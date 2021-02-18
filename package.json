@@ -1,0 +1,93 @@
+{
+	"name": "jump-and-select",
+	"displayName": "Jump and select",
+	"description": "",
+	"version": "0.0.1",
+	"publisher": "ArturoDent",
+	"preview": true,
+	"repository": {
+		"type": "git",
+  	"url": "https://github.com/ArturoDent/jump-and-select"
+	},
+	"license": "MIT",
+	"engines": {
+		"vscode": "^1.53.0"
+	},
+	"main": "./src/extension.js",
+	"categories": [
+		"Other"
+	],
+	"keywords": ["jump", "move", "cursor", "select"],
+	"activationEvents": [
+		"onCommand:jump-and-select.jumpForwardOnly",
+		"onCommand:jump-and-select.jumpForwardSelect",
+		"onCommand:jump-and-select.jumpBackwardOnly",
+		"onCommand:jump-and-select.jumpBackwardSelect"
+	],
+	"contributes": {
+		"commands": [
+			{
+				"command": "jump-and-select.jumpForwardOnly",
+				"title": "Jump forward to next occurrence",
+				"category": "Jump-Select"
+			},
+			{
+				"command": "jump-and-select.jumpForwardSelect",
+				"title": "Select from cursor to next occurrence",
+				"category": "Jump-Select"
+			},
+			{
+				"command": "jump-and-select.jumpBackwardOnly",
+				"title": "Jump backward to previous occurrence",
+				"category": "Jump-Select"
+			},
+			{
+				"command": "jump-and-select.jumpBackwardSelect",
+				"title": "Select from cursor to previous occurrence",
+				"category": "Jump-Select"
+			}
+		],
+		"keybindings": [
+			{
+				"command": "jump-and-select.jumpForwardOnly",
+				"key": "alt+f",
+				"mac": "alt+f",
+				"when": "editorTextFocus && !editorReadonly"
+			},
+			{
+				"command": "jump-and-select.jumpForwardSelect",
+				"key": "shift+alt+f",
+				"mac": "shift+alt+f",
+				"when": "editorTextFocus && !editorReadonly"
+			},
+			{
+				"command": "jump-and-select.jumpBackwardOnly",
+				"key": "alt+b",
+				"mac": "alt+b",
+				"when": "editorTextFocus && !editorReadonly"
+			},
+			{
+				"command": "jump-and-select.jumpBackwardSelect",
+				"key": "shift+alt+b",
+				"mac": "shift+alt+b",
+				"when": "editorTextFocus && !editorReadonly"
+			}
+		]
+	},
+	"scripts": {
+		"lint": "eslint .",
+		"pretest": "npm run lint",
+		"test": "node ./test/runTest.js"
+	},
+	"devDependencies": {
+		"@types/vscode": "^1.53.0",
+		"@types/glob": "^7.1.1",
+		"@types/mocha": "^7.0.2",
+		"@types/node": "^13.11.0",
+		"eslint": "^6.8.0",
+		"glob": "^7.1.6",
+		"mocha": "^7.1.2",
+		"typescript": "^3.8.3",
+		"vscode-test": "^1.3.0"
+	}
+}
