@@ -16,8 +16,7 @@ Choose one of your keybindings, say <kbd>Alt</kbd>+<kbd>f</kbd> to jump forward.
 2.  Type a character (it will not be shown), and     
 3.  Cursor moves to that next character.  
 
-<img src="https://github.com/ArturoDent/jump-and-select/blob/master/images/jumpIntro.gif?raw=true" width="700" height="300" alt="Move cursors forward to next character"/>  
-
+<img src="https://github.com/ArturoDent/jump-and-select/blob/master/images/jumpIntro.gif?raw=true" width="700" height="300" alt="Move cursors forward to next character"/>
 
 ----------
 
