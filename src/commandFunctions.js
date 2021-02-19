@@ -50,7 +50,7 @@ exports.jumpForward = function () {
 /**
  * @description - move cursor forward to next chosen character, with selection from cursor to character
  */
-exports.jumpForwardSelect = function () {	
+exports.jumpForwardSelect = function () {
 
 	let typeDisposable = vscode.commands.registerCommand('type', arg => {
 
@@ -118,7 +118,7 @@ exports.jumpBackward = function () {
 			// const curStartRange = new vscode.Range(firstLine.range.start, curPos);  // directionality?
 
 			let queryIndex = editor.document.getText(curStartRange).lastIndexOf(arg.text);
-			let queryPos = editor.document.positionAt(queryIndex+1);
+			let queryPos = editor.document.positionAt(queryIndex);
 
 
 			// if queryIndex === curIndex-1, skip it backward and jump to previous
@@ -126,7 +126,7 @@ exports.jumpBackward = function () {
 				curPos = new vscode.Position(curPos.line, curPos.character - 1);
 				curStartRange = new vscode.Range(curPos, firstLine.range.start);
 				queryIndex = editor.document.getText(curStartRange).lastIndexOf(arg.text);
-				queryPos = editor.document.positionAt(queryIndex+1);
+				queryPos = editor.document.positionAt(queryIndex);
 			}
 
 				// to jump backwards only
@@ -164,14 +164,14 @@ exports.jumpBackwardSelect = function () {
 			let curStartRange = new vscode.Range(curPos, firstLine.range.start);
 
 			let queryIndex = editor.document.getText(curStartRange).lastIndexOf(arg.text);
-			let queryPos = editor.document.positionAt(queryIndex+1);
+			let queryPos = editor.document.positionAt(queryIndex);
 
 			// if queryIndex === curIndex-1, skip it backward and jump to previous
 			if (queryIndex === curIndex-1) {
 				curPos = new vscode.Position(curPos.line, curPos.character - 1);
 				curStartRange = new vscode.Range(curPos, firstLine.range.start);
 				queryIndex = editor.document.getText(curStartRange).lastIndexOf(arg.text);
-				queryPos = editor.document.positionAt(queryIndex+1);
+				queryPos = editor.document.positionAt(queryIndex);
 			}
 
 				// to select from cursor to queryPos backwards

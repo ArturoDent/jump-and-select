@@ -60,7 +60,9 @@ This extension may not play well with vim or neovim or similar due to registerin
 
 ## Release Notes  
 
-* 0.0.1 &emsp;  Initial release of `jump-and-select` extension
+* 0.0.1 &emsp;  Initial release of `jump-and-select` extension  
+
+* 0.0.2 &emsp;  Change behavior of go to previous character, put cursor befoer that character
 
 
 
