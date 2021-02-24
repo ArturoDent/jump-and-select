@@ -1,0 +1,87 @@
+	{
+    "key": "alt+r",
+    "command": "jump-and-select.jumpForwardOnly",
+    "args": {
+      "text": "mark"
+    }
+  }
+
+	let commandDisposable1 = vscode.commands.registerCommand('jump-and-select.jumpForwardOnly', (arg) => {
+
+		// console.log(`arg from keybinding = ${arg.text}`);  // works from keybinding
+
+		commands.jumpForward(restrict, after);
+	});
+
+	----------------------------------------------------------------------------------------------------
+
+
+	exports.jumpForward = function (restrict, after) {
+
+		// arg === { text: "a" }
+
+		// let typeDisposable7 = vscode.commands.registerCommand('paste', arg => {
+		// 	console.log(arg);   // works, and can do 'type' as well
+		// });
+
+		let typeDisposable = vscode.commands.registerCommand('type', arg => {
+		}
+	}
+
+	---------------------------------------------------------------------------------------------------------
+
+	{
+    "key": "alt+r",
+    "command": "extension.multiCommand.execute",
+    "args": {
+			// "interval": 500,
+      "sequence": [
+        "jump-and-select.jumpForwardSelect",
+        {
+          "command": "type",
+          "args": {
+            "text": "mark"   // works !!!!
+          }
+        }
+      ]
+    },
+  }
+
+	{
+    "key": "alt+r",
+    "command": "extension.multiCommand.execute",
+    "args": {
+			"interval": 500,
+      "sequence": [
+				{
+				  "command": "editor.action.insertSnippet",
+    			"args": {
+        		"snippet": "${CLIPBOARD/([a-z]*)([A-Z])(.*)/$1$2/g}"
+					}
+				},
+        "jump-and-select.jumpBackwardOnly",
+        {
+          "command": "type",
+          "args": {
+            "text": "b"  // or multiple characters works too
+          }
+        }
+      ]
+    },
+  }
+
+	-----------------------------------------------------------------------------------------------
+
+  // so can use an actual regex in a keybinding
+	// indexOf can use multiple characters just need to consider the length
+
+	// consider a select next/previous occurrence command (if multiple characters)
+
+
+
+	----------------------------------------------------------------------------------------------
+
+	Enter '\n' for cancellation or multi-character termination
+
+
+	---------------------------------------------------------------------------------------------

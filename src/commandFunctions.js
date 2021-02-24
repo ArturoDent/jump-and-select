@@ -34,7 +34,7 @@ exports.jumpForward = function (restrict, putCursor) {
 			return;
 		}
 
-		if (arg.text === '\n') {         // Enter
+		if (arg.text === '\n') {         // on Enter, exit
 			typeDisposable.dispose();
 			return;
 		}
@@ -83,6 +83,11 @@ exports.jumpForwardSelect = function (restrict, putCursor) {
 			return;
 		}
 
+		if (arg.text === '\n') {         // on Enter, exit
+			typeDisposable.dispose();
+			return;
+		}
+
 		const editor = vscode.window.activeTextEditor;
 		const selections = editor.selections;
 
@@ -124,6 +129,11 @@ exports.jumpBackward = function (restrict, putCursor) {
 	let typeDisposable = vscode.commands.registerCommand('type', arg => {
 
 		if (!vscode.window.activeTextEditor) {
+			typeDisposable.dispose();
+			return;
+		}
+
+		if (arg.text === '\n') {         // on Enter, exit
 			typeDisposable.dispose();
 			return;
 		}
@@ -175,6 +185,11 @@ exports.jumpBackwardSelect = function (restrict, putCursor) {
 	let typeDisposable = vscode.commands.registerCommand('type', arg => {
 
 		if (!vscode.window.activeTextEditor) {
+			typeDisposable.dispose();
+			return;
+		}
+
+		if (arg.text === '\n') {         // on Enter, exit
 			typeDisposable.dispose();
 			return;
 		}
@@ -235,7 +250,13 @@ function getQueryLineIndexForward(cursorPosition, query) {
 	if (editor) {
 
 		let restOfLine = editor.document.lineAt(cursorPosition.line).text.substring(cursorPosition.character);
-		queryIndex = restOfLine.indexOf(query);
+		// queryIndex = restOfLine.indexOf(query);
+		// queryIndex = restOfLine.indexOf(query);
+
+		const regexp = new RegExp(query, 'g');
+		const matches = [...restOfLine.matchAll(regexp)]
+
+		if (matches.length) queryIndex = Number(matches[0].index);
 
 		if (queryIndex === 0) {
 			cursorPosition = new vscode.Position(cursorPosition.line, cursorPosition.character + 1);
@@ -266,7 +287,13 @@ function getQueryDocumentIndexForward(cursorPosition, query) {
 
 		let lastLine = editor.document.lineAt(editor.document.lineCount - 1);
 		let curEndRange = new vscode.Range(cursorPosition, lastLine.range.end);
-		queryIndex = editor.document.getText(curEndRange).indexOf(query);
+
+		const regexp = new RegExp(query, 'g');
+		const matches = [...editor.document.getText(curEndRange).matchAll(regexp)]
+
+		if (matches.length) queryIndex = Number(matches[0].index);
+
+		// queryIndex = editor.document.getText(curEndRange).indexOf(query);
 
 		if (queryIndex === 0) {
 			cursorPosition = new vscode.Position(cursorPosition.line, cursorPosition.character + 1);
@@ -300,7 +327,12 @@ function getQueryLineIndexBackward(cursorPosition, query) {
 	if (editor) {
 
 		let startOfLine = editor.document.lineAt(cursorPosition.line).text.substring(0, cursorPosition.character);
-		queryIndex = startOfLine.lastIndexOf(query);
+		// queryIndex = startOfLine.lastIndexOf(query);
+
+		const regexp = new RegExp(query, 'g');
+		const matches = [...startOfLine.matchAll(regexp)]
+
+		if (matches.length) queryIndex = Number(matches[matches.length-1].index);
 
 		// if (queryIndex === cursorIndex-1) {
 		// 	cursorPosition = new vscode.Position(cursorPosition.line, cursorPosition.character - 1);
@@ -332,7 +364,11 @@ function getQueryDocumentIndexBackward(cursorPosition, query) {
 		const firstLine = editor.document.lineAt(0);
 		let curStartRange = new vscode.Range(cursorPosition, firstLine.range.start);
 
-		queryIndex = editor.document.getText(curStartRange).lastIndexOf(query);
+		// queryIndex = editor.document.getText(curStartRange).lastIndexOf(query);
+		const regexp = new RegExp(query, 'g');
+		const matches = [...editor.document.getText(curStartRange).matchAll(regexp)]
+
+		if (matches.length) queryIndex = Number(matches[matches.length-1].index);
 
 		// if queryIndex === curIndex-1, skip it backward and jump to previous
 		// if (queryIndex === cursorIndex-1) {
