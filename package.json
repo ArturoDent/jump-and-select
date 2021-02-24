@@ -2,7 +2,7 @@
 	"name": "jump-and-select",
 	"displayName": "Jump and select",
 	"description": "Jump or move the cursor to next or previous chosen character (with optional selection).",
-	"version": "0.0.2",
+	"version": "0.0.3",
 	"publisher": "ArturoDent",
 	"preview": true,
 	"repository": {
@@ -50,6 +50,42 @@
 				"command": "jump-and-select.jumpBackwardSelect",
 				"title": "Select from cursor to previous occurrence",
 				"category": "Jump-Select"
+			}
+		],
+		"configuration": [
+			{
+				"title": "jump-and-select",
+				"type":  "string",
+				"properties": {
+					"jump-and-select.restrictToCurrentLine": {
+						"type": "boolean",
+						"scope": "resource",
+						"enum": [true, false],
+						"enumDescriptions": [
+							"Jump or select only within the current line.",
+							"Jump or select to next/previous character across lines if necessary."
+						],
+						"default": false,
+						"description": "Should the cursor move or select beyond the current line."
+					}
+				}
+			},
+			{
+				"title": "jump-and-select",
+				"type":  "string",
+				"properties": {
+					"jump-and-select.putCursor": {
+						"type": "string",
+						"scope": "resource",
+						"enum": ["beforeCharacter", "afterCharacter"],
+						"enumDescriptions": [
+							"Cursor or selection moves to before next/previous entered character.",
+							"Cursor or selection moves to after next/previous entered character."
+						],
+						"default": "beforeCharacter",
+						"description": "Should the cursor move or select to or after chosen character."
+					}
+				}
 			}
 		],
 		"keybindings": [
