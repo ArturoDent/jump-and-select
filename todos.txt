@@ -7,14 +7,12 @@
   }
 
 	let commandDisposable1 = vscode.commands.registerCommand('jump-and-select.jumpForwardOnly', (arg) => {
-
 		// console.log(`arg from keybinding = ${arg.text}`);  // works from keybinding
-
-		commands.jumpForward(restrict, after);
+		commands.jumpForward(restrict, after);  <== add an arg parameter here and above
 	});
 
 	----------------------------------------------------------------------------------------------------
-
+																																	PASTE
 
 	exports.jumpForward = function (restrict, after) {
 
@@ -77,11 +75,27 @@
 
 	// consider a select next/previous occurrence command (if multiple characters)
 
-
-
 	----------------------------------------------------------------------------------------------
 
-	Enter '\n' for cancellation or multi-character termination
+	A new command to keep running and terminate on Return ?
+
+	Setting to never show infoMessage ?
+
+	A StatusBarItem ?  vscode.window.createStatusBarItem(alignment?: StatusBarAlignment, priority?: number): StatusBarItem
+
+	A setting to disable the StatusBarItem ?
+
+	----------------------------------------------------------------------------
+			// let showMessage = 'true';  // global
+			if (showMessage !== 'never') showMessage = 'true';
+
+		// if (showMessage === 'true') vscode.window
+    //     .showInformationMessage("Press Return to exit jump command.",
+    //       ...['Okay, show next time.', 'Don\'t show again.'])   // two buttons
+    //     .then(selected => {
+		// 			if (selected === 'Okay, show next time.') showMessage = 'false';
+		// 			else showMessage = 'never';
+    //     });
 
 
-	---------------------------------------------------------------------------------------------
+

@@ -61,11 +61,11 @@
 						"type": "boolean",
 						"scope": "resource",
 						"enum": [true, false],
+						"default": false,
 						"enumDescriptions": [
 							"Jump or select only within the current line.",
 							"Jump or select to next/previous character across lines if necessary."
 						],
-						"default": false,
 						"description": "Should the cursor move or select beyond the current line."
 					}
 				}
@@ -74,16 +74,33 @@
 				"title": "jump-and-select",
 				"type":  "string",
 				"properties": {
-					"jump-and-select.putCursor": {
+					"jump-and-select.putCursorForward": {
 						"type": "string",
 						"scope": "resource",
 						"enum": ["beforeCharacter", "afterCharacter"],
-						"enumDescriptions": [
-							"Cursor or selection moves to before next/previous entered character.",
-							"Cursor or selection moves to after next/previous entered character."
-						],
 						"default": "beforeCharacter",
-						"description": "Should the cursor move or select to or after chosen character."
+						"enumDescriptions": [
+							"Cursor or selection moves to before next entered character.",
+							"Cursor or selection moves to after next entered character."
+						],
+						"description": "Should the cursor move or select to or after the next chosen character."
+					}
+				}
+			},
+			{
+				"title": "jump-and-select",
+				"type":  "string",
+				"properties": {
+					"jump-and-select.putCursorBackward": {
+						"type": "string",
+						"scope": "resource",
+						"enum": ["beforeCharacter", "afterCharacter"],
+						"default": "beforeCharacter",
+						"enumDescriptions": [
+							"Cursor or selection moves to before previous entered character.",
+							"Cursor or selection moves to after previous entered character."
+						],
+						"description": "Should the cursor move or select to or after the previous chosen character."
 					}
 				}
 			}
