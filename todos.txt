@@ -97,5 +97,28 @@
 		// 			else showMessage = 'never';
     //     });
 
+--------------------------------------------------------------------------
 
+		// don't show the statusBarItem if command from keybinding
+
+		// if (statusBarItemNotShowing) {
+		// 	sbItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 1);
+		// 	sbItem.text = "'Return' to exit jump";
+		// 	sbItem.tooltip = "Pressing 'Return' will exit the current jump command";
+		// 	sbItem.backgroundColor = new vscode.ThemeColor('statusBarItem.errorBackground');
+		// 	sbItem.show();
+		// 	statusBarItemNotShowing = false;
+		// }
+
+		/** @type { vscode.StatusBarItem } */
+		// let sbItem;
+		// let statusBarItemNotShowing = true;
+
+		if (arg.text === '\n') {         // on Enter, exit
+
+			// sbItem.dispose();
+			// statusBarItemNotShowing = true;
+			typeDisposable.dispose();
+			return;
+		}
 

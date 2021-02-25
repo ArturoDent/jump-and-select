@@ -18,18 +18,21 @@ function activate(context) {
 	});
 
 
-	let commandDisposable2 = vscode.commands.registerCommand('jump-and-select.jumpForwardSelect', () => {
-		commands.jumpForwardSelect(restrict, putCursorForward);
+	let commandDisposable2 = vscode.commands.registerCommand('jump-and-select.jumpForwardSelect', (arg) => {
+		let kbARG = arg ? arg.text : "";  // if arg means triggered via a keybinding
+		commands.jumpForwardSelect(restrict, putCursorForward, kbARG);
 	});
 
 
-	let commandDisposable3 = vscode.commands.registerCommand('jump-and-select.jumpBackwardOnly', () => {
-		commands.jumpBackward(restrict, putCursorBackward);
+	let commandDisposable3 = vscode.commands.registerCommand('jump-and-select.jumpBackwardOnly', (arg) => {
+		let kbARG = arg ? arg.text : "";  // if arg means triggered via a keybinding
+		commands.jumpBackward(restrict, putCursorBackward, kbARG);
 	});
 
 
-	let commandDisposable4 = vscode.commands.registerCommand('jump-and-select.jumpBackwardSelect', () => {
-		commands.jumpBackwardSelect(restrict, putCursorBackward);
+	let commandDisposable4 = vscode.commands.registerCommand('jump-and-select.jumpBackwardSelect', (arg) => {
+		let kbARG = arg ? arg.text : "";  // if arg means triggered via a keybinding
+		commands.jumpBackwardSelect(restrict, putCursorBackward, kbARG);
 	});
 
 	context.subscriptions.push(commandDisposable1, commandDisposable2, commandDisposable3, commandDisposable4);
