@@ -20,122 +20,57 @@ const vscode = require('vscode');
  * Move cursor forward to next chosen character, without selection
  * @param {Boolean} restrict
  * @param {string} putCursorForward
- * @param {string} kbARG - keybinding arg, if any
+ * @param {string} kbARG - keybinding arg, if any or empty string
  */
 exports.jumpForward = function (restrict, putCursorForward, kbARG) {
 
-	// arg === { text: "a" }, so use arg.text to get the value
+	if (kbARG) {            // triggered via a keybinding
+		_jumpForward(restrict, putCursorForward, kbARG);
+	}
+	else {
+		let typeDisposable = vscode.commands.registerCommand('type', arg => {
+			// arg === { text: "a" }, so use arg.text to get the value
 
-	// let typeDisposable7 = vscode.commands.registerCommand('paste', arg => {
-	// 	console.log(arg);   // works, and can do 'type' as well
-	// });
+			// only if in multi-mode
+			if (arg.text === '\n') {         // on Enter, exit multi-mode
+				// sbItem.dispose();
+				// statusBarItemNotShowing = true;
+				typeDisposable.dispose();
+				return;
+			}
 
-	// console.log(kbARG);
-	// if a kbARG, must separately call the workings of below
-
-	let typeDisposable = vscode.commands.registerCommand('type', arg => {
-
-		// don't show the statusBarItem if command from keybinding
-
-		// if (statusBarItemNotShowing) {
-		// 	sbItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 1);
-		// 	sbItem.text = "'Return' to exit jump";
-		// 	sbItem.tooltip = "Pressing 'Return' will exit the current jump command";
-		// 	sbItem.backgroundColor = new vscode.ThemeColor('statusBarItem.errorBackground');
-		// 	sbItem.show();
-		// 	statusBarItemNotShowing = false;
-		// }
-
-		if (!vscode.window.activeTextEditor) {
+			_jumpForward(restrict, putCursorForward, arg.text);
 			typeDisposable.dispose();
-			return;
-		}
-
-		if (arg.text === '\n') {         // on Enter, exit
-
-			// sbItem.dispose();
-			// statusBarItemNotShowing = true;
-			typeDisposable.dispose();
-			return;
-		}
-
-		// if (kbARG) arg.text = kbARG;
-
-		const editor = vscode.window.activeTextEditor;
-		const selections = editor.selections;
-
-		selections.forEach((selection, index) => {
-
-			let curPos = selection.active;  // cursor Position
-			let queryObject;
-
-			if (restrict) {
-				queryObject = getQueryLineIndexForward(curPos, arg.text);
-			}
-			else {
-				queryObject = getQueryDocumentIndexForward(curPos, arg.text);
-			}
-
-			if ((queryObject.cursorIndex !== -1) && (queryObject.queryIndex !== -1)) {
-
-				let queryPos;  // query Position
-				if (putCursorForward === "afterCharacter") queryPos = editor.document.positionAt(queryObject.queryIndex + queryObject.cursorIndex + 1);
-				else queryPos = editor.document.positionAt(queryObject.queryIndex + queryObject.cursorIndex);
-
-				selections[index] = new vscode.Selection(queryPos, queryPos);
-				editor.selections = selections;
-			}
 		});
-		typeDisposable.dispose();
-	});
+	}
 }
 
 /**
  * Move cursor forward to next chosen character, with selection from cursor to character
  * @param {Boolean} restrict
  * @param {string} putCursorForward
+ * @param {string} kbARG - keybinding arg, if any or empty string
  */
-exports.jumpForwardSelect = function (restrict, putCursorForward) {
+exports.jumpForwardSelect = function (restrict, putCursorForward, kbARG) {
 
-	let typeDisposable = vscode.commands.registerCommand('type', arg => {
+	if (kbARG) {            // triggered via a keybinding
+		_jumpForwardSelect(restrict, putCursorForward, kbARG);
+	}
+	else {
 
-		if (!vscode.window.activeTextEditor) {
+		let typeDisposable = vscode.commands.registerCommand('type', arg => {
+
+			if (arg.text === '\n') {         // on Enter, exit multi-mode
+				// sbItem.dispose();
+				// statusBarItemNotShowing = true;
+				typeDisposable.dispose();
+				return;
+			}
+
+			_jumpForwardSelect(restrict, putCursorForward, arg.text);
 			typeDisposable.dispose();
-			return;
-		}
-
-		if (arg.text === '\n') {         // on Enter, exit
-			typeDisposable.dispose();
-			return;
-		}
-
-		const editor = vscode.window.activeTextEditor;
-		const selections = editor.selections;
-
-		selections.forEach((selection, index) => {
-
-			let curPos = selection.active;
-			let queryObject;
-
-			if (restrict) {
-				queryObject = getQueryLineIndexForward(curPos, arg.text);
-			}
-			else {
-				queryObject = getQueryDocumentIndexForward(curPos, arg.text);
-			}
-
-			if ((queryObject.cursorIndex !== -1) && (queryObject.queryIndex !== -1)) {
-
-				let queryPos;
-				if (putCursorForward === "afterCharacter") queryPos = editor.document.positionAt(queryObject.queryIndex + queryObject.cursorIndex + 1);
-				else queryPos = editor.document.positionAt(queryObject.queryIndex + queryObject.cursorIndex);
-
-				selections[index] = new vscode.Selection(curPos, queryPos);
-				editor.selections = selections;
-			}
 		});
-		typeDisposable.dispose();
-	});
+	}
 }
 
 
@@ -143,55 +78,28 @@ exports.jumpForwardSelect = function (restrict, putCursorForward) {
  * Move cursor backward to previous chosen character, without selection
  * @param {Boolean} restrict
  * @param {string} putCursorBackward
+ * @param {string} kbARG - keybinding arg, if any or empty string
  */
-exports.jumpBackward = function (restrict, putCursorBackward) {
+exports.jumpBackward = function (restrict, putCursorBackward, kbARG) {
 
-	let typeDisposable = vscode.commands.registerCommand('type', arg => {
+	if (kbARG) {            // triggered via a keybinding
+		_jumpBackward(restrict, putCursorBackward, kbARG);
+	}
+	else {
 
-		if (!vscode.window.activeTextEditor) {
+		let typeDisposable = vscode.commands.registerCommand('type', arg => {
+
+			if (arg.text === '\n') {         // on Enter, exit multi-mode
+				// sbItem.dispose();
+				// statusBarItemNotShowing = true;
+				typeDisposable.dispose();
+				return;
+			}
+
+			_jumpBackward(restrict, putCursorBackward, arg.text);
 			typeDisposable.dispose();
-			return;
-		}
-
-		if (arg.text === '\n') {         // on Enter, exit
-			typeDisposable.dispose();
-			return;
-		}
-
-		const editor = vscode.window.activeTextEditor;
-		const selections = editor.selections;
-
-		selections.forEach((selection, index) => {
-
-			let curPos = selection.active;
-			let queryObject;
-
-			if (restrict) {
-				queryObject = getQueryLineIndexBackward(curPos, arg.text);
-			}
-			else {
-				queryObject = getQueryDocumentIndexBackward(curPos, arg.text);
-			}
-
-			if ((queryObject.cursorIndex !== -1) && (queryObject.queryIndex !== -1)) {
-
-				let queryPos;
-
-				if (putCursorBackward === "afterCharacter") {
-					if (restrict) queryPos = new vscode.Position(curPos.line, queryObject.queryIndex+1);
-					else queryPos = editor.document.positionAt(queryObject.queryIndex+1);
-				}
-				else {
-					if (restrict) queryPos = new vscode.Position(curPos.line, queryObject.queryIndex);
-					else queryPos = editor.document.positionAt(queryObject.queryIndex);
-				}
-
-				selections[index] = new vscode.Selection(queryPos, queryPos);
-				editor.selections = selections;
-			}
 		});
-		typeDisposable.dispose();
-	});
+	}
 }
 
 
@@ -199,54 +107,197 @@ exports.jumpBackward = function (restrict, putCursorBackward) {
  * Move cursor backward to previous chosen character, with selection from cursor to character
  * @param {Boolean} restrict
  * @param {string} putCursorBackward
+ * @param {string} kbARG - keybinding arg, if any or empty string
  */
-exports.jumpBackwardSelect = function (restrict, putCursorBackward) {
+exports.jumpBackwardSelect = function (restrict, putCursorBackward, kbARG) {
 
-	let typeDisposable = vscode.commands.registerCommand('type', arg => {
+	if (kbARG) {            // triggered via a keybinding
+		_jumpBackwardSelect(restrict, putCursorBackward, kbARG);
+	}
+	else {
 
-		if (!vscode.window.activeTextEditor) {
+		let typeDisposable = vscode.commands.registerCommand('type', arg => {
+
+			if (arg.text === '\n') {         // on Enter, exit multi-mode
+				// sbItem.dispose();
+				// statusBarItemNotShowing = true;
+				typeDisposable.dispose();
+				return;
+			}
+
+			_jumpBackwardSelect(restrict, putCursorBackward, arg.text);
 			typeDisposable.dispose();
-			return;
+		});
+	}
+}
+
+
+/**
+ * Move cursor forward to next chosen character, without selection
+ * @param {Boolean} restrict
+ * @param {string} putCursorForward
+ * @param {string} query - keybinding arg or next character typed
+ */
+function _jumpForward(restrict, putCursorForward, query) {
+
+	if (!vscode.window.activeTextEditor) {
+		return;
+	}
+	const editor = vscode.window.activeTextEditor;
+	const selections = editor.selections;
+
+	selections.forEach((selection, index) => {
+
+		let curPos = selection.active;  // cursor Position
+		let queryObject;
+
+		if (restrict) {
+			queryObject = getQueryLineIndexForward(curPos, query);
+		}
+		else {
+			queryObject = getQueryDocumentIndexForward(curPos, query);
 		}
 
-		if (arg.text === '\n') {         // on Enter, exit
-			typeDisposable.dispose();
-			return;
+		if ((queryObject.cursorIndex !== -1) && (queryObject.queryIndex !== -1)) {
+
+			let queryPos;  // query Position
+			if (putCursorForward === "afterCharacter") queryPos = editor.document.positionAt(queryObject.queryIndex + queryObject.cursorIndex + 1);
+			else queryPos = editor.document.positionAt(queryObject.queryIndex + queryObject.cursorIndex);
+
+			selections[index] = new vscode.Selection(queryPos, queryPos);
+			editor.selections = selections;
+		}
+	});
+}
+
+/**
+ * Move cursor forward to next chosen character, with selection from cursor to character
+ * @param {Boolean} restrict
+ * @param {string} putCursorForward
+ * @param {string} query - keybinding arg or next character typed
+ */
+function _jumpForwardSelect (restrict, putCursorForward, query) {
+
+	if (!vscode.window.activeTextEditor) {
+		return;
+	}
+	const editor = vscode.window.activeTextEditor;
+	const selections = editor.selections;
+
+	selections.forEach((selection, index) => {
+
+		let curPos = selection.active;
+		let queryObject;
+
+		if (restrict) {
+			queryObject = getQueryLineIndexForward(curPos, query);
+		}
+		else {
+			queryObject = getQueryDocumentIndexForward(curPos, query);
 		}
 
-		const editor = vscode.window.activeTextEditor;
-		const selections = editor.selections;
+		// if there is no next selection, should we lose the last selection?
+		if ((queryObject.cursorIndex !== -1) && (queryObject.queryIndex !== -1)) {
 
-		selections.forEach((selection, index) => {
+			let queryPos;
+			if (putCursorForward === "afterCharacter") queryPos = editor.document.positionAt(queryObject.queryIndex + queryObject.cursorIndex + 1);
+			else queryPos = editor.document.positionAt(queryObject.queryIndex + queryObject.cursorIndex);
 
-			let curPos = selection.active;
-			let queryObject;
+			selections[index] = new vscode.Selection(curPos, queryPos);
+			editor.selections = selections;
+		}
+	});
+}
 
-			if (restrict) {
-				queryObject = getQueryLineIndexBackward(curPos, arg.text);
+
+/**
+ * Move cursor forward to next chosen character, without selection
+ * @param {Boolean} restrict
+ * @param {string} putCursorBackward
+ * @param {string} query - keybinding arg or next character typed
+ */
+function _jumpBackward(restrict, putCursorBackward, query) {
+
+	if (!vscode.window.activeTextEditor) {
+		return;
+	}
+	const editor = vscode.window.activeTextEditor;
+	const selections = editor.selections;
+
+	selections.forEach((selection, index) => {
+
+		let curPos = selection.active;
+		let queryObject;
+
+		if (restrict) {
+			queryObject = getQueryLineIndexBackward(curPos, query);
+		}
+		else {
+			queryObject = getQueryDocumentIndexBackward(curPos, query);
+		}
+
+		if ((queryObject.cursorIndex !== -1) && (queryObject.queryIndex !== -1)) {
+
+			let queryPos;
+
+			if (putCursorBackward === "afterCharacter") {
+				if (restrict) queryPos = new vscode.Position(curPos.line, queryObject.queryIndex + 1);
+				else queryPos = editor.document.positionAt(queryObject.queryIndex + 1);
 			}
 			else {
-				queryObject = getQueryDocumentIndexBackward(curPos, arg.text);
+				if (restrict) queryPos = new vscode.Position(curPos.line, queryObject.queryIndex);
+				else queryPos = editor.document.positionAt(queryObject.queryIndex);
 			}
 
-			if ((queryObject.cursorIndex !== -1) && (queryObject.queryIndex !== -1)) {
+			selections[index] = new vscode.Selection(queryPos, queryPos);
+			editor.selections = selections;
+		}
+	});
+}
 
-				let queryPos;
+/**
+ * Move cursor backward to previous chosen character, with selection from cursor to character
+ * @param {Boolean} restrict
+ * @param {string} putCursorBackward
+ * @param {string} query - keybinding arg or next character typed
+ */
+function _jumpBackwardSelect(restrict, putCursorBackward, query) {
 
-				if (putCursorBackward === "afterCharacter") {
-					if (restrict) queryPos = new vscode.Position(curPos.line, queryObject.queryIndex+1);
-					else queryPos = editor.document.positionAt(queryObject.queryIndex+1);
-				}
-				else {
-					if (restrict) queryPos = new vscode.Position(curPos.line, queryObject.queryIndex);
-					else queryPos = editor.document.positionAt(queryObject.queryIndex);
-				}
+	if (!vscode.window.activeTextEditor) {
+		return;
+	}
 
-				selections[index] = new vscode.Selection(curPos, queryPos);
-				editor.selections = selections;
+	const editor = vscode.window.activeTextEditor;
+	const selections = editor.selections;
+
+	selections.forEach((selection, index) => {
+
+		let curPos = selection.active;
+		let queryObject;
+
+		if (restrict) {
+			queryObject = getQueryLineIndexBackward(curPos, query);
+		}
+		else {
+			queryObject = getQueryDocumentIndexBackward(curPos, query);
+		}
+
+		if ((queryObject.cursorIndex !== -1) && (queryObject.queryIndex !== -1)) {
+
+			let queryPos;
+
+			if (putCursorBackward === "afterCharacter") {
+				if (restrict) queryPos = new vscode.Position(curPos.line, queryObject.queryIndex + 1);
+				else queryPos = editor.document.positionAt(queryObject.queryIndex + 1);
 			}
-		});
-		typeDisposable.dispose();
+			else {
+				if (restrict) queryPos = new vscode.Position(curPos.line, queryObject.queryIndex);
+				else queryPos = editor.document.positionAt(queryObject.queryIndex);
+			}
+
+			selections[index] = new vscode.Selection(curPos, queryPos);
+			editor.selections = selections;
+		}
 	});
 }
 
