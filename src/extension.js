@@ -7,32 +7,40 @@ const commands = require('./commandFunctions');
  */
 function activate(context) {
 
-	let restrict =  getRestrictSetting();
-	let putCursorForward = getCusorPlacementForwardSetting();
-	let putCursorBackward    =  getCusorPlacementBackwardSetting();
+	let restrict             =   _getRestrictSetting();
+	let putCursorForward     =   _getCusorPlacementForwardSetting();
+	let putCursorBackward    =   _getCusorPlacementBackwardSetting();
 
 
-	let commandDisposable1 = vscode.commands.registerCommand('jump-and-select.jumpForwardOnly', (arg) => {
-		let kbARG = arg ? arg.text : "";  // if arg means triggered via a keybinding
-		commands.jumpForward(restrict, putCursorForward, kbARG);
+	let commandDisposable1 = vscode.commands.registerCommand('jump-and-select.jumpForward', (args) => {
+
+		// multiple args like '{ text: "mark", putCursorForward: "beforeCharacter",
+		//											 putCursorBackward: "beforeCharacter", "restrictToCurrentLine": true }
+
+		let kbText = args ? args.text : "";  // if args means triggered via a keybinding
+
+		// check if args.putCursorForward and no args.putCursorBackward
+		// check if args.putCursorForward is "beforeCharacter" or "afterCharacter"
+
+		commands.jumpForward(args?.restrictToCurrentLine || restrict, args?.putCursorForward || putCursorForward, kbText);
 	});
 
 
-	let commandDisposable2 = vscode.commands.registerCommand('jump-and-select.jumpForwardSelect', (arg) => {
-		let kbARG = arg ? arg.text : "";  // if arg means triggered via a keybinding
-		commands.jumpForwardSelect(restrict, putCursorForward, kbARG);
+	let commandDisposable2 = vscode.commands.registerCommand('jump-and-select.jumpForwardSelect', (args) => {
+		let kbText = args ? args.text : "";
+		commands.jumpForwardSelect(args?.restrictToCurrentLine || restrict, args?.putCursorForward || putCursorForward, kbText);
 	});
 
 
-	let commandDisposable3 = vscode.commands.registerCommand('jump-and-select.jumpBackwardOnly', (arg) => {
-		let kbARG = arg ? arg.text : "";  // if arg means triggered via a keybinding
-		commands.jumpBackward(restrict, putCursorBackward, kbARG);
+	let commandDisposable3 = vscode.commands.registerCommand('jump-and-select.jumpBackward', (args) => {
+		let kbText = args ? args.text : "";
+		commands.jumpBackward(args?.restrictToCurrentLine || restrict, args?.putCursorBackward || putCursorBackward, kbText);
 	});
 
 
-	let commandDisposable4 = vscode.commands.registerCommand('jump-and-select.jumpBackwardSelect', (arg) => {
-		let kbARG = arg ? arg.text : "";  // if arg means triggered via a keybinding
-		commands.jumpBackwardSelect(restrict, putCursorBackward, kbARG);
+	let commandDisposable4 = vscode.commands.registerCommand('jump-and-select.jumpBackwardSelect', (args) => {
+		let kbText = args ? args.text : "";
+		commands.jumpBackwardSelect(args?.restrictToCurrentLine || restrict, args?.putCursorBackward || putCursorBackward, kbText);
 	});
 
 	context.subscriptions.push(commandDisposable1, commandDisposable2, commandDisposable3, commandDisposable4);
@@ -41,22 +49,22 @@ function activate(context) {
 			// for (let disposable of disposables) {
 			// 		disposable.dispose()
 			// }
-		if (event.affectsConfiguration("jump-and-select.restrictToCurrentLine")) restrict = getRestrictSetting();
-		if (event.affectsConfiguration("jump-and-select.putCursorForward")) putCursorForward = getCusorPlacementForwardSetting();
-		if (event.affectsConfiguration("jump-and-select.putCursorBackward")) putCursorBackward = getCusorPlacementBackwardSetting();
+		if (event.affectsConfiguration("jump-and-select.restrictToCurrentLine")) restrict = _getRestrictSetting();
+		if (event.affectsConfiguration("jump-and-select.putCursorForward")) putCursorForward = _getCusorPlacementForwardSetting();
+		if (event.affectsConfiguration("jump-and-select.putCursorBackward")) putCursorBackward = _getCusorPlacementBackwardSetting();
 
 	}));
 }
 
-function getRestrictSetting() {
+function _getRestrictSetting() {
 	return vscode.workspace.getConfiguration().get("jump-and-select.restrictToCurrentLine");
 }
 
-function getCusorPlacementForwardSetting() {
+function _getCusorPlacementForwardSetting() {
 	return vscode.workspace.getConfiguration().get("jump-and-select.putCursorForward");
 }
 
-function getCusorPlacementBackwardSetting() {
+function _getCusorPlacementBackwardSetting() {
 	return vscode.workspace.getConfiguration().get("jump-and-select.putCursorBackward");
 }
 

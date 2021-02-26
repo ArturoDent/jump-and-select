@@ -24,15 +24,15 @@
 		"select"
 	],
 	"activationEvents": [
-		"onCommand:jump-and-select.jumpForwardOnly",
+		"onCommand:jump-and-select.jumpForward",
 		"onCommand:jump-and-select.jumpForwardSelect",
-		"onCommand:jump-and-select.jumpBackwardOnly",
+		"onCommand:jump-and-select.jumpBackward",
 		"onCommand:jump-and-select.jumpBackwardSelect"
 	],
 	"contributes": {
 		"commands": [
 			{
-				"command": "jump-and-select.jumpForwardOnly",
+				"command": "jump-and-select.jumpForward",
 				"title": "Jump forward to next occurrence",
 				"category": "Jump-Select"
 			},
@@ -42,7 +42,7 @@
 				"category": "Jump-Select"
 			},
 			{
-				"command": "jump-and-select.jumpBackwardOnly",
+				"command": "jump-and-select.jumpBackward",
 				"title": "Jump backward to previous occurrence",
 				"category": "Jump-Select"
 			},
