@@ -1,7 +1,7 @@
 {
 	"compilerOptions": {
 		"strict": true,
-		"module": "commonjs",
+		"module": "commonJS",
 		"target": "es2020",
 		"checkJs": true,  /* Typecheck .js files. */
 		"lib": [

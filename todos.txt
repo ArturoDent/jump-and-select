@@ -1,18 +1,4 @@
-	{
-    "key": "alt+r",
-    "command": "jump-and-select.jumpForwardOnly",
-    "args": {
-      "text": "mark"
-    }
-  }
-
-	let commandDisposable1 = vscode.commands.registerCommand('jump-and-select.jumpForwardOnly', (arg) => {
-		// console.log(`arg from keybinding = ${arg.text}`);  // works from keybinding
-		commands.jumpForward(restrict, after);  <== add an arg parameter here and above
-	});
-
-	----------------------------------------------------------------------------------------------------
-																																	PASTE
+																															PASTE
 
 	exports.jumpForward = function (restrict, after) {
 
@@ -27,23 +13,6 @@
 	}
 
 	---------------------------------------------------------------------------------------------------------
-
-	{
-    "key": "alt+r",
-    "command": "extension.multiCommand.execute",
-    "args": {
-			// "interval": 500,
-      "sequence": [
-        "jump-and-select.jumpForwardSelect",
-        {
-          "command": "type",
-          "args": {
-            "text": "mark"   // works !!!!
-          }
-        }
-      ]
-    },
-  }
 
 	{
     "key": "alt+r",
@@ -70,22 +39,17 @@
 
 	-----------------------------------------------------------------------------------------------
 
-  // so can use an actual regex in a keybinding
-	// indexOf can use multiple characters just need to consider the length
-
 	// consider a select next/previous occurrence command (if multiple characters)
 
 	----------------------------------------------------------------------------------------------
 
-	A new command to keep running and terminate on Return ?
-
-	Setting to never show infoMessage ?
-
-	A StatusBarItem ?  vscode.window.createStatusBarItem(alignment?: StatusBarAlignment, priority?: number): StatusBarItem
-
 	A setting to disable the StatusBarItem ?
 
 	----------------------------------------------------------------------------
+
+		Setting to never show infoMessage ?
+
+
 			// let showMessage = 'true';  // global
 			if (showMessage !== 'never') showMessage = 'true';
 
@@ -97,5 +61,11 @@
 		// 			else showMessage = 'never';
     //     });
 
+--------------------------------------------------------------------------
 
+		completionProvider for keybindings
 
+		// {[^{]*jump-and-select\.(?<command>.*?)\\",?[^"]*(?<args>"args\\"[^}]*})
+		// const regexp = new RegExp(/jump-and-select\.(?<command>[^"]+)/, 'g');
+		// const regexp = new RegExp(/{[^{]*jump-and-select\.(?<command>.*?)\\",?[^"]*(?<args>"args\\"[^}]*})/, 'g');
+		// const matches = [...document.getText(curStartRange).matchAll(regexp)];

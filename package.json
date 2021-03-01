@@ -24,15 +24,22 @@
 		"select"
 	],
 	"activationEvents": [
-		"onCommand:jump-and-select.jumpForwardOnly",
+		"onStartupFinished",
+
+		"onCommand:jump-and-select.jumpForward",
 		"onCommand:jump-and-select.jumpForwardSelect",
-		"onCommand:jump-and-select.jumpBackwardOnly",
-		"onCommand:jump-and-select.jumpBackwardSelect"
+		"onCommand:jump-and-select.jumpBackward",
+		"onCommand:jump-and-select.jumpBackwardSelect",
+
+		"onCommand:jump-and-select.jumpForwardMultiMode",
+		"onCommand:jump-and-select.jumpForwardSelectMultiMode",
+		"onCommand:jump-and-select.jumpBackwardMultiMode",
+		"onCommand:jump-and-select.jumpBackwardSelectMultiMode"
 	],
 	"contributes": {
 		"commands": [
 			{
-				"command": "jump-and-select.jumpForwardOnly",
+				"command": "jump-and-select.jumpForward",
 				"title": "Jump forward to next occurrence",
 				"category": "Jump-Select"
 			},
@@ -42,13 +49,34 @@
 				"category": "Jump-Select"
 			},
 			{
-				"command": "jump-and-select.jumpBackwardOnly",
+				"command": "jump-and-select.jumpBackward",
 				"title": "Jump backward to previous occurrence",
 				"category": "Jump-Select"
 			},
 			{
 				"command": "jump-and-select.jumpBackwardSelect",
 				"title": "Select from cursor to previous occurrence",
+				"category": "Jump-Select"
+			},
+
+			{
+				"command": "jump-and-select.jumpForwardMultiMode",
+				"title": "Jump forward to next occurrence repeatedly",
+				"category": "Jump-Select"
+			},
+			{
+				"command": "jump-and-select.jumpForwardSelectMultiMode",
+				"title": "Select from cursor to next occurrence repeatedly",
+				"category": "Jump-Select"
+			},
+			{
+				"command": "jump-and-select.jumpBackwardMultiMode",
+				"title": "Jump backward to previous occurrence repeatedly",
+				"category": "Jump-Select"
+			},
+			{
+				"command": "jump-and-select.jumpBackwardSelectMultiMode",
+				"title": "Select from cursor to previous occurrence repeatedly",
 				"category": "Jump-Select"
 			}
 		],
@@ -57,16 +85,16 @@
 				"title": "jump-and-select",
 				"type":  "string",
 				"properties": {
-					"jump-and-select.restrictToCurrentLine": {
-						"type": "boolean",
+					"jump-and-select.restrictSearch": {
+						"type": "string",
 						"scope": "resource",
-						"enum": [true, false],
-						"default": false,
+						"enum": ["line", "document"],
+						"default": "document",
 						"enumDescriptions": [
 							"Jump or select only within the current line.",
 							"Jump or select to next/previous character across lines if necessary."
 						],
-						"description": "Should the cursor move or select beyond the current line."
+						"description": "Should the cursor move or select restricted to current line or entire document."
 					}
 				}
 			},
@@ -107,7 +135,7 @@
 		],
 		"keybindings": [
 			{
-				"command": "jump-and-select.jumpForwardOnly",
+				"command": "jump-and-select.jumpForward",
 				"key": "alt+f",
 				"mac": "alt+f",
 				"when": "editorTextFocus && !editorReadonly"
@@ -119,7 +147,7 @@
 				"when": "editorTextFocus && !editorReadonly"
 			},
 			{
-				"command": "jump-and-select.jumpBackwardOnly",
+				"command": "jump-and-select.jumpBackward",
 				"key": "alt+b",
 				"mac": "alt+b",
 				"when": "editorTextFocus && !editorReadonly"
@@ -128,6 +156,31 @@
 				"command": "jump-and-select.jumpBackwardSelect",
 				"key": "shift+alt+b",
 				"mac": "shift+alt+b",
+				"when": "editorTextFocus && !editorReadonly"
+			},
+
+			{
+				"command": "jump-and-select.jumpForwardMultiMode",
+				"key": "alt+m alt+f",
+				"mac": "alt+m alt+f",
+				"when": "editorTextFocus && !editorReadonly"
+			},
+			{
+				"command": "jump-and-select.jumpForwardSelectMultiMode",
+				"key": "shift+alt+m shift+alt+f",
+				"mac": "shift+alt+m shift+alt+f",
+				"when": "editorTextFocus && !editorReadonly"
+			},
+			{
+				"command": "jump-and-select.jumpBackwardMultiMode",
+				"key": "alt+m alt+b",
+				"mac": "alt+m alt+b",
+				"when": "editorTextFocus && !editorReadonly"
+			},
+			{
+				"command": "jump-and-select.jumpBackwardSelectMultiMode",
+				"key": "shift+alt+m shift+alt+b",
+				"mac": "shift+alt+m shift+alt+b",
 				"when": "editorTextFocus && !editorReadonly"
 			}
 		]
