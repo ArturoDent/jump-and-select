@@ -18,23 +18,6 @@
     "key": "alt+r",
     "command": "extension.multiCommand.execute",
     "args": {
-			// "interval": 500,
-      "sequence": [
-        "jump-and-select.jumpForwardSelect",
-        {
-          "command": "type",
-          "args": {
-            "text": "mark"   // works !!!!
-          }
-        }
-      ]
-    },
-  }
-
-	{
-    "key": "alt+r",
-    "command": "extension.multiCommand.execute",
-    "args": {
 			"interval": 500,
       "sequence": [
 				{
@@ -56,15 +39,9 @@
 
 	-----------------------------------------------------------------------------------------------
 
-  // so can use an actual regex in a keybinding
-
 	// consider a select next/previous occurrence command (if multiple characters)
 
 	----------------------------------------------------------------------------------------------
-
-	A new command to keep running and terminate on Return ?
-
-	A StatusBarItem ?  vscode.window.createStatusBarItem(alignment?: StatusBarAlignment, priority?: number): StatusBarItem
 
 	A setting to disable the StatusBarItem ?
 
@@ -86,21 +63,9 @@
 
 --------------------------------------------------------------------------
 
-		// don't show the statusBarItem if command from keybinding
-
-		// if (statusBarItemNotShowing) {
-		// 	sbItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 1);
-		// 	sbItem.text = "'Return' to exit jump";
-		// 	sbItem.tooltip = "Pressing 'Return' will exit the current jump command";
-		// 	sbItem.backgroundColor = new vscode.ThemeColor('statusBarItem.errorBackground');
-		// 	sbItem.show();
-		// 	statusBarItemNotShowing = false;
-		// }
-
-		/** @type { vscode.StatusBarItem } */
-		// let sbItem;
-		// let statusBarItemNotShowing = true;
-
-		----------------------------------------------------------------------
-
 		completionProvider for keybindings
+
+		// {[^{]*jump-and-select\.(?<command>.*?)\\",?[^"]*(?<args>"args\\"[^}]*})
+		// const regexp = new RegExp(/jump-and-select\.(?<command>[^"]+)/, 'g');
+		// const regexp = new RegExp(/{[^{]*jump-and-select\.(?<command>.*?)\\",?[^"]*(?<args>"args\\"[^}]*})/, 'g');
+		// const matches = [...document.getText(curStartRange).matchAll(regexp)];
