@@ -25,33 +25,36 @@ exports.makeKeybindingsCompletionProvider = function(context) {
 
 					const linePrefix = document.lineAt(position).text.substr(0, position.character);
 
+					// "\t\t\t\"putCursorForward"
+					// "\t\t\t\"putCursor"
+
 					// "jump-and-select." command completion
 					if (linePrefix.endsWith('"jump-and-select.')) {
 						return [
-							_makeCompletionItem('jumpForward', position),
-							_makeCompletionItem('jumpForwardSelect', position),
-							_makeCompletionItem('jumpBackward', position),
-							_makeCompletionItem('jumpBackwardSelect', position)
+							_makeCompletionItem('jumpForward', position, ""),
+							_makeCompletionItem('jumpForwardSelect', position, ""),
+							_makeCompletionItem('jumpBackward', position, ""),
+							_makeCompletionItem('jumpBackwardSelect', position, "")
 						];
 					}
 
 					// intellisense/completion for 'args' options values
 					if (linePrefix.endsWith('"putCursorForward": "')) {
 						return [
-							_makeCompletionItem('beforeCharacter', position),
-							_makeCompletionItem('afterCharacter', position)
+							_makeCompletionItem('beforeCharacter', position, "beforeCharacter"),
+							_makeCompletionItem('afterCharacter', position, "beforeCharacter")
 						];
 					}
 					else if (linePrefix.endsWith('"putCursorBackward": "')) {
 						return [
-							_makeCompletionItem('beforeCharacter', position),
-							_makeCompletionItem('afterCharacter', position)
+							_makeCompletionItem('beforeCharacter', position, "beforeCharacter"),
+							_makeCompletionItem('afterCharacter', position, "beforeCharacter")
 						];
 					}
 					else if (linePrefix.endsWith('"restrictSearch": "')) {
 						return [
-							_makeCompletionItem("line", position),
-							_makeCompletionItem("document", position)
+							_makeCompletionItem("line", position, "document"),
+							_makeCompletionItem("document", position, "document")
 						];
 					}
 					else if (linePrefix.endsWith('"text": "')) {
@@ -111,24 +114,15 @@ exports.makeKeybindingsCompletionProvider = function(context) {
  *
  * @param {string} key
  * @param {vscode.Position} position
+ * @param {string} defaultValue - default value for this option
  * @returns {vscode.CompletionItem} - CompletionItemKind.Text
  */
-function _makeCompletionItem(key, position) {
+function _makeCompletionItem(key, position, defaultValue) {
 
-	let item;
-
-	if (key === "true" || key === "false") {
-		item = new vscode.CompletionItem(key, vscode.CompletionItemKind.Keyword);
-	}
-	else item = new vscode.CompletionItem(key, vscode.CompletionItemKind.Text);
-
+	let item = new vscode.CompletionItem(key, vscode.CompletionItemKind.Text);
 	item.range = new vscode.Range(position, position);
-	// item.detail = ;
 
-  // item.sortText = setting.folder;
-
-  // item.insertText = key.replace(stripSpaces, ' $2');
-
+	if (defaultValue) item.detail = `default: ${defaultValue}`;
   return item;
 }
 
@@ -142,13 +136,21 @@ function _makeCompletionItem(key, position) {
  */
 function _completionsItemsNotUsed(directionArray, argsText, position) {
 
+	const defaults = {
+		"text": "",
+		"putCursorForward": "beforeCharacter",
+		"putCursorBackward": "beforeCharacter",
+		"restrictSearch": "document"
+	}
+
 	/** @type { Array<vscode.CompletionItem> } */
 	let completionArray = [];
 
 	// doesn't account for commented options or the word "text" appeearing in another option for example
 	// have to use something other than 'includes'
 	directionArray.forEach(option => {
-		if (!argsText.includes(`"${option}"`)) completionArray.push(_makeCompletionItem(option, position));
+			// @ts-ignore
+		if (!argsText.includes(`"${option}"`)) completionArray.push(_makeCompletionItem(option, position, defaults[`${option}`]));
 	});
 
 	return completionArray;

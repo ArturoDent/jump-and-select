@@ -200,7 +200,9 @@ The options take precedence in that order: 1 > 2 > 3.  All the options have defa
 
 ## Known Issues
 
-This extension may not play well with vim or neovim or similar due to registering the same `'type'` command as those extensions do.  However, this extension disposes of that binding immediately after typing one character so it may not be an issue...
+This extension may not play well with vim or neovim or similar due to registering the same `'type'` command as those extensions do.  However, this extension disposes of that binding immediately after typing one character so it may not be an issue... 
+
+Small intellisense issue in keybindings.  If you highlight an existing option and then <kbd>Ctrl</kbd>+<kbd>Space</kbd> it does not give you the option of the existing highlighted option (seeing it as already used).  
 
 ## TODO  
   
@@ -210,7 +212,7 @@ This extension may not play well with vim or neovim or similar due to registerin
 [ X ] - Explore use of multi-character queries in macros or keybindings.  
 [ X ] - Explore use of regexp queries in macros or keybindings.   
 [ X ] - Add a StatusBarItem reminder for multiMmode.   
-[&emsp; ] - Add intellisense for keybindings.   
+[ X ] - Add intellisense for keybindings.   
 [&emsp; ] - Explore allowing input via 'paste' as well.      
 [&emsp; ] - Add a setting to make searches case-insensitive, **if requested**.  
 

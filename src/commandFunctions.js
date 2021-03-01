@@ -317,7 +317,7 @@ function getQueryLineIndexForward(cursorPosition, query) {
 
 		let restOfLine = editor.document.lineAt(cursorPosition.line).text.substring(cursorPosition.character);
 
-		const regexp = new RegExp(query, 'g');
+		const regexp = new RegExp(query, 'gm');
 		const matches = [...restOfLine.matchAll(regexp)];
 		if (matches.length) {
 			queryIndex = Number(matches[0].index);
@@ -359,7 +359,7 @@ function getQueryDocumentIndexForward(cursorPosition, query) {
 		let lastLine = editor.document.lineAt(editor.document.lineCount - 1);
 		let curEndRange = new vscode.Range(cursorPosition, lastLine.range.end);
 
-		const regexp = new RegExp(query, 'g');
+		const regexp = new RegExp(query, 'gm');
 		const matches = [...editor.document.getText(curEndRange).matchAll(regexp)];
 		if (matches.length) {
 			queryIndex = Number(matches[0].index);
@@ -400,7 +400,7 @@ function getQueryLineIndexBackward(cursorPosition, query) {
 
 		let startOfLine = editor.document.lineAt(cursorPosition.line).text.substring(0, cursorPosition.character);
 
-		const regexp = new RegExp(query, 'g');
+		const regexp = new RegExp(query, 'gm');
 		const matches = [...startOfLine.matchAll(regexp)];
 
 		// if going backward and cursor right after search query position, skip and goto next
@@ -439,7 +439,7 @@ function getQueryDocumentIndexBackward(cursorPosition, query) {
 		const firstLine = editor.document.lineAt(0);
 		let curStartRange = new vscode.Range(cursorPosition, firstLine.range.start);
 
-		const regexp = new RegExp(query, 'g');
+		const regexp = new RegExp(query, 'gm');
 		const matches = [...editor.document.getText(curStartRange).matchAll(regexp)];
 
 		// if going backward and cursor right after search query position, skip and goto next
