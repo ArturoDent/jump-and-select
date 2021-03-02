@@ -29,7 +29,8 @@ function activate(context) {
 		// 2 modes ogf commands: single mode - one character at a time
 		//                       multi mode - trigger command, move cursor character by character until command disabled
 
-		commands.jumpForward(args?.restrictSearch || restrict, args?.putCursorForward || putCursorForward, kbText, multiMode);
+		commands.jumpForward(
+			args?.restrictSearch || restrict, args?.putCursorForward || putCursorForward, kbText, multiMode);
 	});
 
 	let commandDisposable1m = vscode.commands.registerCommand('jump-and-select.jumpForwardMultiMode', (args) => {
