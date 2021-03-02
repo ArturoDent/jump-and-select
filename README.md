@@ -20,11 +20,15 @@ Works with multiple cursors.
 2.  Type a character (it will not be shown), and     
 3.  Cursor moves to that next character.  
 
-<img src="https://github.com/ArturoDent/jump-and-select/blob/master/images/jumpIntro1.gif?raw=true" width="700" height="300" alt="Move cursors forward to next character"/>
+<img src="https://github.com/ArturoDent/jump-and-select/blob/master/images/jumpIntro1.gif?raw=true" width="500" height="100" alt="Move cursors forward to next character"/>
+
+<br/><br/> 
 
 * Using `jump-and-select.jumpBackwardMultiMode` and `jump-and-select.jumpForwardMultiMode` commands:
 
-<img src="https://github.com/ArturoDent/jump-and-select/blob/master/images/multiModeJumping.gif?raw=true" width="700" height="150" alt="Move cursors forward to next character"/>
+<img src="https://github.com/ArturoDent/jump-and-select/blob/master/images/multiModeJumping.gif?raw=true" width="500" height="150" alt="Move cursors forward to next character"/>
+
+<br/> 
 
 ----------
 
@@ -132,7 +136,7 @@ The `errorBackground` default is `#f00` or red.  Changing it will change the err
 
 If you see this error message you may have forgotten to exit (via the <kbd>Enter</kbd>) the MultiMode and tried to initiate some other `jump-and-select` command:  
 
-<img src="https://github.com/ArturoDent/jump-and-select/blob/master/images/multiModeError.jpg?raw=true" width="700" height="300" alt="Error message when fail to exit MultiMode"/>
+<img src="https://github.com/ArturoDent/jump-and-select/blob/master/images/multiModeError.jpg?raw=true" width="500" height="100" alt="Error message when fail to exit MultiMode"/>
 
 ------------------------
 
