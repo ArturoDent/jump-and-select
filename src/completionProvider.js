@@ -25,8 +25,8 @@ exports.makeKeybindingsCompletionProvider = function(context) {
 
 					const linePrefix = document.lineAt(position).text.substr(0, position.character);
 
-					// "\t\t\t\"putCursorForward"
-					// "\t\t\t\"putCursor"
+					// \t\t\t\"putCursorForward
+					// \t\t\t\"putCursor  // and fix range fro replacement
 
 					// "jump-and-select." command completion
 					if (linePrefix.endsWith('"jump-and-select.')) {
@@ -93,10 +93,10 @@ exports.makeKeybindingsCompletionProvider = function(context) {
 
 					// eliminate any options already used
 					if ((command === "jumpForward") || (command === "jumpForwardSelect")) {
-						return _completionsItemsNotUsed(forwardArray, argsText, position);
+						return _filterCompletionsItemsNotUsed(forwardArray, argsText, position);
 					}
 					else if ((command === "jumpBackward") || (command === "jumpBackwardSelect")) {
-						return _completionsItemsNotUsed(backwardArray, argsText, position);
+						return _filterCompletionsItemsNotUsed(backwardArray, argsText, position);
 
 					}
 					else return undefined;
@@ -134,7 +134,7 @@ function _makeCompletionItem(key, position, defaultValue) {
  * @param {vscode.Position} position - cursor position
  * @returns {Array<vscode.CompletionItem>}
  */
-function _completionsItemsNotUsed(directionArray, argsText, position) {
+function _filterCompletionsItemsNotUsed(directionArray, argsText, position) {
 
 	const defaults = {
 		"text": "",
