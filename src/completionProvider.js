@@ -38,28 +38,29 @@ exports.makeKeybindingsCompletionProvider = function(context) {
 						];
 					}
 
-					// intellisense/completion for 'args' options values
-					if (linePrefix.endsWith('"putCursorForward": "')) {
-						return [
-							_makeCompletionItem('beforeCharacter', position, "beforeCharacter"),
-							_makeCompletionItem('afterCharacter', position, "beforeCharacter")
-						];
-					}
-					else if (linePrefix.endsWith('"putCursorBackward": "')) {
-						return [
-							_makeCompletionItem('beforeCharacter', position, "beforeCharacter"),
-							_makeCompletionItem('afterCharacter', position, "beforeCharacter")
-						];
-					}
-					else if (linePrefix.endsWith('"restrictSearch": "')) {
-						return [
-							_makeCompletionItem("line", position, "document"),
-							_makeCompletionItem("document", position, "document")
-						];
-					}
-					else if (linePrefix.endsWith('"text": "')) {
-						return undefined;
-					}
+					// // TODO: should restrict these to within the 'jump-and-select....' keybinding to avoid name clashes
+					// // intellisense/completion for 'args' options values
+					// if (linePrefix.endsWith('"putCursorForward": "')) {
+					// 	return [
+					// 		_makeCompletionItem('beforeCharacter', position, "beforeCharacter"),
+					// 		_makeCompletionItem('afterCharacter', position, "beforeCharacter")
+					// 	];
+					// }
+					// else if (linePrefix.endsWith('"putCursorBackward": "')) {
+					// 	return [
+					// 		_makeCompletionItem('beforeCharacter', position, "beforeCharacter"),
+					// 		_makeCompletionItem('afterCharacter', position, "beforeCharacter")
+					// 	];
+					// }
+					// else if (linePrefix.endsWith('"restrictSearch": "')) {
+					// 	return [
+					// 		_makeCompletionItem("line", position, "document"),
+					// 		_makeCompletionItem("document", position, "document")
+					// 	];
+					// }
+					// else if (linePrefix.endsWith('"text": "')) {
+					// 	return undefined;
+					// }
 
 					// 'args' options keys intellisense/completions
 					const firstLine = document.lineAt(0);
@@ -88,6 +89,30 @@ exports.makeKeybindingsCompletionProvider = function(context) {
 
 					if (!argsRange.contains(position) || linePrefix.search(/^\s*"/m) === -1) return undefined;
 
+					// TODO: should restrict these to within the 'jump-and-select....' keybinding to avoid name clashes
+					// intellisense/completion for 'args' options values
+					if (argsRange.contains(position) && linePrefix.endsWith('"putCursorForward": "')) {
+						return [
+							_makeCompletionItem('beforeCharacter', position, "beforeCharacter"),
+							_makeCompletionItem('afterCharacter', position, "beforeCharacter")
+						];
+					}
+					else if (argsRange.contains(position) && linePrefix.endsWith('"putCursorBackward": "')) {
+						return [
+							_makeCompletionItem('beforeCharacter', position, "beforeCharacter"),
+							_makeCompletionItem('afterCharacter', position, "beforeCharacter")
+						];
+					}
+					else if (argsRange.contains(position) && linePrefix.endsWith('"restrictSearch": "')) {
+						return [
+							_makeCompletionItem("line", position, "document"),
+							_makeCompletionItem("document", position, "document")
+						];
+					}
+					else if (argsRange.contains(position) && linePrefix.endsWith('"text": "')) {
+						return undefined;
+					}
+
 					const forwardArray = ["text", "putCursorForward", "restrictSearch"];
 					const backwardArray = ["text", "putCursorBackward", "restrictSearch"];
 
@@ -102,7 +127,8 @@ exports.makeKeybindingsCompletionProvider = function(context) {
 					else return undefined;
         }
       },
-      '.', '"'   // trigger intellisense/completion
+      // '.', '"'   // trigger intellisense/completion
+      '"'   // trigger intellisense/completion
     );
 
   context.subscriptions.push(configCompletionProvider);
@@ -120,6 +146,7 @@ exports.makeKeybindingsCompletionProvider = function(context) {
 function _makeCompletionItem(key, position, defaultValue) {
 
 	let item = new vscode.CompletionItem(key, vscode.CompletionItemKind.Text);
+
 	item.range = new vscode.Range(position, position);
 
 	if (defaultValue) item.detail = `default: ${defaultValue}`;

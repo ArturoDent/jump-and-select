@@ -20,13 +20,13 @@ Works with multiple cursors.
 2.  Type a character (it will not be shown), and     
 3.  Cursor moves to that next character.  
 
-<img src="https://github.com/ArturoDent/jump-and-select/blob/master/images/jumpIntro1.gif?raw=true" width="500" height="100" alt="Move cursors forward to next character"/>
+<img src="https://github.com/ArturoDent/jump-and-select/blob/master/images/jumpIntro1.gif?raw=true" width="700" height="100" alt="Move cursors forward to next character"/>
 
 <br/><br/> 
 
 * Using `jump-and-select.jumpBackwardMultiMode` and `jump-and-select.jumpForwardMultiMode` commands:
 
-<img src="https://github.com/ArturoDent/jump-and-select/blob/master/images/multiModeJumping.gif?raw=true" width="500" height="150" alt="Move cursors forward to next character"/>
+<img src="https://github.com/ArturoDent/jump-and-select/blob/master/images/multiModeJumping.gif?raw=true" width="700" height="150" alt="Move cursors forward to next character"/>
 
 <br/> 
 
@@ -230,10 +230,9 @@ Small intellisense issue in keybindings.  If you highlight an existing option an
 
 * 0.0.2 &emsp;  Change behavior of go to previous character, put cursor before the character.
 
-* 0.0.3 &emsp;  Added setting to restrict movement/selection to current line or full document.  
+* 0.0.41 &emsp;  Added setting to restrict movement/selection to current line or full document.  
 &emsp;&emsp; &emsp; Added setting to move/select before or after the chosen character.  
-
-* 0.0.4 &emsp;  Separated settings to put cursor before/after the chosen character for both forward/backward.    
+&emsp;&emsp; &emsp; Separated settings to put cursor before/after the chosen character for both forward/backward.     
 &emsp;&emsp; &emsp; Added support for keybindings and all args therein.  
 &emsp;&emsp; &emsp; Added support for regular expressions in keybindings and macros.  
 &emsp;&emsp; &emsp; Renamed to `restrictSearch` setting and `args` option.  

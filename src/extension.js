@@ -6,7 +6,7 @@ const providers = require('./completionProvider');
 /**
  * @param {vscode.ExtensionContext} context
  */
-function activate(context) {
+async function activate(context) {
 
 	let restrict             =   _getRestrictSetting();
 	let putCursorForward     =   _getCusorPlacementForwardSetting();
