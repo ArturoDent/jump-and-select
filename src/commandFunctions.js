@@ -179,7 +179,7 @@ function _jumpForwardSelect (restrict, putCursorForward, query) {
 	const selections = editor.selections;
 
 	selections.forEach((selection, index) => {
-
+    const curAnchor = selection.anchor;
 		let curPos = selection.active;
 		let queryObject;
 
@@ -200,7 +200,7 @@ function _jumpForwardSelect (restrict, putCursorForward, query) {
 			}
 			else queryPos = editor.document.positionAt(queryObject.queryIndex + queryObject.cursorIndex);
 
-			selections[index] = new vscode.Selection(curPos, queryPos);
+			selections[index] = new vscode.Selection(curAnchor, queryPos);
 			editor.selections = selections;
 		}
 	});
@@ -269,7 +269,7 @@ function _jumpBackwardSelect(restrict, putCursorBackward, query) {
 	const selections = editor.selections;
 
 	selections.forEach((selection, index) => {
-
+    const curAnchor = selection.anchor;
 		let curPos = selection.active;
 		let queryObject;
 
@@ -293,7 +293,7 @@ function _jumpBackwardSelect(restrict, putCursorBackward, query) {
 				else queryPos = editor.document.positionAt(queryObject.queryIndex);
 			}
 
-			selections[index] = new vscode.Selection(curPos, queryPos);
+			selections[index] = new vscode.Selection(curAnchor, queryPos);
 			editor.selections = selections;
 		}
 	});
