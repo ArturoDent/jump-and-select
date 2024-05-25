@@ -1,8 +1,7 @@
 const vscode = require('vscode');
+const statusBarItem = require('./statusBar');
 
-/** @type { vscode.StatusBarItem } */
-let sbItem;
-let statusBarItemShowing = false;
+var global = Function('return this')();  // used for global.typeDisposable
 
 /**
  * The Object returned contains the index of the matched query or -1,
@@ -24,21 +23,28 @@ let statusBarItemShowing = false;
  * @param {string} kbText - keybinding text, if any or empty string
  * @param {boolean} multiMode - in MultiMode?
  */
-exports.jumpForward = function (restrict, putCursorForward, kbText, multiMode) {
+exports.jumpForward = async function (restrict, putCursorForward, kbText, multiMode) {
 
 	if (kbText) {            						// triggered via a keybinding
 		_jumpForward(restrict, putCursorForward, kbText);
 	}
-	else {
-		let typeDisposable = vscode.commands.registerCommand('type', arg => {
+  else {
+    
+    if (multiMode) await statusBarItem.show();
+    
+    /** @type { vscode.Disposable } */    
+		global.typeDisposable = vscode.commands.registerCommand('type', async arg => {
 			// arg === { text: "a" }, so use arg.text to get the value
 
-			// on 'Enter' exit command and dispose
-			if (_shouldExitAndDisposeCommand(typeDisposable, arg.text)) return;
+      // on 'Return/Enter' exit command and dispose
+      if (arg.text === '\n') {
+        await statusBarItem.hide();
+        await global.typeDisposable.dispose();
+        return;
+      }
 
 			_jumpForward(restrict, putCursorForward, arg.text);
-			if (!multiMode) typeDisposable.dispose();
-			if (multiMode && !statusBarItemShowing) _showStatusBarItem();
+			if (!multiMode) await global.typeDisposable.dispose();
 		});
 	}
 }
@@ -51,20 +57,25 @@ exports.jumpForward = function (restrict, putCursorForward, kbText, multiMode) {
  * @param {string} kbText - keybinding text, if any or empty string
  * @param {boolean} multiMode - in MultiMode?
  */
-exports.jumpForwardSelect = function (restrict, putCursorForward, kbText, multiMode) {
+exports.jumpForwardSelect = async function (restrict, putCursorForward, kbText, multiMode) {
 
 	if (kbText) {
 		_jumpForwardSelect(restrict, putCursorForward, kbText);
 	}
-	else {
+  else {
+    
+    if (multiMode) await statusBarItem.show();
 
-		let typeDisposable = vscode.commands.registerCommand('type', arg => {
+		global.typeDisposable = vscode.commands.registerCommand('type', async arg => {
 
-			if (_shouldExitAndDisposeCommand(typeDisposable, arg.text)) return;
+      if (arg.text === '\n') {
+        await statusBarItem.hide();
+        await global.typeDisposable.dispose();
+        return;
+      }
 
 			_jumpForwardSelect(restrict, putCursorForward, arg.text);
-			if (!multiMode) typeDisposable.dispose();
-			if (multiMode && !statusBarItemShowing) _showStatusBarItem();
+			if (!multiMode) await global.typeDisposable.dispose();
 		});
 	}
 }
@@ -77,20 +88,25 @@ exports.jumpForwardSelect = function (restrict, putCursorForward, kbText, multiM
  * @param {string} kbText - keybinding text, if any or empty string
  * @param {boolean} multiMode - in MultiMode?
  */
-exports.jumpBackward = function (restrict, putCursorBackward, kbText, multiMode) {
+exports.jumpBackward = async function (restrict, putCursorBackward, kbText, multiMode) {
 
 	if (kbText) {
 		_jumpBackward(restrict, putCursorBackward, kbText);
 	}
-	else {
+  else {
+    
+    if (multiMode) await statusBarItem.show();
 
-		let typeDisposable = vscode.commands.registerCommand('type', arg => {
+		global.typeDisposable = vscode.commands.registerCommand('type', async arg => {
 
-			if (_shouldExitAndDisposeCommand(typeDisposable, arg.text)) return;
+      if (arg.text === '\n') {
+        await statusBarItem.hide();
+        await global.typeDisposable.dispose();
+        return;
+      }
 
 			_jumpBackward(restrict, putCursorBackward, arg.text);
-			if (!multiMode) typeDisposable.dispose();
-			if (multiMode && !statusBarItemShowing) _showStatusBarItem();
+			if (!multiMode) await global.typeDisposable.dispose();
 		});
 	}
 }
@@ -103,27 +119,32 @@ exports.jumpBackward = function (restrict, putCursorBackward, kbText, multiMode)
  * @param {string} kbText - keybinding text, if any or empty string
  * @param {boolean} multiMode - in MultiMode?
  */
-exports.jumpBackwardSelect = function (restrict, putCursorBackward, kbText, multiMode) {
+exports.jumpBackwardSelect = async function (restrict, putCursorBackward, kbText, multiMode) {
 
 	if (kbText) {
 		_jumpBackwardSelect(restrict, putCursorBackward, kbText);
 	}
-	else {
+  else {
+    
+    if (multiMode) await statusBarItem.show();
 
-		let typeDisposable = vscode.commands.registerCommand('type', arg => {
+		global.typeDisposable = vscode.commands.registerCommand('type', async arg => {
 
-			if (_shouldExitAndDisposeCommand(typeDisposable, arg.text)) return;
+      if (arg.text === '\n') {
+        await statusBarItem.hide();
+        await global.typeDisposable.dispose();
+        return;
+      }
 
 			_jumpBackwardSelect(restrict, putCursorBackward, arg.text);
-			if (!multiMode) typeDisposable.dispose();
-			if (multiMode && !statusBarItemShowing) _showStatusBarItem();
+			if (!multiMode) await global.typeDisposable.dispose();
 		});
 	}
 }
 
 
 /**
- * Move cursor forward to next chosen character, without selection
+ * Move cursor forward to next chosen character, without selection, and reveal if necessary
  * @param {string} restrict
  * @param {string} putCursorForward
  * @param {string} query - keybinding arg or next character typed
@@ -148,7 +169,7 @@ function _jumpForward(restrict, putCursorForward, query) {
 			queryObject = getQueryDocumentIndexForward(curPos, query);
 		}
 
-		if ((queryObject.cursorIndex !== -1) && (queryObject.queryIndex !== -1)) {
+		if ((queryObject.cursorIndex !== -1)  &&  (queryObject.queryIndex !== -1)) {
 
 			let queryPos;  // query Position
 			if (putCursorForward === "afterCharacter") {
@@ -158,9 +179,11 @@ function _jumpForward(restrict, putCursorForward, query) {
 			else queryPos = editor.document.positionAt(queryObject.queryIndex + queryObject.cursorIndex);  // effective default
 
 			selections[index] = new vscode.Selection(queryPos, queryPos);
-			editor.selections = selections;
+      editor.selections = selections;
 		}
-	});
+  });
+  // editor.revealRange(new vscode.Range(selections[0].anchor, selections[0].active), vscode.TextEditorRevealType.InCenterIfOutsideViewport);     // InCenterIfOutsideViewport = 2
+  editor.revealRange(new vscode.Range(selections[0].anchor, selections[0].active), vscode.TextEditorRevealType.Default);  // Default = 0, as little scrolling as necessary
 }
 
 
@@ -191,7 +214,7 @@ function _jumpForwardSelect (restrict, putCursorForward, query) {
 		}
 
 		// if there is no next selection, should we lose the last selection?
-		if ((queryObject.cursorIndex !== -1) && (queryObject.queryIndex !== -1)) {
+		if ((queryObject.cursorIndex !== -1)  &&  (queryObject.queryIndex !== -1)) {
 
 			let queryPos;
 			if (putCursorForward === "afterCharacter") {
@@ -203,7 +226,9 @@ function _jumpForwardSelect (restrict, putCursorForward, query) {
 			selections[index] = new vscode.Selection(curPos, queryPos);
 			editor.selections = selections;
 		}
-	});
+  });
+  // editor.revealRange(new vscode.Range(selections[0].anchor, selections[0].active), vscode.TextEditorRevealType.InCenterIfOutsideViewport);     // InCenterIfOutsideViewport = 2
+  editor.revealRange(new vscode.Range(selections[0].anchor, selections[0].active), vscode.TextEditorRevealType.Default);  // Default = 0, as little scrolling as necessary
 }
 
 
@@ -233,7 +258,7 @@ function _jumpBackward(restrict, putCursorBackward, query) {
 			queryObject = getQueryDocumentIndexBackward(curPos, query);
 		}
 
-		if ((queryObject.cursorIndex !== -1) && (queryObject.queryIndex !== -1)) {
+		if ((queryObject.cursorIndex !== -1)  &&  (queryObject.queryIndex !== -1)) {
 
 			let queryPos;
 
@@ -249,7 +274,9 @@ function _jumpBackward(restrict, putCursorBackward, query) {
 			selections[index] = new vscode.Selection(queryPos, queryPos);
 			editor.selections = selections;
 		}
-	});
+  });
+  // editor.revealRange(new vscode.Range(selections[0].anchor, selections[0].active), vscode.TextEditorRevealType.InCenterIfOutsideViewport);     // InCenterIfOutsideViewport = 2
+  editor.revealRange(new vscode.Range(selections[0].anchor, selections[0].active), vscode.TextEditorRevealType.Default);  // Default = 0, as little scrolling as necessary
 }
 
 
@@ -280,7 +307,7 @@ function _jumpBackwardSelect(restrict, putCursorBackward, query) {
 			queryObject = getQueryDocumentIndexBackward(curPos, query);
 		}
 
-		if ((queryObject.cursorIndex !== -1) && (queryObject.queryIndex !== -1)) {
+		if ((queryObject.cursorIndex !== -1)  &&  (queryObject.queryIndex !== -1)) {
 
 			let queryPos;
 
@@ -296,7 +323,9 @@ function _jumpBackwardSelect(restrict, putCursorBackward, query) {
 			selections[index] = new vscode.Selection(curPos, queryPos);
 			editor.selections = selections;
 		}
-	});
+  });
+  // editor.revealRange(new vscode.Range(selections[0].anchor, selections[0].active), vscode.TextEditorRevealType.InCenterIfOutsideViewport);     // InCenterIfOutsideViewport = 2
+  editor.revealRange(new vscode.Range(selections[0].anchor, selections[0].active), vscode.TextEditorRevealType.Default);  // Default = 0, as little scrolling as necessary
 }
 
 
@@ -310,33 +339,23 @@ function getQueryLineIndexForward(cursorPosition, query) {
 
 	let queryIndex = -1;
 	const editor = vscode.window.activeTextEditor;
-	let cursorIndex = editor?.document.offsetAt(cursorPosition) || -1;
+	let cursorIndex = editor?.document.offsetAt(cursorPosition)  ||  -1;
 	let matchLength = 0;
 
 	if (editor) {
 
 		let restOfLine = editor.document.lineAt(cursorPosition.line).text.substring(cursorPosition.character);
 
-		const regexp = new RegExp(query, 'gm');
-		const matches = [...restOfLine.matchAll(regexp)];
-		if (matches.length) {
-			queryIndex = Number(matches[0].index);
-			matchLength = matches[0][0].length;
-		}
-
-		if (queryIndex === 0) {
-			if (matches.length > 1) {
-				queryIndex = Number(matches[1].index) - 1;
-				cursorPosition = new vscode.Position(cursorPosition.line, cursorPosition.character + 1);
-				cursorIndex = editor.document.offsetAt(cursorPosition);
-				matchLength = matches[1][0].length;
-			}
+    const matchPos = restOfLine.substring(1).indexOf(query) + 1;  // 
+		if (matchPos) {
+      queryIndex = matchPos;
+			matchLength = query.length;
 		}
 	}
 	return {
-		queryIndex: queryIndex,
-		cursorIndex: cursorIndex,
-		matchLength: matchLength
+		queryIndex,
+		cursorIndex,
+		matchLength
 	}
 }
 
@@ -350,35 +369,47 @@ function getQueryLineIndexForward(cursorPosition, query) {
 function getQueryDocumentIndexForward(cursorPosition, query) {
 
 	let queryIndex = -1;
-	const editor = vscode.window.activeTextEditor;
-	let cursorIndex = editor?.document.offsetAt(cursorPosition) || -1;
+	const editor = vscode.window.activeTextEditor;  // TODO: exclude schemes like vscode-data, etc.
+	let cursorIndex = editor?.document.offsetAt(cursorPosition)  ||  -1;
 	let matchLength = 0;
 
 	if (editor) {
 
 		let lastLine = editor.document.lineAt(editor.document.lineCount - 1);
-		let curEndRange = new vscode.Range(cursorPosition, lastLine.range.end);
+		let curEndRange = new vscode.Range(cursorPosition, lastLine.range.end);  // to end of file
 
-		const regexp = new RegExp(query, 'gm');
-		const matches = [...editor.document.getText(curEndRange).matchAll(regexp)];
-		if (matches.length) {
-			queryIndex = Number(matches[0].index);
-			matchLength = matches[0][0].length;
+    // need to use 'g' for regex - can it be more than one match
+		// const regexp = new RegExp(query, 'gm');   // need to escape certain characters: TODO
+    // const matches = [...editor.document.getText(curEndRange).matchAll(regexp)];
+    
+    const restOfText = editor.document.getText(curEndRange);
+    const matchPos = restOfText.substring(1).indexOf(query) + 1;  // 
+		if (matchPos) {
+      queryIndex = matchPos;
+			matchLength = query.length;
 		}
 
-		if (queryIndex === 0) {
-			if (matches.length > 1) {
-				queryIndex = Number(matches[1].index) - 1;
-				cursorPosition = new vscode.Position(cursorPosition.line, cursorPosition.character + 1);
-				cursorIndex = editor.document.offsetAt(cursorPosition);
-				matchLength = matches[1][0].length;
-			}
-		}
+    // if match is at the cursor, go to the next one if any
+    // if (matchPos === -1) {
+    //   matchPos = editor.document.getText(curEndRange).indexOf(query, cursorIndex + 1);
+      
+    //   cursorPosition = new vscode.Position(cursorPosition.line, cursorPosition.character + 1);
+    //   cursorIndex = editor.document.offsetAt(cursorPosition);
+    //   matchLength = matches[1][0].length;
+		// }
+		// if (queryIndex === 0) {
+		// 	if (matches.length > 1) {
+		// 		queryIndex = Number(matches[1].index) - 1;
+		// 		cursorPosition = new vscode.Position(cursorPosition.line, cursorPosition.character + 1);
+		// 		cursorIndex = editor.document.offsetAt(cursorPosition);
+		// 		matchLength = matches[1][0].length;
+		// 	}
+		// }
 	}
 	return  {
-		queryIndex: queryIndex,
-		cursorIndex: cursorIndex,
-		matchLength: matchLength
+		queryIndex,
+		cursorIndex,
+		matchLength
 	}
 }
 
@@ -393,30 +424,37 @@ function getQueryLineIndexBackward(cursorPosition, query) {
 
 	let queryIndex = -1;
 	const editor = vscode.window.activeTextEditor;
-	let cursorIndex = editor?.document.offsetAt(cursorPosition) || -1;
+	let cursorIndex = editor?.document.offsetAt(cursorPosition)  ||  -1;
 	let matchLength = 0;
 
 	if (editor) {
 
 		let startOfLine = editor.document.lineAt(cursorPosition.line).text.substring(0, cursorPosition.character);
 
-		const regexp = new RegExp(query, 'gm');
-		const matches = [...startOfLine.matchAll(regexp)];
+		// const regexp = new RegExp(query, 'gm');
+		// const matches = [...startOfLine.matchAll(regexp)];
 
 		// if going backward and cursor right after search query position, skip and goto next
-		if ((matches.length > 1) && (cursorPosition.character === (Number(matches[matches.length - 1].index) + 1))) {
-			queryIndex = Number(matches[matches.length - 2].index);
-			matchLength = matches[matches.length - 2][0].length;
+		// if ((matches.length > 1)  &&  (cursorPosition.character === (Number(matches[matches.length - 1].index) + 1))) {
+		// 	queryIndex = Number(matches[matches.length - 2].index);
+		// 	matchLength = matches[matches.length - 2][0].length;
+		// }
+		// else if (matches.length) {
+		// 	queryIndex = Number(matches[matches.length - 1].index);
+		// 	matchLength = matches[matches.length - 1][0].length;
+    // }
+    
+    let matchPos = startOfLine.substring(0, startOfLine.length-1).lastIndexOf(query);  // would be case-sensitive
+		if (matchPos) {
+      queryIndex = matchPos;
+			matchLength = query.length;
 		}
-		else if (matches.length) {
-			queryIndex = Number(matches[matches.length - 1].index);
-			matchLength = matches[matches.length - 1][0].length;
-		}
+    
 	}
 	return {
-		queryIndex: queryIndex,
-		cursorIndex: cursorIndex,
-		matchLength: matchLength
+		queryIndex,
+		cursorIndex,
+		matchLength
 	}
 }
 
@@ -431,7 +469,7 @@ function getQueryDocumentIndexBackward(cursorPosition, query) {
 
 	let queryIndex = -1;
 	const editor = vscode.window.activeTextEditor;
-	let cursorIndex = editor?.document.offsetAt(cursorPosition) || -1;
+	let cursorIndex = editor?.document.offsetAt(cursorPosition)  ||  -1;
 	let matchLength = 0;
 
 	if (editor) {
@@ -439,60 +477,32 @@ function getQueryDocumentIndexBackward(cursorPosition, query) {
 		const firstLine = editor.document.lineAt(0);
 		let curStartRange = new vscode.Range(cursorPosition, firstLine.range.start);
 
-		const regexp = new RegExp(query, 'gm');
-		const matches = [...editor.document.getText(curStartRange).matchAll(regexp)];
+		// const regexp = new RegExp(query, 'gm');
+		// const matches = [...editor.document.getText(curStartRange).matchAll(regexp)];
 
-		// if going backward and cursor right after search query position, skip and goto next
-		if ((matches.length > 1) && (cursorIndex === (Number(matches[matches.length - 1].index) + 1))) {
-			queryIndex = Number(matches[matches.length - 2].index);
-			matchLength = matches[matches.length - 2][0].length;
+		// // if going backward and cursor right after search query position, skip and goto next
+		// if ((matches.length > 1)  &&  (cursorIndex === (Number(matches[matches.length - 1].index) + 1))) {
+		// 	queryIndex = Number(matches[matches.length - 2].index);
+		// 	matchLength = matches[matches.length - 2][0].length;
+		// }
+		// else if (matches.length) {
+		// 	queryIndex = Number(matches[matches.length - 1].index);
+		// 	matchLength = matches[matches.length - 1][0].length;
+    // }
+    
+    const startText = editor.document.getText(curStartRange);
+    const matchPos = startText.substring(0, startText.length - 1).lastIndexOf(query);  // would be case-sensitive
+    
+		if (matchPos) {
+      queryIndex = matchPos;
+			matchLength = query.length;
 		}
-		else if (matches.length) {
-			queryIndex = Number(matches[matches.length - 1].index);
-			matchLength = matches[matches.length - 1][0].length;
-		}
+    
 	}
 
 	return  {
-		queryIndex: queryIndex,
-		cursorIndex: cursorIndex,
-		matchLength: matchLength
+		queryIndex,
+		cursorIndex,
+		matchLength
 	}
-}
-
-// ------------------------------------------------------------------------------------------------
-
-/**
- * Should the command be exited, has a Return been typed after command started?
- * If so, dispose of the 'type' command binding and statusBarItem
- *
- * @param {vscode.Disposable} typeDisposable
- * @param {string} arg - character typed after command initiated
- * @returns { boolean } - 'Return' has been typed
- */
-function _shouldExitAndDisposeCommand(typeDisposable, arg) {
-
-	if (arg === '\n') {
-		sbItem.dispose();
-		statusBarItemShowing = false;
-		typeDisposable.dispose();
-		return true;
-	}
-	return false;
-}
-
-// ------------------------------------------------------------------------------------------------
-
-/**
- * Create and show a StatusBarItem
- * advising to press 'Return' to exit multiMode
- */
-function _showStatusBarItem() {
-
-	sbItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 1);
-	sbItem.text = "Press 'Return' to exit jump";
-	sbItem.tooltip = "'Return' will exit the current jump command";
-	sbItem.backgroundColor = new vscode.ThemeColor('statusBarItem.errorBackground');
-	sbItem.show();
-	statusBarItemShowing = true;
 }

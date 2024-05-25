@@ -1,20 +1,24 @@
 const vscode = require('vscode');
 const commands = require('./commandFunctions');
 const providers = require('./completionProvider');
+const statusBarItem = require('./statusBar');
+
+var global = Function('return this')();  // used for global.typeDisposable
 
 
 /**
  * @param {vscode.ExtensionContext} context
  */
 async function activate(context) {
+  
+  await vscode.commands.executeCommand('setContext', 'jumpAndSelect.statusBarItem.visible', false);
 
 	let restrict             =   _getRestrictSetting();
 	let putCursorForward     =   _getCusorPlacementForwardSetting();
 	let putCursorBackward    =   _getCusorPlacementBackwardSetting();
-	let multiMode = false;
+	let multiMode            =   false;
 
-	providers.makeKeybindingsCompletionProvider(context);
-
+  // providers.makeKeybindingsCompletionProvider(context);
 
 	let commandDisposable1 = vscode.commands.registerCommand('jump-and-select.jumpForward', (args) => {
 
@@ -26,8 +30,8 @@ async function activate(context) {
 
 		// check if args.putCursorForward is "beforeCharacter" or "afterCharacter"
 
-		// 2 modes ogf commands: single mode - one character at a time
-		//                       multi mode - trigger command, move cursor character by character until command disabled
+		// 2 modes of commands: single mode -  one character at a time
+		//                      multiMode   -  trigger command, move cursor character by character until command disabled
 
 		commands.jumpForward(
 			args?.restrictSearch || restrict, args?.putCursorForward || putCursorForward, kbText, multiMode);
@@ -79,13 +83,16 @@ async function activate(context) {
 	});
 
 	context.subscriptions.push(commandDisposable1, commandDisposable2, commandDisposable3, commandDisposable4);
-	context.subscriptions.push(commandDisposable1m, commandDisposable2m, commandDisposable3m, commandDisposable4m);
+  context.subscriptions.push(commandDisposable1m, commandDisposable2m, commandDisposable3m, commandDisposable4m);
+  
+  let abortMultimode = vscode.commands.registerCommand('jump-and-select.abortMultiMode', async () => {
+    if (statusBarItem) await statusBarItem.hide();
+    global.typeDisposable.dispose(); 
+  });
+  
+  context.subscriptions.push(abortMultimode);  
 
 	context.subscriptions.push(vscode.workspace.onDidChangeConfiguration((event) => {
-
-			// for (let disposable of disposables) {
-			// 		disposable.dispose()
-			// }
 
 		if (event.affectsConfiguration("jump-and-select.restrictSearch"))    restrict          = _getRestrictSetting();
 		if (event.affectsConfiguration("jump-and-select.putCursorForward"))  putCursorForward  = _getCusorPlacementForwardSetting();
@@ -94,8 +101,10 @@ async function activate(context) {
 	}));
 }
 
+// TODO simplify getting the settings ?
 function _getRestrictSetting() {
-	return vscode.workspace.getConfiguration().get("jump-and-select.restrictSearch");
+  return vscode.workspace.getConfiguration().get("jump-and-select.restrictSearch");
+	// return vscode.workspace.getConfiguration("jump-and-select").get("restrictSearch");
 }
 
 function _getCusorPlacementForwardSetting() {
@@ -106,7 +115,13 @@ function _getCusorPlacementBackwardSetting() {
 	return vscode.workspace.getConfiguration().get("jump-and-select.putCursorBackward");
 }
 
-function deactivate() {}
+function deactivate() {
+  if (statusBarItem) {
+    statusBarItem.hide();
+    statusBarItem.dispose();
+  }
+  if (global.typeDisposable) global.typeDisposable.dispose();
+}
 
 module.exports = {
 	activate,

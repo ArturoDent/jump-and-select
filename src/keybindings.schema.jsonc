@@ -1,0 +1,207 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": [
+      "command"
+    ],
+    "allOf": [
+      {
+        "if": {
+          "properties": {
+            "command": {
+              "type": "string",
+              "pattern": "^jump-and-select"
+            }
+          }
+        },
+        "then": {
+          "properties": {
+            "command": {
+              "anyOf": [
+                {
+                  "const": "jump-and-select.jumpForward"
+                },
+                {
+                  "const": "jump-and-select.jumpForwardSelect"
+                },
+                {
+                  "const": "jump-and-select.jumpForwardMultiMode"
+                },
+                {
+                  "const": "jump-and-select.jumpForwardSelectMultiMode"
+                },
+                {
+                  "const": "jump-and-select.jumpBackward"
+                },
+                {
+                  "const": "jump-and-select.jumpBackwardSelect"
+                },
+                {
+                  "const": "jump-and-select.jumpBackwardMultiMode"
+                },
+                {
+                  "const": "jump-and-select.jumpBackwardSelectMultiMode"
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "if": {
+          "properties": {
+            "command": {
+              "anyOf": [
+                {
+                  "const": "jump-and-select.jumpForward"
+                },
+                {
+                  "const": "jump-and-select.jumpForwardSelect"
+                },
+                {
+                  "const": "jump-and-select.jumpForwardSelectMultiMode"
+                },
+                {
+                  "const": "jump-and-select.jumpForewardMultiMode"
+                }
+              ]
+            }
+          }
+        },
+        "then": {
+          "properties": {
+            "args": {
+              "type": [
+                "object"
+              ]
+            }
+          },
+          "if": {
+            "$comment": "args is not required",
+            "properties": {
+              "args": {
+                "type": "object"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "args": {
+                "required": [
+                  "text"
+                ],
+                "properties": {
+                  "text": {
+                    "description": "The text to jump forward to",
+                    "type": [
+                      "string"
+                    ]
+                  },
+                  "restrictSearch": {
+                    "description": "Default is to jump anywhere in the document.",
+                    "type": "string",
+                    "enum": [
+                      "document",
+                      "line"
+                    ],
+                    "default": "document"
+                  },
+                  "putCursorForward": {
+                    "description": "Default is 'beforeCharacter'.",
+                    "type": "string",
+                    "enum": [
+                      "afterCharacter",
+                      "beforeCharacter"
+                    ],
+                    "default": "beforeCharacter"
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      },
+      {
+        "if": {
+          "properties": {
+            "command": {
+              "anyOf": [
+                {
+                  "const": "jump-and-select.jumpBackward"
+                },
+                {
+                  "const": "jump-and-select.jumpBackwardSelect"
+                },
+                {
+                  "const": "jump-and-select.jumpBackwardSelectMultiMode"
+                },
+                {
+                  "const": "jump-and-select.jumpBackwardMultiMode"
+                }
+              ]
+            }
+          }
+        },
+        "then": {
+          "properties": {
+            "args": {
+              "type": [
+                "object"
+              ]
+            }
+          },
+          "if": {
+            "properties": {
+              "args": {
+                "type": "object"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "args": {
+                "required": [
+                  "text"
+                ],
+                "properties": {
+                  "text": {
+                    "description": "The text to jump forward to",
+                    "type": [
+                      "string"
+                    ]
+                  },
+                  "restrictSearch": {
+                    "description": "Default is to jump anywhere in the document..",
+                    "type": "string",
+                    "enum": [
+                      "document",
+                      "line"
+                    ],
+                    "enumDescriptions": [
+                      "the document description",
+                      "the line description"
+                    ],
+                    "default": "document"
+                  },
+                  "putCursorBackward": {
+                    "description": "Default is 'beforeCharacter'.",
+                    "type": "string",
+                    "enum": [
+                      "afterCharacter",
+                      "beforeCharacter"
+                    ],
+                    "default": "beforeCharacter"
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      }
+    ]
+  }
+}

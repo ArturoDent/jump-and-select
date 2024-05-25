@@ -11,7 +11,7 @@
 	},
 	"license": "MIT",
 	"engines": {
-		"vscode": "^1.53.0"
+		"vscode": "^1.75.0"
 	},
 	"main": "./src/extension.js",
 	"categories": [
@@ -23,20 +23,18 @@
 		"cursor",
 		"select"
 	],
-	"activationEvents": [
-		"onStartupFinished",
-
-		"onCommand:jump-and-select.jumpForward",
-		"onCommand:jump-and-select.jumpForwardSelect",
-		"onCommand:jump-and-select.jumpBackward",
-		"onCommand:jump-and-select.jumpBackwardSelect",
-
-		"onCommand:jump-and-select.jumpForwardMultiMode",
-		"onCommand:jump-and-select.jumpForwardSelectMultiMode",
-		"onCommand:jump-and-select.jumpBackwardMultiMode",
-		"onCommand:jump-and-select.jumpBackwardSelectMultiMode"
-	],
+	"activationEvents": [	],
 	"contributes": {
+    "jsonValidation": [
+      {
+        "fileMatch": "%APP_SETTINGS_HOME%/keybindings.json",
+        "url": "./src/keybindings.schema.jsonc"
+      },
+      {
+        "fileMatch": "%APP_SETTINGS_HOME%/profiles/*/keybindings.json",
+        "url": "./src/keybindings.schema.jsonc"
+      }
+    ],
 		"commands": [
 			{
 				"command": "jump-and-select.jumpForward",
@@ -78,7 +76,13 @@
 				"command": "jump-and-select.jumpBackwardSelectMultiMode",
 				"title": "Select from cursor to previous occurrence repeatedly",
 				"category": "Jump-Select"
-			}
+			},
+      {
+				"command": "jump-and-select.abortMultiMode",
+				"title": "Abort MultiMode",
+				"category": "Jump-Select",
+        "enablement": "jumpAndSelect.statusBarItem.visible"
+      }
 		],
 		"configuration": [
 			{
@@ -138,7 +142,8 @@
 				"command": "jump-and-select.jumpForward",
 				"key": "alt+f",
 				"mac": "alt+f",
-				"when": "editorTextFocus && !editorReadonly"
+				"when": "editorTextFocus && !editorReadonly",
+        "required": ["text", "direction"]
 			},
 			{
 				"command": "jump-and-select.jumpForwardSelect",

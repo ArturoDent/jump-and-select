@@ -2,10 +2,11 @@
 	"compilerOptions": {
 		"strict": true,
 		"module": "commonJS",
-		"target": "es2020",
+		"target": "ESNext",
 		"checkJs": true,  /* Typecheck .js files. */
+    "noImplicitAny": true,
 		"lib": [
-			"es2020"
+			"ESNext"
 		]
 	},
 	"exclude": [

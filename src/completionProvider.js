@@ -1,5 +1,4 @@
 const vscode = require('vscode');
-// const utilities = require('./utilities');
 
 
 /**
@@ -37,30 +36,6 @@ exports.makeKeybindingsCompletionProvider = function(context) {
 							_makeCompletionItem('jumpBackwardSelect', position, "")
 						];
 					}
-
-					// // TODO: should restrict these to within the 'jump-and-select....' keybinding to avoid name clashes
-					// // intellisense/completion for 'args' options values
-					// if (linePrefix.endsWith('"putCursorForward": "')) {
-					// 	return [
-					// 		_makeCompletionItem('beforeCharacter', position, "beforeCharacter"),
-					// 		_makeCompletionItem('afterCharacter', position, "beforeCharacter")
-					// 	];
-					// }
-					// else if (linePrefix.endsWith('"putCursorBackward": "')) {
-					// 	return [
-					// 		_makeCompletionItem('beforeCharacter', position, "beforeCharacter"),
-					// 		_makeCompletionItem('afterCharacter', position, "beforeCharacter")
-					// 	];
-					// }
-					// else if (linePrefix.endsWith('"restrictSearch": "')) {
-					// 	return [
-					// 		_makeCompletionItem("line", position, "document"),
-					// 		_makeCompletionItem("document", position, "document")
-					// 	];
-					// }
-					// else if (linePrefix.endsWith('"text": "')) {
-					// 	return undefined;
-					// }
 
 					// 'args' options keys intellisense/completions
 					const firstLine = document.lineAt(0);
@@ -127,8 +102,7 @@ exports.makeKeybindingsCompletionProvider = function(context) {
 					else return undefined;
         }
       },
-      // '.', '"'   // trigger intellisense/completion
-      '"'   // trigger intellisense/completion
+      '"', '.'   // trigger intellisense/completion
     );
 
   context.subscriptions.push(configCompletionProvider);
@@ -145,7 +119,7 @@ exports.makeKeybindingsCompletionProvider = function(context) {
  */
 function _makeCompletionItem(key, position, defaultValue) {
 
-	let item = new vscode.CompletionItem(key, vscode.CompletionItemKind.Text);
+	let item = new vscode.CompletionItem(key, vscode.CompletionItemKind.Property);
 
 	item.range = new vscode.Range(position, position);
 
@@ -169,16 +143,12 @@ function _filterCompletionsItemsNotUsed(directionArray, argsText, position) {
 		"putCursorBackward": "beforeCharacter",
 		"restrictSearch": "document"
 	}
+  
+  return directionArray
+    .filter(option => argsText.search(new RegExp(`^[ \t]*"${ option }"`, "gm")) === -1)
+    .map(option => {
+      // @ts-ignore
+      return _makeCompletionItem(option, position, defaults[`${ option }`]);
+    });
 
-	/** @type { Array<vscode.CompletionItem> } */
-	let completionArray = [];
-
-	// doesn't account for commented options or the word "text" appeearing in another option for example
-	// have to use something other than 'includes'
-	directionArray.forEach(option => {
-			// @ts-ignore
-		if (!argsText.includes(`"${option}"`)) completionArray.push(_makeCompletionItem(option, position, defaults[`${option}`]));
-	});
-
-	return completionArray;
 }

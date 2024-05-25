@@ -1,22 +1,22 @@
-## Keybindings and macros
+# Keybindings and macros
 
 We have already seen simple keybindings like
 
 ```jsonc
 {
-	"key": "alt+f",          						// default keybinding, can be changed
-	"command": "jump-and-select.jumpForward",
-		// "args" options not needed if you are happy with the defaults for the settings
+  "key": "alt+f",           // default keybinding, can be changed
+  "command": "jump-and-select.jumpForward",
+     // "args" options not needed if you are happy with the defaults for the settings
 },
 
 {
-	"key": "alt+g",           
-	"command": "jump-and-select.jumpForward",
-	"args": {                         				// an example using "args"
-		"text": "}",                    			// can be a regexp or simple text
-		"putCursorforward": "afterCharacter",
-		"restrictSearch": "document"
-	}
+  "key": "alt+g",           
+  "command": "jump-and-select.jumpForward",
+  "args": {                             // an example using "args"
+    "text": "}",                        // can be a regexp or simple text
+    "putCursorforward": "afterCharacter",
+    "restrictSearch": "document"
+  }
 }
 ```
 
@@ -27,45 +27,45 @@ If you use the `"args"`, put it right after the `"command"` as shown above to ge
 Note: If you use the characters `^` or `$` in the `"text"` value they will interpreted as regex start/end of line.  If you want them to be interpreted literally, use them like this:
 
 ```jsonc
-"args": {                         				
-	"text": "\\$",              // double-escaped to be treated literally
+"args": {
+  "text": "\\$",              // double-escaped to be treated literally
 }
 ```
 
-### Macros
+## Macros
 
 Using a macro extension like [multi-command](https://marketplace.visualstudio.com/items?itemName=ryuta46.multi-command) you can chain together this extension's commands with each other or with other vscode/extension commands.  Example:
 
 ```jsonc
 {
-	"key": "alt+r",
-	"command": "extension.multiCommand.execute",
-	"args": {
-	  "sequence": [
-		  {
-			  "command": "jump-and-select.jumpBackward",
-			  "args": {
-				  "text": "{\\s*",
-				  "putCursorBackward": "afterCharacter",
-				  "restrictSearch": "document"
-			  }
-		  },
-		  {
-			  "command": "jump-and-select.jumpForwardSelect",
-			  "args": {
-				  "text": "\\s*}",
-				  "putCursorForward": "beforeCharacter",
-				  "restrictSearch": "document"
-			  }
-		  },
-  	]
-	},
+  "key": "alt+r",
+  "command": "extension.multiCommand.execute",
+  "args": {
+    "sequence": [
+      {
+        "command": "jump-and-select.jumpBackward",
+        "args": {
+          "text": "{\\s*",
+          "putCursorBackward": "afterCharacter",
+          "restrictSearch": "document"
+        }
+      },
+      {
+        "command": "jump-and-select.jumpForwardSelect",
+        "args": {
+          "text": "\\s*}",
+          "putCursorForward": "beforeCharacter",
+          "restrictSearch": "document"
+        }
+      },
+    ]
+  },
 }
 ```
 
-This macro would select all text between brackets `{...}` around the cursor.    
+This macro would select all text between brackets `{...}` around the cursor.  
 
-<img src="https://github.com/ArturoDent/jump-and-select/blob/master/images/macroSelectBrackets.gif?raw=true" width="900" height="200" alt="selecting between brackets macro demo"/> 
+<img src="https://github.com/ArturoDent/jump-and-select/blob/master/images/macroSelectBrackets.gif?raw=true" width="900" height="200" alt="selecting between brackets macro demo"/>  
   
 <br/><br/>
 
