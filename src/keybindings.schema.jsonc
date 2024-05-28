@@ -1,5 +1,52 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema",
+  "definitions": {
+    "text": {
+      "description": "The text to find and jump forward to.",
+      "type": [
+        "string"
+      ]
+    },
+    "restrictSearch": {
+      "description": "Default is to jump anywhere in the document.  Options: document, line.",
+      "type": "string",
+      "enum": [
+        "document",
+        "line"
+      ],
+      "enumDescriptions": [
+        "Jump anywhere in the document - but does not wrap.",
+        "Jump only within the current line - does not wrap."
+      ],
+      "default": "document"
+    },
+    "putCursorForward": {
+      "description": "Where to put the cursor after any jump. Default is 'beforeCharacter' - before the matched character.",
+      "type": "string",
+      "enum": [
+        "beforeCharacter",
+        "afterCharacter"
+      ],
+      "enumDescriptions": [
+        "On jump, cursor will be put before the matched character.",
+        "On jump, cursor will be put after the matched character."
+      ],
+      "default": "beforeCharacter"
+    },
+    "putCursorBackward": {
+      "description": "Where to put the cursor after any jump. Default is 'beforeCharacter' - before the matched character.",
+      "type": "string",
+      "enum": [
+        "beforeCharacter",
+        "afterCharacter"
+      ],
+      "enumDescriptions": [
+        "On jump, cursor will be put before the matched character.",
+        "On jump, cursor will be put after the matched character."
+      ],
+      "default": "beforeCharacter"
+    }
+  },
   "type": "array",
   "items": {
     "type": "object",
@@ -59,12 +106,6 @@
                 },
                 {
                   "const": "jump-and-select.jumpForwardSelect"
-                },
-                {
-                  "const": "jump-and-select.jumpForwardSelectMultiMode"
-                },
-                {
-                  "const": "jump-and-select.jumpForwardMultiMode"
                 }
               ]
             }
@@ -73,9 +114,7 @@
         "then": {
           "properties": {
             "args": {
-              "type": [
-                "object"
-              ]
+              "type": "object"
             }
           },
           "if": {
@@ -95,35 +134,63 @@
                 "properties": {
                   "text": {
                     "description": "The text to find and jump forward to.",
-                    "type": [
-                      "string"
-                    ]
+                    "$ref": "#/definitions/text"
                   },
                   "restrictSearch": {
-                    "description": "Default is to jump anywhere in the document.  Options: document, line.",
-                    "type": "string",
-                    "enum": [
-                      "document",
-                      "line"
-                    ],
-                    "enumDescriptions": [
-                      "Jump anywhere in the document - but does not wrap.",
-                      "Jump only within the current line - does not wrap."
-                    ],
-                    "default": "document"
+                    "$ref": "#/definitions/restrictSearch"
                   },
                   "putCursorForward": {
-                    "description": "Where to put the cursor after any jump. Default is 'beforeCharacter' - before the matched character.",
-                    "type": "string",
-                    "enum": [
-                      "beforeCharacter",
-                      "afterCharacter"                      
-                    ],
-                    "enumDescriptions": [
-                      "On jump, cursor will be put before the matched character.",
-                      "On jump, cursor will be put after the matched character."
-                    ],
-                    "default": "beforeCharacter"
+                    "$ref": "#/definitions/putCursorForward"
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      },
+      {
+        "if": {
+          "properties": {
+            "command": {
+              "anyOf": [
+                {
+                  "const": "jump-and-select.jumpForwardSelectMultiMode"
+                },
+                {
+                  "const": "jump-and-select.jumpForwardMultiMode"
+                }
+              ]
+            }
+          }
+        },
+        "then": {
+          "properties": {
+            "args": {
+              "type": "object"
+            }
+          },
+          "if": {
+            "$comment": "args is not required",
+            "properties": {
+              "args": {
+                "type": "object"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "args": {
+                "properties": {
+                  "text": {
+                    "description": "The text to find and jump forward to.",
+                    "$ref": "#/definitions/text"
+                  },
+                  "restrictSearch": {
+                    "$ref": "#/definitions/restrictSearch"
+                  },
+                  "putCursorForward": {
+                    "$ref": "#/definitions/putCursorForward"
                   }
                 },
                 "additionalProperties": false
@@ -142,12 +209,6 @@
                 },
                 {
                   "const": "jump-and-select.jumpBackwardSelect"
-                },
-                {
-                  "const": "jump-and-select.jumpBackwardSelectMultiMode"
-                },
-                {
-                  "const": "jump-and-select.jumpBackwardMultiMode"
                 }
               ]
             }
@@ -156,9 +217,7 @@
         "then": {
           "properties": {
             "args": {
-              "type": [
-                "object"
-              ]
+              "type": "object"
             }
           },
           "if": {
@@ -177,35 +236,62 @@
                 "properties": {
                   "text": {
                     "description": "The text to jump backward to",
-                    "type": [
-                      "string"
-                    ]
+                    "$ref": "#/definitions/text"
                   },
                   "restrictSearch": {
-                    "description": "Default is to jump anywhere in the document.   Options: document, line.",
-                    "type": "string",
-                    "enum": [
-                      "document",
-                      "line"
-                    ],
-                    "enumDescriptions": [
-                      "Jump anywhere in the document - but does not wrap.",
-                      "Jump only within the current line - does not wrap."
-                    ],
-                    "default": "document"
+                    "$ref": "#/definitions/restrictSearch"
                   },
                   "putCursorBackward": {
-                    "description": "Where to put the cursor after any jump. Default is 'beforeCharacter' - before the matched character.",
-                    "type": "string",
-                    "enum": [
-                      "beforeCharacter",
-                      "afterCharacter"
-                    ],
-                    "enumDescriptions": [
-                      "On jump, cursor will be put before the matched character.",
-                      "On jump, cursor will be put after the matched character."
-                    ],
-                    "default": "beforeCharacter"
+                    "$ref": "#/definitions/putCursorBackward"
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      },
+      {
+        "if": {
+          "properties": {
+            "command": {
+              "anyOf": [
+                {
+                  "const": "jump-and-select.jumpBackwardSelectMultiMode"
+                },
+                {
+                  "const": "jump-and-select.jumpBackwardMultiMode"
+                }
+              ]
+            }
+          }
+        },
+        "then": {
+          "properties": {
+            "args": {
+              "type": "object"
+            }
+          },
+          "if": {
+            "properties": {
+              "args": {
+                "type": "object"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "args": {
+                "properties": {
+                  "text": {
+                    "description": "The text to jump backward to",
+                    "$ref": "#/definitions/text"
+                  },
+                  "restrictSearch": {
+                    "$ref": "#/definitions/restrictSearch"
+                  },
+                  "putCursorBackward": {
+                    "$ref": "#/definitions/putCursorBackward"
                   }
                 },
                 "additionalProperties": false

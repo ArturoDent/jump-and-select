@@ -13,39 +13,55 @@ We have already seen simple keybindings like
   "key": "alt+g",           
   "command": "jump-and-select.jumpForward",
   "args": {                             // an example using "args"
-    "text": "}",                        // can be a regexp or simple text
+    "text": "}",
     "putCursorforward": "afterCharacter",
     "restrictSearch": "document"
   }
 }
 ```
 
-If you use the `"args"`, put it right after the `"command"` as shown above to get intellisense/completion for both the `"args"` keys, like `"putCursorForward"` and their possible values, like `"afterCharacter"`.  The commands `jumpForward` and `jumpForwardSelect` have different possible `args` than do the commands `jumpBackward` and `jumpBackwardSelect`.  
+<img src="https://github.com/ArturoDent/jump-and-select/blob/main/images/keybindingCompletions.gif?raw=true" width="850" height="200" alt="Intellisense completion for keybindings"/>
 
-<img src="https://github.com/ArturoDent/jump-and-select/blob/master/images/keybindingCompletions.gif?raw=true" width="850" height="200" alt="Intellisense completion for keybindings"/>
+## multiMode keybindings do not need to have a `text` argument
 
-Note: If you use the characters `^` or `$` in the `"text"` value they will interpreted as regex start/end of line.  If you want them to be interpreted literally, use them like this:
+But non-multiMode commands do require a `text` argument as it makes no sense to trigger `jumpForward`, for example, with no argument.
 
 ```jsonc
-"args": {
-  "text": "\\$",              // double-escaped to be treated literally
+{
+  "key": "alt+f",           // default keybinding, can be changed
+  "command": "jump-and-select.jumpForward",
+   "args": {
+    "text": "foo"   // the 'text' argument is required here, not one of the 'multiMode' commands
+   }
+},
+
+// a multiMode command does not require a 'text' argument
+// you can initiate a multiMode session first and then start to jump and select
+{
+  "key": "alt+g",
+  "command": "jump-and-select.jumpForwardMultiMode",
+  "args": {
+    // "text": "}",   // the 'text' argument is NOT required here
+    "putCursorforward": "afterCharacter",
+    "restrictSearch": "document"
+  }
 }
 ```
 
-## Macros
+## Macros/Run Multiple Commands
 
-Using a macro extension like [multi-command](https://marketplace.visualstudio.com/items?itemName=ryuta46.multi-command) you can chain together this extension's commands with each other or with other vscode/extension commands.  Example:
+Using the built-in command: `runCommands` you can chain together this extension's commands with each other or with other vscode/extension commands.  Example:
 
 ```jsonc
 {
   "key": "alt+r",
-  "command": "extension.multiCommand.execute",
+  "command": "runCommands",
   "args": {
-    "sequence": [
+    "commands": [
       {
         "command": "jump-and-select.jumpBackward",
         "args": {
-          "text": "{\\s*",
+          "text": "{",
           "putCursorBackward": "afterCharacter",
           "restrictSearch": "document"
         }
@@ -53,24 +69,16 @@ Using a macro extension like [multi-command](https://marketplace.visualstudio.co
       {
         "command": "jump-and-select.jumpForwardSelect",
         "args": {
-          "text": "\\s*}",
+          "text": "}",
           "putCursorForward": "beforeCharacter",
           "restrictSearch": "document"
         }
       },
     ]
-  },
+  }
 }
 ```
 
 This macro would select all text between brackets `{...}` around the cursor.  
-
-<img src="https://github.com/ArturoDent/jump-and-select/blob/master/images/macroSelectBrackets.gif?raw=true" width="900" height="200" alt="selecting between brackets macro demo"/>  
-  
-<br/><br/>
-
-It could be interesting to insert and then modify a snippet using this extension to move the cursor and select text.  
-
-<br/><br/>
 
 -------------
