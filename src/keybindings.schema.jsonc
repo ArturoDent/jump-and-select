@@ -64,7 +64,7 @@
                   "const": "jump-and-select.jumpForwardSelectMultiMode"
                 },
                 {
-                  "const": "jump-and-select.jumpForewardMultiMode"
+                  "const": "jump-and-select.jumpForwardMultiMode"
                 }
               ]
             }
@@ -94,26 +94,34 @@
                 ],
                 "properties": {
                   "text": {
-                    "description": "The text to jump forward to",
+                    "description": "The text to find and jump forward to.",
                     "type": [
                       "string"
                     ]
                   },
                   "restrictSearch": {
-                    "description": "Default is to jump anywhere in the document.",
+                    "description": "Default is to jump anywhere in the document.  Options: document, line.",
                     "type": "string",
                     "enum": [
                       "document",
                       "line"
                     ],
+                    "enumDescriptions": [
+                      "Jump anywhere in the document - but does not wrap.",
+                      "Jump only within the current line - does not wrap."
+                    ],
                     "default": "document"
                   },
                   "putCursorForward": {
-                    "description": "Default is 'beforeCharacter'.",
+                    "description": "Where to put the cursor after any jump. Default is 'beforeCharacter' - before the matched character.",
                     "type": "string",
                     "enum": [
-                      "afterCharacter",
-                      "beforeCharacter"
+                      "beforeCharacter",
+                      "afterCharacter"                      
+                    ],
+                    "enumDescriptions": [
+                      "On jump, cursor will be put before the matched character.",
+                      "On jump, cursor will be put after the matched character."
                     ],
                     "default": "beforeCharacter"
                   }
@@ -168,30 +176,34 @@
                 ],
                 "properties": {
                   "text": {
-                    "description": "The text to jump forward to",
+                    "description": "The text to jump backward to",
                     "type": [
                       "string"
                     ]
                   },
                   "restrictSearch": {
-                    "description": "Default is to jump anywhere in the document..",
+                    "description": "Default is to jump anywhere in the document.   Options: document, line.",
                     "type": "string",
                     "enum": [
                       "document",
                       "line"
                     ],
                     "enumDescriptions": [
-                      "the document description",
-                      "the line description"
+                      "Jump anywhere in the document - but does not wrap.",
+                      "Jump only within the current line - does not wrap."
                     ],
                     "default": "document"
                   },
                   "putCursorBackward": {
-                    "description": "Default is 'beforeCharacter'.",
+                    "description": "Where to put the cursor after any jump. Default is 'beforeCharacter' - before the matched character.",
                     "type": "string",
                     "enum": [
-                      "afterCharacter",
-                      "beforeCharacter"
+                      "beforeCharacter",
+                      "afterCharacter"
+                    ],
+                    "enumDescriptions": [
+                      "On jump, cursor will be put before the matched character.",
+                      "On jump, cursor will be put after the matched character."
                     ],
                     "default": "beforeCharacter"
                   }

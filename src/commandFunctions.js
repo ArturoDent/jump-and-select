@@ -19,54 +19,23 @@ var global = Function('return this')();  // used for global.typeDisposable
 /**
  * Move cursor forward to next chosen character, without selection
  * @param {string} restrict - search forward in current line or document
- * @param {string} putCursorForward - move cursor before/after character typed
+ * @param {string} putCursor - move cursor before/after character typed
  * @param {string} kbText - keybinding text, if any or empty string
  * @param {boolean} multiMode - in MultiMode?
+ * @param {boolean} select - in select?
  */
-exports.jumpForward = async function (restrict, putCursorForward, kbText, multiMode) {
+exports.jumpForward = async function (restrict, putCursor, kbText, multiMode, select) {
 
-	if (kbText) {            						// triggered via a keybinding
-		_jumpForward(restrict, putCursorForward, kbText);
-	}
+  if (multiMode && !global.statusBarItemVisible) await statusBarItem.show();
+
+  // if kbText = triggered via a keybinding
+  // if (kbText && select) _jumpForwardSelect(restrict, putCursor, kbText);
+  // else if (kbText) _jumpForward(restrict, putCursor, kbText, select);
+  if (kbText) _jumpForward(restrict, putCursor, kbText, select);
+  
   else {
     
-    if (multiMode) await statusBarItem.show();
-    
-    /** @type { vscode.Disposable } */    
-		global.typeDisposable = vscode.commands.registerCommand('type', async arg => {
-			// arg === { text: "a" }, so use arg.text to get the value
-
-      // on 'Return/Enter' exit command and dispose
-      if (arg.text === '\n') {
-        await statusBarItem.hide();
-        await global.typeDisposable.dispose();
-        return;
-      }
-
-			_jumpForward(restrict, putCursorForward, arg.text);
-			if (!multiMode) await global.typeDisposable.dispose();
-		});
-	}
-}
-
-
-/**
- * Move cursor forward to next chosen character, with selection from cursor to character
- * @param {string} restrict - search forward in current line or document
- * @param {string} putCursorForward - select forward to before/after character typed
- * @param {string} kbText - keybinding text, if any or empty string
- * @param {boolean} multiMode - in MultiMode?
- */
-exports.jumpForwardSelect = async function (restrict, putCursorForward, kbText, multiMode) {
-
-	if (kbText) {
-		_jumpForwardSelect(restrict, putCursorForward, kbText);
-	}
-  else {
-    
-    if (multiMode) await statusBarItem.show();
-
-		global.typeDisposable = vscode.commands.registerCommand('type', async arg => {
+    global.typeDisposable = vscode.commands.registerCommand('type', async arg => {
 
       if (arg.text === '\n') {
         await statusBarItem.hide();
@@ -74,30 +43,31 @@ exports.jumpForwardSelect = async function (restrict, putCursorForward, kbText, 
         return;
       }
 
-			_jumpForwardSelect(restrict, putCursorForward, arg.text);
-			if (!multiMode) await global.typeDisposable.dispose();
-		});
-	}
+      _jumpForward(restrict, putCursor, arg.text, select);
+    
+      if (!multiMode) await global.typeDisposable.dispose();
+    });
+  }
 }
 
 
 /**
  * Move cursor backward to previous chosen character, without selection
  * @param {string} restrict - search backward in current line or document
- * @param {string} putCursorBackward - move cursor before/after character typed
+ * @param {string} putCursor - move cursor before/after character typed
  * @param {string} kbText - keybinding text, if any or empty string
  * @param {boolean} multiMode - in MultiMode?
+ * @param {boolean} select - in select?
  */
-exports.jumpBackward = async function (restrict, putCursorBackward, kbText, multiMode) {
+exports.jumpBackward = async function (restrict, putCursor, kbText, multiMode, select) {
 
-	if (kbText) {
-		_jumpBackward(restrict, putCursorBackward, kbText);
-	}
+  if (multiMode && !global.statusBarItemVisible) await statusBarItem.show();
+  
+  if (kbText) _jumpBackward(restrict, putCursor, kbText, select);
+  
   else {
-    
-    if (multiMode) await statusBarItem.show();
-
-		global.typeDisposable = vscode.commands.registerCommand('type', async arg => {
+  
+    global.typeDisposable = vscode.commands.registerCommand('type', async arg => {
 
       if (arg.text === '\n') {
         await statusBarItem.hide();
@@ -105,41 +75,11 @@ exports.jumpBackward = async function (restrict, putCursorBackward, kbText, mult
         return;
       }
 
-			_jumpBackward(restrict, putCursorBackward, arg.text);
-			if (!multiMode) await global.typeDisposable.dispose();
-		});
-	}
-}
-
-
-/**
- * Move cursor backward to previous chosen character, with selection from cursor to character
- * @param {string} restrict - search backward in current line or document
- * @param {string} putCursorBackward - select backward to before/after character typed
- * @param {string} kbText - keybinding text, if any or empty string
- * @param {boolean} multiMode - in MultiMode?
- */
-exports.jumpBackwardSelect = async function (restrict, putCursorBackward, kbText, multiMode) {
-
-	if (kbText) {
-		_jumpBackwardSelect(restrict, putCursorBackward, kbText);
-	}
-  else {
+      _jumpBackward(restrict, putCursor, arg.text, select);
     
-    if (multiMode) await statusBarItem.show();
-
-		global.typeDisposable = vscode.commands.registerCommand('type', async arg => {
-
-      if (arg.text === '\n') {
-        await statusBarItem.hide();
-        await global.typeDisposable.dispose();
-        return;
-      }
-
-			_jumpBackwardSelect(restrict, putCursorBackward, arg.text);
-			if (!multiMode) await global.typeDisposable.dispose();
-		});
-	}
+      if (!multiMode) await global.typeDisposable.dispose();
+    });
+  }
 }
 
 
@@ -148,8 +88,9 @@ exports.jumpBackwardSelect = async function (restrict, putCursorBackward, kbText
  * @param {string} restrict
  * @param {string} putCursorForward
  * @param {string} query - keybinding arg or next character typed
+ * @param {boolean} select
  */
-function _jumpForward(restrict, putCursorForward, query) {
+function _jumpForward(restrict, putCursorForward, query, select) {
 
 	if (!vscode.window.activeTextEditor) {
 		return;
@@ -163,10 +104,10 @@ function _jumpForward(restrict, putCursorForward, query) {
 		let queryObject;
 
 		if (restrict === "line") {
-			queryObject = getQueryLineIndexForward(curPos, query);
+			queryObject = getQueryLineIndexForward(curPos, query, putCursorForward);
 		}
 		else {
-			queryObject = getQueryDocumentIndexForward(curPos, query);
+			queryObject = getQueryDocumentIndexForward(curPos, query, putCursorForward);
 		}
 
 		if ((queryObject.cursorIndex !== -1)  &&  (queryObject.queryIndex !== -1)) {
@@ -178,53 +119,10 @@ function _jumpForward(restrict, putCursorForward, query) {
 			}
 			else queryPos = editor.document.positionAt(queryObject.queryIndex + queryObject.cursorIndex);  // effective default
 
-			selections[index] = new vscode.Selection(queryPos, queryPos);
+      if (select) selections[index] = new vscode.Selection(curPos, queryPos);
+      else selections[index] = new vscode.Selection(queryPos, queryPos);
+      
       editor.selections = selections;
-		}
-  });
-  // editor.revealRange(new vscode.Range(selections[0].anchor, selections[0].active), vscode.TextEditorRevealType.InCenterIfOutsideViewport);     // InCenterIfOutsideViewport = 2
-  editor.revealRange(new vscode.Range(selections[0].anchor, selections[0].active), vscode.TextEditorRevealType.Default);  // Default = 0, as little scrolling as necessary
-}
-
-
-/**
- * Move cursor forward to next chosen character, with selection from cursor to character
- * @param {string} restrict
- * @param {string} putCursorForward
- * @param {string} query - keybinding arg or next character typed
- */
-function _jumpForwardSelect (restrict, putCursorForward, query) {
-
-	if (!vscode.window.activeTextEditor) {
-		return;
-	}
-	const editor = vscode.window.activeTextEditor;
-	const selections = editor.selections;
-
-	selections.forEach((selection, index) => {
-
-		let curPos = selection.active;
-		let queryObject;
-
-		if (restrict === "line") {
-			queryObject = getQueryLineIndexForward(curPos, query);
-		}
-		else {
-			queryObject = getQueryDocumentIndexForward(curPos, query);
-		}
-
-		// if there is no next selection, should we lose the last selection?
-		if ((queryObject.cursorIndex !== -1)  &&  (queryObject.queryIndex !== -1)) {
-
-			let queryPos;
-			if (putCursorForward === "afterCharacter") {
-				const finalCurPos = queryObject.queryIndex + queryObject.cursorIndex + queryObject.matchLength;
-				queryPos = editor.document.positionAt(finalCurPos);
-			}
-			else queryPos = editor.document.positionAt(queryObject.queryIndex + queryObject.cursorIndex);
-
-			selections[index] = new vscode.Selection(curPos, queryPos);
-			editor.selections = selections;
 		}
   });
   // editor.revealRange(new vscode.Range(selections[0].anchor, selections[0].active), vscode.TextEditorRevealType.InCenterIfOutsideViewport);     // InCenterIfOutsideViewport = 2
@@ -237,8 +135,9 @@ function _jumpForwardSelect (restrict, putCursorForward, query) {
  * @param {string} restrict
  * @param {string} putCursorBackward
  * @param {string} query - keybinding arg or next character typed
+ * @param {boolean} select 
  */
-function _jumpBackward(restrict, putCursorBackward, query) {
+function _jumpBackward(restrict, putCursorBackward, query, select) {
 
 	if (!vscode.window.activeTextEditor) {
 		return;
@@ -252,10 +151,10 @@ function _jumpBackward(restrict, putCursorBackward, query) {
 		let queryObject;
 
 		if (restrict === "line") {
-			queryObject = getQueryLineIndexBackward(curPos, query);
+			queryObject = getQueryLineIndexBackward(curPos, query, putCursorBackward);
 		}
 		else {
-			queryObject = getQueryDocumentIndexBackward(curPos, query);
+			queryObject = getQueryDocumentIndexBackward(curPos, query, putCursorBackward);
 		}
 
 		if ((queryObject.cursorIndex !== -1)  &&  (queryObject.queryIndex !== -1)) {
@@ -271,56 +170,9 @@ function _jumpBackward(restrict, putCursorBackward, query) {
 				else queryPos = editor.document.positionAt(queryObject.queryIndex);
 			}
 
-			selections[index] = new vscode.Selection(queryPos, queryPos);
-			editor.selections = selections;
-		}
-  });
-  // editor.revealRange(new vscode.Range(selections[0].anchor, selections[0].active), vscode.TextEditorRevealType.InCenterIfOutsideViewport);     // InCenterIfOutsideViewport = 2
-  editor.revealRange(new vscode.Range(selections[0].anchor, selections[0].active), vscode.TextEditorRevealType.Default);  // Default = 0, as little scrolling as necessary
-}
-
-
-/**
- * Move cursor backward to previous chosen character, with selection from cursor to character
- * @param {string} restrict
- * @param {string} putCursorBackward
- * @param {string} query - keybinding arg or next character typed
- */
-function _jumpBackwardSelect(restrict, putCursorBackward, query) {
-
-	if (!vscode.window.activeTextEditor) {
-		return;
-	}
-
-	const editor = vscode.window.activeTextEditor;
-	const selections = editor.selections;
-
-	selections.forEach((selection, index) => {
-
-		let curPos = selection.active;
-		let queryObject;
-
-		if (restrict === "line") {
-			queryObject = getQueryLineIndexBackward(curPos, query);
-		}
-		else {
-			queryObject = getQueryDocumentIndexBackward(curPos, query);
-		}
-
-		if ((queryObject.cursorIndex !== -1)  &&  (queryObject.queryIndex !== -1)) {
-
-			let queryPos;
-
-			if (putCursorBackward === "afterCharacter") {
-				if (restrict === "line") queryPos = new vscode.Position(curPos.line, queryObject.queryIndex + queryObject.matchLength);
-				else queryPos = editor.document.positionAt(queryObject.queryIndex + queryObject.matchLength);
-			}
-			else {
-				if (restrict === "line") queryPos = new vscode.Position(curPos.line, queryObject.queryIndex);
-				else queryPos = editor.document.positionAt(queryObject.queryIndex);
-			}
-
-			selections[index] = new vscode.Selection(curPos, queryPos);
+      if (select) selections[index] = new vscode.Selection(curPos, queryPos);
+      else selections[index] = new vscode.Selection(queryPos, queryPos);
+      
 			editor.selections = selections;
 		}
   });
@@ -333,9 +185,10 @@ function _jumpBackwardSelect(restrict, putCursorBackward, query) {
  *  Get the next query position restricted to the line of the cursor
  * @param {vscode.Position} cursorPosition
  * @param {string} query - the typed character to match
+ * @param {string} putCursorForward - before/afterCharacter
  * @returns {QueryObject}
  */
-function getQueryLineIndexForward(cursorPosition, query) {
+function getQueryLineIndexForward(cursorPosition, query, putCursorForward) {
 
 	let queryIndex = -1;
 	const editor = vscode.window.activeTextEditor;
@@ -345,9 +198,15 @@ function getQueryLineIndexForward(cursorPosition, query) {
 	if (editor) {
 
 		let restOfLine = editor.document.lineAt(cursorPosition.line).text.substring(cursorPosition.character);
-
-    const matchPos = restOfLine.substring(1).indexOf(query) + 1;  // 
-		if (matchPos) {
+    let matchPos;
+    
+    if (putCursorForward === 'beforeCharacter') {
+      matchPos = restOfLine.substring(query.length).indexOf(query);  // if no match
+      if (matchPos !== -1) matchPos += query.length;
+    }
+    else matchPos = restOfLine.indexOf(query);
+    
+		if (matchPos !== -1) {
       queryIndex = matchPos;
 			matchLength = query.length;
 		}
@@ -364,9 +223,10 @@ function getQueryLineIndexForward(cursorPosition, query) {
  * Get the next query position anywhere in the document after the cursor
  * @param {vscode.Position} cursorPosition
  * @param {string} query - the typed character to match
+ * @param {string} putCursorForward 
  * @returns {QueryObject}
  */
-function getQueryDocumentIndexForward(cursorPosition, query) {
+function getQueryDocumentIndexForward(cursorPosition, query, putCursorForward) {
 
 	let queryIndex = -1;
 	const editor = vscode.window.activeTextEditor;  // TODO: exclude schemes like vscode-data, etc.
@@ -377,34 +237,18 @@ function getQueryDocumentIndexForward(cursorPosition, query) {
 
 		let lastLine = editor.document.lineAt(editor.document.lineCount - 1);
 		let curEndRange = new vscode.Range(cursorPosition, lastLine.range.end);  // to end of file
-
-    // need to use 'g' for regex - can it be more than one match
-		// const regexp = new RegExp(query, 'gm');   // need to escape certain characters: TODO
-    // const matches = [...editor.document.getText(curEndRange).matchAll(regexp)];
     
     const restOfText = editor.document.getText(curEndRange);
-    const matchPos = restOfText.substring(1).indexOf(query) + 1;  // 
-		if (matchPos) {
+    
+    let matchPos;
+    
+    if (putCursorForward === 'beforeCharacter') matchPos = restOfText.substring(query.length).indexOf(query) + query.length;
+    else matchPos = restOfText.indexOf(query);
+    
+		if (matchPos !== -1) {
       queryIndex = matchPos;
 			matchLength = query.length;
 		}
-
-    // if match is at the cursor, go to the next one if any
-    // if (matchPos === -1) {
-    //   matchPos = editor.document.getText(curEndRange).indexOf(query, cursorIndex + 1);
-      
-    //   cursorPosition = new vscode.Position(cursorPosition.line, cursorPosition.character + 1);
-    //   cursorIndex = editor.document.offsetAt(cursorPosition);
-    //   matchLength = matches[1][0].length;
-		// }
-		// if (queryIndex === 0) {
-		// 	if (matches.length > 1) {
-		// 		queryIndex = Number(matches[1].index) - 1;
-		// 		cursorPosition = new vscode.Position(cursorPosition.line, cursorPosition.character + 1);
-		// 		cursorIndex = editor.document.offsetAt(cursorPosition);
-		// 		matchLength = matches[1][0].length;
-		// 	}
-		// }
 	}
 	return  {
 		queryIndex,
@@ -418,9 +262,10 @@ function getQueryDocumentIndexForward(cursorPosition, query) {
  * Get the previous query position restricted to the line of the cursor
  * @param {vscode.Position} cursorPosition
  * @param {string} query - the typed character to match
+ * @param {string} purCursorBackward - before/afterCharacter
  * @returns {QueryObject}
  */
-function getQueryLineIndexBackward(cursorPosition, query) {
+function getQueryLineIndexBackward(cursorPosition, query, purCursorBackward) {
 
 	let queryIndex = -1;
 	const editor = vscode.window.activeTextEditor;
@@ -431,25 +276,18 @@ function getQueryLineIndexBackward(cursorPosition, query) {
 
 		let startOfLine = editor.document.lineAt(cursorPosition.line).text.substring(0, cursorPosition.character);
 
-		// const regexp = new RegExp(query, 'gm');
-		// const matches = [...startOfLine.matchAll(regexp)];
-
-		// if going backward and cursor right after search query position, skip and goto next
-		// if ((matches.length > 1)  &&  (cursorPosition.character === (Number(matches[matches.length - 1].index) + 1))) {
-		// 	queryIndex = Number(matches[matches.length - 2].index);
-		// 	matchLength = matches[matches.length - 2][0].length;
-		// }
-		// else if (matches.length) {
-		// 	queryIndex = Number(matches[matches.length - 1].index);
-		// 	matchLength = matches[matches.length - 1][0].length;
-    // }
+    let matchPos;
     
-    let matchPos = startOfLine.substring(0, startOfLine.length-1).lastIndexOf(query);  // would be case-sensitive
-		if (matchPos) {
+    if (purCursorBackward === 'afterCharacter') {
+      const end = startOfLine.length - query.length;
+      matchPos = startOfLine.substring(0, end).lastIndexOf(query);
+    }
+    else matchPos = startOfLine.lastIndexOf(query);  // is case-sensitive
+    
+		if (matchPos !== -1) {
       queryIndex = matchPos;
 			matchLength = query.length;
 		}
-    
 	}
 	return {
 		queryIndex,
@@ -463,9 +301,10 @@ function getQueryLineIndexBackward(cursorPosition, query) {
  * Get the previous query position anywhere in the document prior to cursor
  * @param {vscode.Position} cursorPosition
  * @param {string} query - the typed character to match
+ * @param {string} purCursorBackward - before/afterCharacter
  * @returns {QueryObject}
  */
-function getQueryDocumentIndexBackward(cursorPosition, query) {
+function getQueryDocumentIndexBackward(cursorPosition, query, purCursorBackward) {
 
 	let queryIndex = -1;
 	const editor = vscode.window.activeTextEditor;
@@ -477,27 +316,19 @@ function getQueryDocumentIndexBackward(cursorPosition, query) {
 		const firstLine = editor.document.lineAt(0);
 		let curStartRange = new vscode.Range(cursorPosition, firstLine.range.start);
 
-		// const regexp = new RegExp(query, 'gm');
-		// const matches = [...editor.document.getText(curStartRange).matchAll(regexp)];
-
-		// // if going backward and cursor right after search query position, skip and goto next
-		// if ((matches.length > 1)  &&  (cursorIndex === (Number(matches[matches.length - 1].index) + 1))) {
-		// 	queryIndex = Number(matches[matches.length - 2].index);
-		// 	matchLength = matches[matches.length - 2][0].length;
-		// }
-		// else if (matches.length) {
-		// 	queryIndex = Number(matches[matches.length - 1].index);
-		// 	matchLength = matches[matches.length - 1][0].length;
-    // }
-    
     const startText = editor.document.getText(curStartRange);
-    const matchPos = startText.substring(0, startText.length - 1).lastIndexOf(query);  // would be case-sensitive
+    let matchPos;
+    
+    if (purCursorBackward === 'afterCharacter') {
+      const end = startText.length - query.length;
+      matchPos = startText.substring(0, end).lastIndexOf(query);
+    }
+    else matchPos = startText.lastIndexOf(query);  // is case-sensitive
     
 		if (matchPos) {
       queryIndex = matchPos;
 			matchLength = query.length;
 		}
-    
 	}
 
 	return  {

@@ -1,6 +1,6 @@
 const vscode = require('vscode');
 const commands = require('./commandFunctions');
-const providers = require('./completionProvider');
+// const providers = require('./completionProvider');
 const statusBarItem = require('./statusBar');
 
 var global = Function('return this')();  // used for global.typeDisposable
@@ -16,7 +16,6 @@ async function activate(context) {
 	let restrict             =   _getRestrictSetting();
 	let putCursorForward     =   _getCusorPlacementForwardSetting();
 	let putCursorBackward    =   _getCusorPlacementBackwardSetting();
-	let multiMode            =   false;
 
   // providers.makeKeybindingsCompletionProvider(context);
 
@@ -26,7 +25,8 @@ async function activate(context) {
 		//											 putCursorBackward: "beforeCharacter", "restrictSearch": "line" }
 
 		let kbText = args ? args.text : "";  // if args means triggered via a keybinding
-		multiMode = false;
+    const multiMode = false;
+    const select = false;
 
 		// check if args.putCursorForward is "beforeCharacter" or "afterCharacter"
 
@@ -34,52 +34,70 @@ async function activate(context) {
 		//                      multiMode   -  trigger command, move cursor character by character until command disabled
 
 		commands.jumpForward(
-			args?.restrictSearch || restrict, args?.putCursorForward || putCursorForward, kbText, multiMode);
+			args?.restrictSearch || restrict, args?.putCursorForward || putCursorForward, kbText, multiMode, select);
 	});
 
 	let commandDisposable1m = vscode.commands.registerCommand('jump-and-select.jumpForwardMultiMode', (args) => {
 		let kbText = args ? args.text : "";  // if args means triggered via a keybinding
-		multiMode = true;
-		commands.jumpForward(args?.restrictSearch || restrict, args?.putCursorForward || putCursorForward, kbText, multiMode);
+    const multiMode = true;
+    const select = false;
+    
+		commands.jumpForward(args?.restrictSearch || restrict, args?.putCursorForward || putCursorForward, kbText, multiMode, select);
 	});
 
 
 	let commandDisposable2 = vscode.commands.registerCommand('jump-and-select.jumpForwardSelect', (args) => {
 		let kbText = args ? args.text : "";
-		multiMode = false;
-		commands.jumpForwardSelect(args?.restrictSearch || restrict, args?.putCursorForward || putCursorForward, kbText, multiMode);
+    const multiMode = false;
+    const select = true;
+    
+		// commands.jumpForwardSelect(args?.restrictSearch || restrict, args?.putCursorForward || putCursorForward, kbText, multiMode, select);
+		commands.jumpForward(args?.restrictSearch || restrict, args?.putCursorForward || putCursorForward, kbText, multiMode, select);
 	});
 
 	let commandDisposable2m = vscode.commands.registerCommand('jump-and-select.jumpForwardSelectMultiMode', (args) => {
 		let kbText = args ? args.text : "";
-		multiMode = true;
-		commands.jumpForwardSelect(args?.restrictSearch || restrict, args?.putCursorForward || putCursorForward, kbText, multiMode);
+    const multiMode = true;
+    const select = true;
+    
+		// commands.jumpForwardSelect(args?.restrictSearch || restrict, args?.putCursorForward || putCursorForward, kbText, multiMode, select);
+		commands.jumpForward(args?.restrictSearch || restrict, args?.putCursorForward || putCursorForward, kbText, multiMode, select);
 	});
 
 
 	let commandDisposable3 = vscode.commands.registerCommand('jump-and-select.jumpBackward', (args) => {
 		let kbText = args ? args.text : "";
-		multiMode = false;
-		commands.jumpBackward(args?.restrictSearch || restrict, args?.putCursorBackward || putCursorBackward, kbText, multiMode);
+    const multiMode = false;
+    const select = false;
+    
+		commands.jumpBackward(args?.restrictSearch || restrict, args?.putCursorBackward || putCursorBackward, kbText, multiMode, select);
 	});
 
 	let commandDisposable3m = vscode.commands.registerCommand('jump-and-select.jumpBackwardMultiMode', (args) => {
 		let kbText = args ? args.text : "";
-		multiMode = true;
-		commands.jumpBackward(args?.restrictSearch || restrict, args?.putCursorBackward || putCursorBackward, kbText, multiMode);
+    const multiMode = true;
+    const select = false;
+    
+		commands.jumpBackward(args?.restrictSearch || restrict, args?.putCursorBackward || putCursorBackward, kbText, multiMode, select);
 	});
 
 
 	let commandDisposable4 = vscode.commands.registerCommand('jump-and-select.jumpBackwardSelect', (args) => {
 		let kbText = args ? args.text : "";
-		multiMode = false;
-		commands.jumpBackwardSelect(args?.restrictSearch || restrict, args?.putCursorBackward || putCursorBackward, kbText, multiMode);
+    const multiMode = false;
+    const select = true;
+    
+		commands.jumpBackward(args?.restrictSearch || restrict, args?.putCursorBackward || putCursorBackward, kbText, multiMode, select);
+    // commands.jumpBackwardSelect(args?.restrictSearch || restrict, args?.putCursorBackward || putCursorBackward, kbText, multiMode, select);
 	});
 
 	let commandDisposable4m = vscode.commands.registerCommand('jump-and-select.jumpBackwardSelectMultiMode', (args) => {
 		let kbText = args ? args.text : "";
-		multiMode = true;
-		commands.jumpBackwardSelect(args?.restrictSearch || restrict, args?.putCursorBackward || putCursorBackward, kbText, multiMode);
+    const multiMode = true;
+    const select = true;
+    
+		// commands.jumpBackwardSelect(args?.restrictSearch || restrict, args?.putCursorBackward || putCursorBackward, kbText, multiMode, select);
+		commands.jumpBackward(args?.restrictSearch || restrict, args?.putCursorBackward || putCursorBackward, kbText, multiMode, select);
 	});
 
 	context.subscriptions.push(commandDisposable1, commandDisposable2, commandDisposable3, commandDisposable4);
@@ -87,10 +105,15 @@ async function activate(context) {
   
   let abortMultimode = vscode.commands.registerCommand('jump-and-select.abortMultiMode', async () => {
     if (statusBarItem) await statusBarItem.hide();
-    global.typeDisposable.dispose(); 
+    global.typeDisposable.dispose();
+    
+    // focus is lost from the editor when you click the StatusBarItem
+    await vscode.commands.executeCommand('workbench.action.focusLastEditorGroup');
   });
   
   context.subscriptions.push(abortMultimode);  
+  
+  // TODO: trun off multiMode when change file?  make a setting? default to turn off
 
 	context.subscriptions.push(vscode.workspace.onDidChangeConfiguration((event) => {
 
