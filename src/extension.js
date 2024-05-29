@@ -19,10 +19,13 @@ async function activate(context) {
 
   // providers.makeKeybindingsCompletionProvider(context);
 
-	let commandDisposable1 = vscode.commands.registerCommand('jump-and-select.jumpForward', (args) => {
+	let commandDisposable1 = vscode.commands.registerCommand('jump-and-select.jumpForward', async args => {
 
 		// multiple args like '{ text: "mark", putCursorForward: "beforeCharacter",
-		//											 putCursorBackward: "beforeCharacter", "restrictSearch": "line" }
+    //											 putCursorBackward: "beforeCharacter", "restrictSearch": "line" }
+    
+    if (statusBarItem) await statusBarItem.hide();
+    if (global.typeDisposable) await global.typeDisposable.dispose();
 
 		let kbText = args ? args.text : "";  // if args means triggered via a keybinding
     const multiMode = false;
@@ -37,7 +40,11 @@ async function activate(context) {
 			args?.restrictSearch || restrict, args?.putCursorForward || putCursorForward, kbText, multiMode, select);
 	});
 
-	let commandDisposable1m = vscode.commands.registerCommand('jump-and-select.jumpForwardMultiMode', (args) => {
+  let commandDisposable1m = vscode.commands.registerCommand('jump-and-select.jumpForwardMultiMode', async args => {
+    
+    if (statusBarItem) await statusBarItem.hide();
+    if (global.typeDisposable) await global.typeDisposable.dispose();
+    
 		let kbText = args ? args.text : "";  // if args means triggered via a keybinding
     const multiMode = true;
     const select = false;
@@ -46,7 +53,11 @@ async function activate(context) {
 	});
 
 
-	let commandDisposable2 = vscode.commands.registerCommand('jump-and-select.jumpForwardSelect', (args) => {
+  let commandDisposable2 = vscode.commands.registerCommand('jump-and-select.jumpForwardSelect', async args => {
+    
+    if (statusBarItem) await statusBarItem.hide();
+    if (global.typeDisposable) await global.typeDisposable.dispose();
+    
 		let kbText = args ? args.text : "";
     const multiMode = false;
     const select = true;
@@ -55,7 +66,11 @@ async function activate(context) {
 		commands.jumpForward(args?.restrictSearch || restrict, args?.putCursorForward || putCursorForward, kbText, multiMode, select);
 	});
 
-	let commandDisposable2m = vscode.commands.registerCommand('jump-and-select.jumpForwardSelectMultiMode', (args) => {
+  let commandDisposable2m = vscode.commands.registerCommand('jump-and-select.jumpForwardSelectMultiMode', async args => {
+    
+    if (statusBarItem) await statusBarItem.hide();
+    if (global.typeDisposable) await global.typeDisposable.dispose();
+    
 		let kbText = args ? args.text : "";
     const multiMode = true;
     const select = true;
@@ -65,7 +80,11 @@ async function activate(context) {
 	});
 
 
-	let commandDisposable3 = vscode.commands.registerCommand('jump-and-select.jumpBackward', (args) => {
+  let commandDisposable3 = vscode.commands.registerCommand('jump-and-select.jumpBackward', async args => {
+    
+    if (statusBarItem) await statusBarItem.hide();
+    if (global.typeDisposable) await global.typeDisposable.dispose();
+    
 		let kbText = args ? args.text : "";
     const multiMode = false;
     const select = false;
@@ -73,7 +92,11 @@ async function activate(context) {
 		commands.jumpBackward(args?.restrictSearch || restrict, args?.putCursorBackward || putCursorBackward, kbText, multiMode, select);
 	});
 
-	let commandDisposable3m = vscode.commands.registerCommand('jump-and-select.jumpBackwardMultiMode', (args) => {
+  let commandDisposable3m = vscode.commands.registerCommand('jump-and-select.jumpBackwardMultiMode', async args => {
+    
+    if (statusBarItem) await statusBarItem.hide();
+    if (global.typeDisposable) await global.typeDisposable.dispose();
+    
 		let kbText = args ? args.text : "";
     const multiMode = true;
     const select = false;
@@ -82,7 +105,11 @@ async function activate(context) {
 	});
 
 
-	let commandDisposable4 = vscode.commands.registerCommand('jump-and-select.jumpBackwardSelect', (args) => {
+  let commandDisposable4 = vscode.commands.registerCommand('jump-and-select.jumpBackwardSelect', async args => {
+    
+    if (statusBarItem) await statusBarItem.hide();
+    if (global.typeDisposable) await global.typeDisposable.dispose();
+    
 		let kbText = args ? args.text : "";
     const multiMode = false;
     const select = true;
@@ -91,7 +118,11 @@ async function activate(context) {
     // commands.jumpBackwardSelect(args?.restrictSearch || restrict, args?.putCursorBackward || putCursorBackward, kbText, multiMode, select);
 	});
 
-	let commandDisposable4m = vscode.commands.registerCommand('jump-and-select.jumpBackwardSelectMultiMode', (args) => {
+  let commandDisposable4m = vscode.commands.registerCommand('jump-and-select.jumpBackwardSelectMultiMode', async args => {
+    
+    if (statusBarItem) await statusBarItem.hide();
+    if (global.typeDisposable) await global.typeDisposable.dispose();
+    
 		let kbText = args ? args.text : "";
     const multiMode = true;
     const select = true;

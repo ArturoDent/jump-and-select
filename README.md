@@ -7,13 +7,17 @@ Works with multiple cursors.
 
 -----------
 
-## Changes in v0.1
+## Notable Changes in v0.1.0
 
-* In a keybinding, the `text` argument will NOT be interpreted as a regular expression.  
+* In a keybinding, the `text` argument will NOT be interpreted as a regular expression.  **Breaking Change.**
+
+* Selections are now cumulative.  So jumping and selecting will extend the current selection.  Demo below.
 
 * Jumps to text outside of the viewport will be revealed - i.e., the file will be scrolled to show the forward/backward jump.
 
 * Added a command: `Jump-Select: Abort MultiMode` so can click StatusBarItem or Command Palette command to cancel `multMode`.
+
+--------
 
 ## How It Works  
 
@@ -160,7 +164,17 @@ The available `args` have the same names as the settings, like `"jump-and-select
 
 For more on using **[keybindings and macros](keybindings.md)**.  
 
---------------------
+------------
+
+### `"restrictSearch": "line"` option and selections
+
+If you have `"restrictSearch": "line"` and have an existing selection in the code and then trigger one of the commands, what exactly is considered to be the 'line'?  
+
+The one 'line' will be where the cursor is - this is known as the `active` end of the selection.  So if you make a multiline selection first, the one 'line' will be where the end of the selection is that has the active cursor.
+
+Also, when this selection searches forward on a line, it will do so **FROM** the cursor.  Likewise, if it is searching backward on a 'line' with a selection, it will search backwards from the position of the active cursor.
+
+----------
 
 ### A note on the precedence of the options.  
 
@@ -178,7 +192,7 @@ The options take precedence in that order: 1 > 2 > 3.  All the options have defa
 
 #### 2. &nbsp; If after triggering one of the commands you decide you want to move the cursor first, <kbd>left/rightArrow</kbd> keys or clicking in the file elsewhere will move the cursor without exiting the command.  You can then type a chosen character to move/select from the new cursor position.  
 
-#### 3. &nbsp; If the next or previous jump would be out of the editor's viewport, it will be revealed.  
+#### 3. &nbsp; If the next or previous jump would be out of the editor's viewport, it will be revealed.  For multiple selections, the first selection made (which could appear after other selections) will be revealed.
 
 ----------------
 
@@ -191,6 +205,7 @@ This extension may not play well with vim or neovim or similar due to registerin
 [&emsp; ] - Explore allowing input via 'paste' as well.  
 [&emsp; ] - Consider adding a setting to make queries be interpreted as regex's in keybindings.  
 [&emsp; ] - Consider cancelling multiMode if change editor.
+[&emsp; ] - Should there be a notification for no match on a query?
 
 ## Release Notes  
 
@@ -207,6 +222,7 @@ This extension may not play well with vim or neovim or similar due to registerin
 &emsp;&emsp; &emsp; Added intellisense/completions for keybindings, including `args` options.
 
 * 0.1.0&emsp; Removed regex interpretation of keybinding queries.  
+&emsp;&emsp; &emsp; Selections are continuous - extending each current selection.  
 &emsp;&emsp; &emsp; Make all jumps reveal.  
 &emsp;&emsp; &emsp; Fix putCursorForward/Backward if next to a match.  
 &emsp;&emsp; &emsp; Make the StatusBarItem show immediately.  
