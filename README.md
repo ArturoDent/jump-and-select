@@ -9,13 +9,21 @@ Works with multiple cursors.
 
 ## Notable Changes in v0.1.0
 
-* In a keybinding, the `text` argument will NOT be interpreted as a regular expression.  **Breaking Change.**
+* In a keybinding, the `text` argument will NOT be interpreted as a regular expression.  This is a **Breaking Change**.  But these limited `text` queries are allowed:  
+
+```plaintext
+       1. "^" : go to start of line,
+       2. "$" : go to end of line, and
+       3. "^$": go to next or previous empty line.
+```
+
+See [Using regular expressions in a keybinding](#using-regular-expressions-in-a-keybinding).
 
 * Selections are now cumulative.  So jumping and selecting will extend the current selection.  Demo below.
 
 * Jumps to text outside of the viewport will be revealed - i.e., the file will be scrolled to show the forward/backward jump.
 
-* Added a command: `Jump-Select: Abort MultiMode` so can click StatusBarItem or Command Palette command to cancel `multMode`.
+* Added a command: `Jump-Select: Abort MultiMode` so can click StatusBarItem or Command Palette command to cancel `multiMode`.
 
 --------
 
@@ -86,6 +94,53 @@ Example of the three settings (in `settings.json`):
 
 * `jump-and-select.abortMultiMode` &nbsp; : &nbsp; Abort or leave `multiMode` - to return to regular text entry. No default keybinding.  Appears in the Command Palette (or Keyboard Shortcuts) as `Jump-Select: Abort MultiMode` when `multimode` is active.
 
+When you trigger one of these commands, you will not see the next character you type - instead that character will trigger a search for that character.  
+
+-------
+
+### Example Keybindings
+
+You can change the default arguments, like `restrictSearch/putCursorForward/putCursorBackward` , in your `Settigns UI`.  Search for `jump-and-select` and you should see these options.
+
+You can set the command arguments like this in your `keybindings.json` and these will override the settings defaults for these keybindings:  
+
+```jsonc
+{
+  "key": "alt+f",                  // <== change this to whatever you want
+  "command": "jump-and-select.jumpForward"
+  // "when": "editorTextFocus && editorLangId == javascript"  // for example
+}
+```  
+
+```jsonc
+{
+  "key": "alt+r",
+  "command": "jump-and-select.jumpBackwardSelect",
+  "args": {
+
+    // the args that can be used in a keybinding
+
+    "text": "hello",                           // no default
+
+    // "putCursorForward" is used if the command is 'jumpForward..."
+    // "putCursorForward": "afterCharacter"   // or "beforeCharacter"
+    
+    // "putCursorBackward" is used if the command is 'jumpBackward..."
+    "putCursorBackward": "beforeCharacter",   // or "afterCharacter"
+
+    "restrictSearch": "document"              // or "line" to search in the current line only
+  }
+}
+```
+
+In this last example, you would use `putCursorBackward` and **not** `putCursorForward` because the command `jumpBackwardSelect` is jumping backward and thus `putCursorForward` is ignored.  For commands that are jumping forward use `putCursorForward`.  
+
+The available `args` have the same names as the settings, like `"jump-and-select.putCursorForward"` minus the extension name prefix.  
+
+For more on using **[keybindings and macros](keybindings.md)**.  
+
+------------
+
 ## Multimode Commands  
 
 What is `MultiMode`?  It means you can trigger the command ONCE and then move/select as many times as you want.  
@@ -105,6 +160,99 @@ You can also exit `multiMode` by clicking on the StatusBarItem or by invoking th
 To trigger <kbd>Alt</kbd>+<kbd>m</kbd> &nbsp; <kbd>Alt</kbd>+<kbd>f</kbd> you can hold down the <kbd>Alt</kbd> key and then hit <kbd>m</kbd> and then <kbd>f</kbd> and release and MultiMode is running.  These are just suggested keybindings, use whatever you want.  Think of <kbd>Alt</kbd>+<kbd>m</kbd> as standing for MultiMode.
 
 Once you are in `multiMode` you can move the cursor anywhere you want and continue to jump from that new position.  
+
+---------
+
+## Expanding the Selection
+
+If you already have a selection or create one with one of the 'Select' commands (`jumpForwardSelect`, `jumpForwardSelectMultiMode`, `jumpBackwardSelect`, or `jumpBackwardSelectMultiMode`) and do another 'select' command that pre-existing selection will be expanded.
+
+The below demo shows creating a backwards selection to the `(` and then a forwards expansion of that selection to the `)`.
+
+<img src="https://github.com/ArturoDent/jump-and-select/blob/main/images/jumpExpandSelection1.gif?raw=true" width="700" height="150" alt="Expand the selection to the brackets"/>
+
+Here is a single keybinding combining the two operations from above.
+
+```jsonc
+{
+  "key": "alt+t",
+  "command": "runCommands",
+  "args": {
+    "commands": [
+      {
+        "command": "jump-and-select.jumpBackwardSelect",
+        "args": {
+          "text": "(",
+          "putCursorBackward": "afterCharacter"
+        }
+      },
+      {
+        "command": "jump-and-select.jumpForwardSelect",
+        "args": {
+          "text": ")",
+          "putCursorBackward": "beforeCharacter"
+        }
+      }
+    ]
+  },
+  // "when": "editorTextFocus && !editorReadonly && editorLangId == rust"
+  // "when": "editorTextFocus && !editorReadonly && resourceExtname =~ /\\.(js|ts)/"
+}
+```
+
+-------------
+
+## Using regular expressions in a keybinding
+
+With a `"text": ""` argument, you can only use these regular expression patterns: `^`, `$`, or `^$`.  For example,
+
+```jsonc
+{
+  "key": "alt+p",
+  "command": "jump-and-select.jumpForward",
+  "args": {
+    "text": "^",
+    // "putCursorBackward": "beforeCharacter",   // irrelevant
+    // "restrictSearch": "line"   // or document
+  },
+}
+```
+
+A. **With one of the `jumpForward...` commands:**
+
+**` "restrictSearch": "document" ` or no `restrictSearch` argument (`document` is the default):**
+
+1. "^" : the cursor would go to the start of the next line - that is forwards.  If the cursor is already at the start of a line: it will go to the start of the next line.
+2. "$" : the cursor would go to the end of the current line.  If the cursor is already at the end of a line: it will go to the end of the next line.
+3. "^$" : the cursor would go to the next empty line.
+
+##### ` "restrictSearch": "line" `:
+
+1. "^" : nothing would happen. Can't go forward to the start of the same line.
+2. "$" : the cursor will go to the end of the current line.
+3. "^$" : nothing would happen.  Never leave the current line.
+
+------------
+
+**2. With one of the `jumpBackward...` commands:**
+
+##### ` "restrictSearch": "document" ` or no `restrictSearch` argument (`document` is the default):
+
+1. "^" : the cursor would go to the start of the current line - that is backwards.  If the cursor is already at the start of a line: it will go to the start of the previous line.
+2. "$" : the cursor would go to the end of the current line.  If the cursor is already at the end of a line: it will go to the end of the previous line.
+3. "^$" : the cursor would go to the previous empty line.
+
+##### ` "restrictSearch": "line" `:
+
+1. "^" : the cursor will go to the start of the current line - that is backwards.
+2. "$" : nothing would happen.  Can't go backward to the end of the same line.
+3. "^$" : nothing would happen.  Never leave the current line.
+
+The arguments `putCursorForward` or `putCursorBackward` are ignored when using `^`, `$` or `^$`.
+
+---------------
+
+## StatusBar colors
 
 Color options for the StatusBarItem are very limited.  Right now you can use these settings:
 
@@ -127,44 +275,6 @@ If you see this error message you may have forgotten to exit (via the <kbd>Enter
 <img src="https://github.com/ArturoDent/jump-and-select/blob/main/images/multiModeError.jpg?raw=true" width="500" height="100" alt="Error message when fail to exit MultiMode"/>
 
 ------------------------
-
-When you trigger one of these commands, you will not see the next character you type - instead that character will trigger a search for that character.  
-
-The bindings listed above are default keybindings, you can change them like this in your `keybindings.json`:  
-
-```jsonc
-{
-  "key": "alt+f",                  // <== change this to whatever you want
-  "command": "jump-and-select.jumpForward"
-  // "when": "editorTextFocus && editorLangId == javascript"  // for example
-}
-```  
-
-```jsonc
-{
-  "key": "alt+r",
-  "command": "jump-and-select.jumpBackwardSelect",
-  "args": {
-
-    // the args that can be used in a keybinding
-
-    "text": "hello",
-
-    // "putCursorForward": "afterCharacter"   // or "beforeCharacter"
-    "putCursorBackward": "beforeCharacter",   // or "afterCharacter"
-
-    "restrictSearch": "document"              // or "line" to search in the current line only
-  }
-}
-```
-
-In this last example, you would use `putCursorBackward` and **not** `putCursorForward` because the command `jumpBackwardSelect` is jumping backward and thus `putCursorForward` is ignored.  For commands that are jumping forward use `putCursorForward`.  
-
-The available `args` have the same names as the settings, like `"jump-and-select.putCursorForward"` minus the extension name prefix.  
-
-For more on using **[keybindings and macros](keybindings.md)**.  
-
-------------
 
 ### `"restrictSearch": "line"` option and selections
 
@@ -206,6 +316,7 @@ This extension may not play well with vim or neovim or similar due to registerin
 [&emsp; ] - Consider adding a setting to make queries be interpreted as regex's in keybindings.  
 [&emsp; ] - Consider cancelling multiMode if change editor.
 [&emsp; ] - Should there be a notification for no match on a query?
+[&emsp; ] - Refactor getQueryLineIndexForward/getQueryDocumentIndexForward to only use queryIndex (or cursorIndex)
 
 ## Release Notes  
 
@@ -229,5 +340,6 @@ This extension may not play well with vim or neovim or similar due to registerin
 &emsp;&emsp; &emsp; Add `Abort MultiMode` command.  In Command Palette and clicking the StatusBarItem.  
 &emsp;&emsp; &emsp; Prevent multiple StatusBarItems.  
 &emsp;&emsp; &emsp; Swapped JSON Schema `keybindings.schema.jsonc` for CompletionProvider.  
+&emsp;&emsp; &emsp; Enable `^`, `$`, and `^$` in keybindings.  
 
 -----------------------------------------------------------------------------------------------------------

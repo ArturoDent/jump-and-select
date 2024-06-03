@@ -82,6 +82,8 @@ async function activate(context) {
 
   let commandDisposable3 = vscode.commands.registerCommand('jump-and-select.jumpBackward', async args => {
     
+    if (!vscode.window.activeTextEditor) return;
+    
     if (statusBarItem) await statusBarItem.hide();
     if (global.typeDisposable) await global.typeDisposable.dispose();
     
@@ -136,7 +138,7 @@ async function activate(context) {
   
   let abortMultimode = vscode.commands.registerCommand('jump-and-select.abortMultiMode', async () => {
     if (statusBarItem) await statusBarItem.hide();
-    global.typeDisposable.dispose();
+    if (global.typeDisposable) global.typeDisposable.dispose();
     
     // focus is lost from the editor when you click the StatusBarItem
     await vscode.commands.executeCommand('workbench.action.focusLastEditorGroup');

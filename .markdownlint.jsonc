@@ -1,5 +1,7 @@
 {
+  "MD001": false,  // heading increment skips
   "MD013": false,  // 80 line length
+  "MD024": false,  // no duplicate headings
   "MD026": false,  // no trailing punctation
   "MD028": false,   // no blank line inside blockquote
   "MD030": false,   // 2+ spaces after list markers
