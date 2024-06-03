@@ -4,18 +4,17 @@ const statusBarItem = require('./statusBar');
 var global = Function('return this')();  // used for global.typeDisposable
 
 /**
- * The Object returned contains the index of the matched query or -1,
- *   the index of the updated cursor location and the length of the match
+ * The Object returned contains the index of the matched query or -1.
+ * This index is from the beginning of the text to be searched.
  *
  * @typedef  {Object} QueryObject
  * @property {Number} queryIndex  - index of query character in line or document from cursor
- * @property {Number} matchLength - the length of the match, esp. useful for regexp's
  */
 
-const noMatchQueryObject = {
-  queryIndex: -1,
-  matchLength: -1
-}
+// if used a regex match, might need matchLength again
+//  * @property {Number} matchLength - the length of the match, esp. useful for regexp's
+
+const noMatchQueryObject = { queryIndex: -1 };
 
 // -------------------------------------------------------------------------------------------
 
@@ -106,6 +105,7 @@ function _jumpForward(restrictSearch, putCursorForward, query, select) {
   }
   const editor = vscode.window.activeTextEditor;
   const selections = editor.selections;
+  const matchLength = query.length;
 
   selections.forEach((selection, index) => {
 
@@ -126,7 +126,7 @@ function _jumpForward(restrictSearch, putCursorForward, query, select) {
 
       let queryPos;  // query Position
       if (putCursorForward === "afterCharacter") {
-        const finalCurPos = queryObject.queryIndex + cursorIndex + queryObject.matchLength;
+        const finalCurPos = queryObject.queryIndex + cursorIndex + matchLength;
         queryPos = editor.document.positionAt(finalCurPos);
       }
       // effective default = "beforeCharacter"
@@ -161,6 +161,7 @@ function _jumpBackward(restrictSearch, putCursorBackward, query, select) {
   }
   const editor = vscode.window.activeTextEditor;
   const selections = editor.selections;
+  const matchLength = query.length;
 
   selections.forEach((selection, index) => {
 
@@ -181,8 +182,8 @@ function _jumpBackward(restrictSearch, putCursorBackward, query, select) {
       let queryPos;
 
       if (putCursorBackward === "afterCharacter") {
-        if (restrictSearch === "line") queryPos = new vscode.Position(curPos.line, queryObject.queryIndex + queryObject.matchLength);
-        else queryPos = editor.document.positionAt(queryObject.queryIndex + queryObject.matchLength);
+        if (restrictSearch === "line") queryPos = new vscode.Position(curPos.line, queryObject.queryIndex + matchLength);
+        else queryPos = editor.document.positionAt(queryObject.queryIndex + matchLength);
       }
       else {   // (putCursorBackward === "afterCharacter") effective default
         if (restrictSearch === "line") queryPos = new vscode.Position(curPos.line, queryObject.queryIndex);
@@ -217,7 +218,6 @@ function getQueryLineIndexForward(cursorPosition, query, putCursorForward, selec
   const document = vscode.window.activeTextEditor?.document;
 
   let queryIndex = -1;  // the match point as an index of the line
-  let matchLength = 0;
   let restOfLine = '';
 
   if (!document) return noMatchQueryObject;    
@@ -230,10 +230,7 @@ function getQueryLineIndexForward(cursorPosition, query, putCursorForward, selec
     // leave as is
     // if (selection.isReversed && !selection.isSingleLine) {    // a reversed multiline selection
     
-    return {
-      queryIndex: lineRange.end.character - cursorPosition.character,
-      matchLength: 0
-    };
+    return { queryIndex: lineRange.end.character - cursorPosition.character };
   }
 
   if (selection.isReversed) restOfLine = line.text.substring(selection.anchor.character);
@@ -252,13 +249,10 @@ function getQueryLineIndexForward(cursorPosition, query, putCursorForward, selec
     if (matchPos !== -1) {
       if (selection.isReversed) queryIndex = document.offsetAt(selection.end) - document.offsetAt(selection.start) + matchPos;
       else queryIndex = matchPos;
-
-      matchLength = query.length;
     }
   }
   return {
-    queryIndex,
-    matchLength
+    queryIndex
   };
 }
 
@@ -276,7 +270,6 @@ function getQueryDocumentIndexForward(cursorPosition, query, putCursorForward, s
   const document = vscode.window.activeTextEditor?.document;  // TODO: exclude schemes like vscode-data, etc.
 
   let queryIndex = -1;
-  let matchLength = 0;
   let restOfText = '';
 
   if (!document) return noMatchQueryObject; 
@@ -305,17 +298,13 @@ function getQueryDocumentIndexForward(cursorPosition, query, putCursorForward, s
         // else if (document.eol === vscode.EndOfLine.LF) eolLength = 1; // correct for Mac/etc. LF
 
         return {
-          queryIndex: document.offsetAt(selection.end) - document.offsetAt(selection.start) + lineAfterSelectionEnd.text.length + eolLength,
-          matchLength: 0
+          queryIndex: document.offsetAt(selection.end) - document.offsetAt(selection.start) + lineAfterSelectionEnd.text.length + eolLength
         };
       }
       else if (cursorPosition.isBefore(lineRange.end)) {       // not at end of currentLine 
         // range of the selection union with the line where the selection ends
         const rangeToEnd = selection.union(lineOfSelectionEnd.range);
-        return {
-          queryIndex: document.offsetAt(rangeToEnd.end) - document.offsetAt(rangeToEnd.start),
-          matchLength: 0
-        };
+        return { queryIndex: document.offsetAt(rangeToEnd.end) - document.offsetAt(rangeToEnd.start) };
       }
     }
     else {
@@ -326,16 +315,10 @@ function getQueryDocumentIndexForward(cursorPosition, query, putCursorForward, s
         if (document.eol === vscode.EndOfLine.CRLF) eolLength = 2; // correct for Windows CRLF
         // else if (document.eol === vscode.EndOfLine.LF) eolLength = 1; // correct for Mac/etc. LF
 
-        return {
-          queryIndex: nextLine.range.end.character + eolLength,
-          matchLength: 0
-        };
+        return { queryIndex: nextLine.range.end.character + eolLength };
       }
       else if (cursorPosition.isBefore(lineRange.end))        // not at end of currentLine 
-        return {
-          queryIndex: lineRange.end.character - cursorPosition.character,
-          matchLength: 0
-        };
+        return { queryIndex: lineRange.end.character - cursorPosition.character };
     }
   }
   else if (query === '^') {
@@ -359,34 +342,21 @@ function getQueryDocumentIndexForward(cursorPosition, query, putCursorForward, s
           const lineAfterSelectionEnd = document.lineAt(selection.end.line + 1);
           if (!lineAfterSelectionEnd) return noMatchQueryObject;
           
-          return {  // not at start of the current line
-            // go to start of the line after the end of the selection
-            queryIndex: document.offsetAt(lineAfterSelectionEnd.range.start) - cursorIndex,
-            matchLength: 0
-          };
+          // go to start of the line after the end of the selection
+          return { queryIndex: document.offsetAt(lineAfterSelectionEnd.range.start) - cursorIndex };
         }
         
         else if (cursorPosition.isEqual(lineRange.start)) // already at start of the current line
-          return {
-            // go to end of current line and add eolLength
-            queryIndex: line.text.length + eolLength,
-            matchLength: 0
-          };
+          // go to end of current line and add eolLength
+          return { queryIndex: line.text.length + eolLength };
       }
       else {  // !selection.isReversed
-        if (cursorPosition.isBefore(lineRange.end))
-          return {  // not at start of the current line
-            // go to end of current line and add eolLength
-            queryIndex: line.text.length - cursorPosition.character + eolLength,
-            matchLength: 0
-          };
+        if (cursorPosition.isBefore(lineRange.end))  // go to end of current line and add eolLength
+          return {  queryIndex: line.text.length - cursorPosition.character + eolLength };
       
         else if (cursorPosition.isEqual(lineRange.start)) // already at start of the current line
-          return {
-            // go to end of current line and add eolLength
-            queryIndex: line.text.length + eolLength,
-            matchLength: 0
-          };
+                      // go to end of current line and add eolLength
+          return { queryIndex: line.text.length + eolLength };
       }
     }
   }
@@ -400,19 +370,16 @@ function getQueryDocumentIndexForward(cursorPosition, query, putCursorForward, s
 
     if (matches.length) {
       queryIndex = Number(matches[0].index);
-      matchLength = 0;
     }
 
     if (queryIndex === 0) {  // if on an empty line already
       if (matches.length > 1) {
         queryIndex = Number(matches[1].index);
-        matchLength = 0;
       }
     }
 
     return {
-      queryIndex,
-      matchLength
+      queryIndex
     };
   }
 
@@ -438,13 +405,10 @@ function getQueryDocumentIndexForward(cursorPosition, query, putCursorForward, s
       if (selection.isReversed)
         queryIndex = document.offsetAt(selection.end) - document.offsetAt(selection.start) + matchPos;
       else queryIndex = matchPos;
-
-      matchLength = query.length;
     }
   }
   return {
-    queryIndex,
-    matchLength
+    queryIndex
   };
 }
 
@@ -462,16 +426,12 @@ function getQueryLineIndexBackward(cursorPosition, query, purCursorBackward, sel
   const document = vscode.window.activeTextEditor?.document;
 
   let queryIndex = -1;
-  let matchLength = 0;
   let startOfLine = '';
 
   if (!document) return noMatchQueryObject; 
 
   if (query === '^') {
-    return {
-      queryIndex: 0,
-      matchLength: 0
-    };
+    return { queryIndex: 0 };
   }
 
   const line = document.lineAt(cursorPosition.line);
@@ -490,12 +450,10 @@ function getQueryLineIndexBackward(cursorPosition, query, purCursorBackward, sel
 
     if (matchPos !== -1) {
       queryIndex = matchPos;
-      matchLength = query.length;
     }
   }
   return {
-    queryIndex,
-    matchLength
+    queryIndex
   };
 }
 
@@ -513,7 +471,6 @@ function getQueryDocumentIndexBackward(cursorPosition, query, purCursorBackward,
   const document = vscode.window.activeTextEditor?.document;
 
   let queryIndex = -1;
-  let matchLength = 0;
   let startText = '';
 
   if (!document) return noMatchQueryObject; 
@@ -543,16 +500,10 @@ function getQueryDocumentIndexBackward(cursorPosition, query, purCursorBackward,
       if (selectionStartPreviousLine) {
 
         if (selection.start.isEqual(selectionStartLine.range.end)) {  // at end of line already and there is a selectionStartPreviousLine
-          return {
-            queryIndex: document.offsetAt(selectionStartLine.range.end),
-            matchLength: 0
-          };
+          return { queryIndex: document.offsetAt(selectionStartLine.range.end) };
         }        
         else if (selection.start.isBefore(selectionStartLine.range.end)) {      // not at end of selection start line
-          return {
-            queryIndex: document.offsetAt(selectionStartPreviousLine.range.end),
-            matchLength: 0
-          };
+          return { queryIndex: document.offsetAt(selectionStartPreviousLine.range.end) };
         }
       }
     }
@@ -562,10 +513,7 @@ function getQueryDocumentIndexBackward(cursorPosition, query, purCursorBackward,
       else return noMatchQueryObject;
       
       const previousLineRange = previousLine.range;  
-      return {
-        queryIndex: document.offsetAt(previousLineRange.end),
-        matchLength: 0
-      };
+      return { queryIndex: document.offsetAt(previousLineRange.end) };
     }
   }
 
@@ -586,30 +534,18 @@ function getQueryDocumentIndexBackward(cursorPosition, query, purCursorBackward,
       else return noMatchQueryObject;
       
       if (selection.start.isEqual(selectionStartLine.range.start) && selectionStartPreviousLine) {  // at start of line already and there is a previousLine
-        return {
-          queryIndex: document.offsetAt(selectionStartPreviousLine.range.start),
-          matchLength: 0
-        };
+        return { queryIndex: document.offsetAt(selectionStartPreviousLine.range.start) };
       }
       else if (selection.start.isAfter(selectionStartLine.range.start)) {      // not at start of selection start line
-        return {
-          queryIndex: document.offsetAt(selectionStartLine.range.start),
-          matchLength: 0
-        };
+        return { queryIndex: document.offsetAt(selectionStartLine.range.start) };
       }
     }
     else {
       if (cursorPosition.isEqual(currentLineRange.start) && previousLine) {  // at start of line already and there is a previousLine
-        return {
-          queryIndex: document.offsetAt(previousLine.range.start),
-          matchLength: 0
-        };
+        return { queryIndex: document.offsetAt(previousLine.range.start) };
       }
       else if (cursorPosition.isAfter(currentLineRange.start))        // not at start of currentLine 
-        return {
-          queryIndex: document.offsetAt(currentLineRange.start),
-          matchLength: 0
-        };
+        return { queryIndex: document.offsetAt(currentLineRange.start) };
     }
   }
 
@@ -625,16 +561,13 @@ function getQueryDocumentIndexBackward(cursorPosition, query, purCursorBackward,
     // going backward and cursor at last match, skip and go to the penultimate match
     if ((penultimateIndex !== -1) && (lastIndex !== -1) && (cursorIndex === lastIndex)) {
       queryIndex = penultimateIndex;
-      matchLength = 0;
     }
     else if (lastIndex !== -1) {
       queryIndex = lastIndex;
-      matchLength = 0;
     }
 
     return {
-      queryIndex,
-      matchLength
+      queryIndex
     };
   }
 
@@ -650,12 +583,10 @@ function getQueryDocumentIndexBackward(cursorPosition, query, purCursorBackward,
 
     if (matchPos !== -1) {
       queryIndex = matchPos;
-      matchLength = query.length;
     }
   }
 
   return {
-    queryIndex,
-    matchLength
+    queryIndex
   };
 }

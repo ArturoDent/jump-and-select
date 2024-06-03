@@ -25,6 +25,8 @@ See [Using regular expressions in a keybinding](#using-regular-expressions-in-a-
 
 * Added a command: `Jump-Select: Abort MultiMode` so can click StatusBarItem or Command Palette command to cancel `multiMode`.
 
+See the [GitHub Discussions](https://github.com/ArturoDent/jump-and-select/discussions) to provide input on new features.
+
 --------
 
 ## How It Works  
@@ -212,7 +214,7 @@ With a `"text": ""` argument, you can only use these regular expression patterns
   "command": "jump-and-select.jumpForward",
   "args": {
     "text": "^",
-    // "putCursorBackward": "beforeCharacter",   // irrelevant
+    // "putCursorBackward": "beforeCharacter",   // "putCursorBackward" is ignored when using ^, $ or ^$
     // "restrictSearch": "line"   // or document
   },
 }
@@ -316,7 +318,7 @@ This extension may not play well with vim or neovim or similar due to registerin
 [&emsp; ] - Consider adding a setting to make queries be interpreted as regex's in keybindings.  
 [&emsp; ] - Consider cancelling multiMode if change editor.
 [&emsp; ] - Should there be a notification for no match on a query?
-[&emsp; ] - Refactor getQueryLineIndexForward/getQueryDocumentIndexForward to only use queryIndex (or cursorIndex)
+[&emsp; ] - Should before/afterCharacter do something for "^$"?
 
 ## Release Notes  
 
@@ -334,12 +336,15 @@ This extension may not play well with vim or neovim or similar due to registerin
 
 * 0.1.0&emsp; Removed regex interpretation of keybinding queries.  
 &emsp;&emsp; &emsp; Selections are continuous - extending each current selection.  
-&emsp;&emsp; &emsp; Make all jumps reveal.  
+&emsp;&emsp; &emsp; Make all jumps reveal - at bottom.  
 &emsp;&emsp; &emsp; Fix putCursorForward/Backward if next to a match.  
 &emsp;&emsp; &emsp; Make the StatusBarItem show immediately.  
 &emsp;&emsp; &emsp; Add `Abort MultiMode` command.  In Command Palette and clicking the StatusBarItem.  
 &emsp;&emsp; &emsp; Prevent multiple StatusBarItems.  
 &emsp;&emsp; &emsp; Swapped JSON Schema `keybindings.schema.jsonc` for CompletionProvider.  
-&emsp;&emsp; &emsp; Enable `^`, `$`, and `^$` in keybindings.  
+&emsp;&emsp; &emsp; Better `^`, `$`, and `^$` selecting in keybindings.  
+&emsp;&emsp; &emsp; Simplified the QueryObject and made a default noMatch.
+
+&emsp;&emsp; &emsp; Better Made a Discussions item for new features.
 
 -----------------------------------------------------------------------------------------------------------
