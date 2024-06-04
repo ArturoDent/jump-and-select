@@ -105,7 +105,13 @@ function _jumpForward(restrictSearch, putCursorForward, query, select) {
   }
   const editor = vscode.window.activeTextEditor;
   const selections = editor.selections;
-  const matchLength = query.length;
+  
+  let matchLength = query.length;
+  if      (query === "^" || query === "$" || query === "^$") matchLength = 0;
+  else if (query === "\\^" || query === "\\$") matchLength = 1;
+  
+  let unescapedQuery = query.replaceAll(/\\([$^])/g, '$1');  // remove all double-escapes
+  matchLength = unescapedQuery.length;  
 
   selections.forEach((selection, index) => {
 
@@ -161,7 +167,13 @@ function _jumpBackward(restrictSearch, putCursorBackward, query, select) {
   }
   const editor = vscode.window.activeTextEditor;
   const selections = editor.selections;
-  const matchLength = query.length;
+  
+  let matchLength = query.length;
+  if      (query === "^" || query === "$" || query === "^$") matchLength = 0;
+  else if (query === "\\^" || query === "\\$") matchLength = 1;
+  
+  let unescapedQuery = query.replaceAll(/\\([$^])/g, '$1');  // remove all double-escapes
+  matchLength = unescapedQuery.length;  
 
   selections.forEach((selection, index) => {
 
@@ -232,7 +244,13 @@ function getQueryLineIndexForward(cursorPosition, query, putCursorForward, selec
     
     return { queryIndex: lineRange.end.character - cursorPosition.character };
   }
-
+  
+  if (query === '\\^') query = '^';
+  else if (query === '\\$') query = '$';
+  
+  // $ must precede ^ in the [], else interpreted as not ^
+  query = query.replaceAll(/\\([$^])/g, '$1');  // remove all double-escapes
+  
   if (selection.isReversed) restOfLine = line.text.substring(selection.anchor.character);
   else restOfLine = line.text.substring(cursorPosition.character);
 
@@ -251,9 +269,7 @@ function getQueryLineIndexForward(cursorPosition, query, putCursorForward, selec
       else queryIndex = matchPos;
     }
   }
-  return {
-    queryIndex
-  };
+  return { queryIndex };
 }
 
 
@@ -378,10 +394,14 @@ function getQueryDocumentIndexForward(cursorPosition, query, putCursorForward, s
       }
     }
 
-    return {
-      queryIndex
-    };
+    return { queryIndex };
   }
+  
+  if (query === '\\^') query = '^';
+  else if (query === '\\$') query = '$';
+  
+  // $ must precede ^ in the [], else interpreted as not ^
+  query = query.replaceAll(/\\([$^])/g, '$1');  // remove all double-escapes
 
   let curEndRange;
 
@@ -407,9 +427,7 @@ function getQueryDocumentIndexForward(cursorPosition, query, putCursorForward, s
       else queryIndex = matchPos;
     }
   }
-  return {
-    queryIndex
-  };
+  return { queryIndex };
 }
 
 
@@ -430,9 +448,13 @@ function getQueryLineIndexBackward(cursorPosition, query, purCursorBackward, sel
 
   if (!document) return noMatchQueryObject; 
 
-  if (query === '^') {
-    return { queryIndex: 0 };
-  }
+  if (query === '^') return { queryIndex: 0 };
+  
+  if (query === '\\^') query = '^';
+  else if (query === '\\$') query = '$';
+  
+  // $ must precede ^ in the [], else interpreted as not ^
+  query = query.replaceAll(/\\([$^])/g, '$1');  // remove all double-escapes
 
   const line = document.lineAt(cursorPosition.line);
   if (!selection.isReversed) startOfLine = line.text.substring(0, selection.anchor.character);
@@ -452,9 +474,7 @@ function getQueryLineIndexBackward(cursorPosition, query, purCursorBackward, sel
       queryIndex = matchPos;
     }
   }
-  return {
-    queryIndex
-  };
+  return { queryIndex };
 }
 
 
@@ -566,10 +586,14 @@ function getQueryDocumentIndexBackward(cursorPosition, query, purCursorBackward,
       queryIndex = lastIndex;
     }
 
-    return {
-      queryIndex
-    };
+    return { queryIndex };
   }
+  
+  if (query === '\\^') query = '^';
+  else if (query === '\\$') query = '$';
+  
+  // $ must precede ^ in the [], else interpreted as not ^
+  query = query.replaceAll(/\\([$^])/g, '$1');  // remove all double-escapes
 
   if (startText) {  // startText = '' if already at the start of the document 
 
@@ -586,7 +610,5 @@ function getQueryDocumentIndexBackward(cursorPosition, query, purCursorBackward,
     }
   }
 
-  return {
-    queryIndex
-  };
+  return { queryIndex };
 }

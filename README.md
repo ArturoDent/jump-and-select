@@ -1,7 +1,7 @@
 # Jump and Select
 
 Jump/move the cursor to the next or previous occurrence of some character.  
-You can also optionally select the text from the current cursor position to that next/previous character.  
+You can also optionally select the text from the current cursor position to that next/previous character while extending the current selection.  
 Works with keybindings and macros.  You can use multiple characters in a keybinding or macro.  
 Works with multiple cursors.  
 
@@ -81,6 +81,8 @@ Example of the three settings (in `settings.json`):
   "jump-and-select.putCursorForward"      :      "beforeCharacter",
   "jump-and-select.putCursorBackward"     :      "afterCharacter",
 ```
+
+* Note: `beforeCharacter` should really be `beforeQuery` and `afterCharacter` should be `afterQuery`.  The original names are from a time when you could only input one typed character at a time.  But in the keybindings `text` argument you can have multiple characters like `howdy` or `abc\\$` and the cursor will go before or after that entire query.  So think of them as `beforeQuery` and `afterQuery` - which may be a single or multiple characters.
 
 -----------------  
 
@@ -167,11 +169,16 @@ Once you are in `multiMode` you can move the cursor anywhere you want and contin
 
 ## Expanding the Selection
 
-If you already have a selection or create one with one of the 'Select' commands (`jumpForwardSelect`, `jumpForwardSelectMultiMode`, `jumpBackwardSelect`, or `jumpBackwardSelectMultiMode`) and do another 'select' command that pre-existing selection will be expanded.
+If you already have a selection or create one with one of the 'Select' commands (`jumpForwardSelect`, `jumpForwardSelectMultiMode`, `jumpBackwardSelect`, or `jumpBackwardSelectMultiMode`) and do another 'select' command that pre-existing selection will be expanded.  
+
+The selection can be expanded forward with either the `jumpForwardSelect` or `jumpForwardSelectMultiMode` command.  
+The selection can be expanded backward with either the `jumpBackwardSelect` or `jumpBackwardSelectMultiMode` command.  
+
+This can be done either by triggering the default commands or by triggering a keybinding.
 
 The below demo shows creating a backwards selection to the `(` and then a forwards expansion of that selection to the `)`.
 
-<img src="https://github.com/ArturoDent/jump-and-select/blob/main/images/jumpExpandSelection1.gif?raw=true" width="700" height="150" alt="Expand the selection to the brackets"/>
+<img src="https://github.com/ArturoDent/jump-and-select/blob/main/images/jumpSelectionExpand1.gif?raw=true" width="800" height="250" alt="Expand the selection to the brackets"/>
 
 Here is a single keybinding combining the two operations from above.
 
@@ -202,23 +209,55 @@ Here is a single keybinding combining the two operations from above.
 }
 ```
 
+Another example, using a combination of `jump-and-select.jumpBackwardSelectMultiMode` and then this keybinding:
+
+```jsonc
+{
+  "key": "alt+p",
+  "command": "jump-and-select.jumpForwardSelect",
+  "args": {
+    "text": "^$"   // select to next empty line
+  },
+}
+```
+
+<img src="https://github.com/ArturoDent/jump-and-select/blob/main/images/jumpSelectionExpandEmptyLine.gif?raw=true" width="500" height="100" alt="Error message when fail to exit MultiMode"/>
+
 -------------
 
 ## Using regular expressions in a keybinding
 
-With a `"text": ""` argument, you can only use these regular expression patterns: `^`, `$`, or `^$`.  For example,
+With a `"text": ""` argument in a keybinding, you can only use these regular expression patterns: `^`, `$`, or `^$`.  Those will always be evaluated as regular expressions, never as literals.  For example,
 
 ```jsonc
 {
   "key": "alt+p",
   "command": "jump-and-select.jumpForward",
   "args": {
-    "text": "^",
+    "text": "^",  // go to start of line
+    // "text": "$",  // go to end of line
+    // "text": "^$",  // go to next/previous empty line
     // "putCursorBackward": "beforeCharacter",   // "putCursorBackward" is ignored when using ^, $ or ^$
     // "restrictSearch": "line"   // or document
   },
 }
 ```
+
+* Note, you can also use `^` and `$` as key inputs to any of the commands outside of a keybinding - they will also be interpreted as regular expression characters.
+
+If you want to jump to a literal `^` or `$`, you will need to put them into a keybinding and double-escape them like so:
+
+```jsonc
+{
+  "key": "alt+p",
+  "command": "jump-and-select.jumpForward",
+  "args": {
+    "text": "howdy\\$",  // "123\\^" or "\\^\\$" also work, 
+  }
+}
+```
+
+You can have any number of double-escaped `\\^` and `\\$` mixed with other text and it will all be treated as literal (non-regular expression) characters.  
 
 A. **With one of the `jumpForward...` commands:**
 
@@ -248,9 +287,29 @@ A. **With one of the `jumpForward...` commands:**
 
 1. "^" : the cursor will go to the start of the current line - that is backwards.
 2. "$" : nothing would happen.  Can't go backward to the end of the same line.
-3. "^$" : nothing would happen.  Never leave the current line.
+3. "^$" : nothing would happen.  Never leave the current line.  
+
+---------
 
 The arguments `putCursorForward` or `putCursorBackward` are ignored when using `^`, `$` or `^$`.
+
+* Note: `^/$/^$` also work to expand existing selections.  It is easiest to set up a simple keybinding like
+
+```jsonc
+{
+  "key": "alt+p",
+  "command": "jump-and-select.jumpForwardSelect",
+  "args": {
+    "text": "^",
+    // "text": "$", 
+    // "text": "^$", 
+  },
+  "restrictSearch": "document"
+  // "restrictSearch": "line"
+}
+```
+
+to see how they work in action.  
 
 ---------------
 
@@ -319,6 +378,7 @@ This extension may not play well with vim or neovim or similar due to registerin
 [&emsp; ] - Consider cancelling multiMode if change editor.
 [&emsp; ] - Should there be a notification for no match on a query?
 [&emsp; ] - Should before/afterCharacter do something for "^$"?
+[&emsp; ] - Make `\\^` and `\\$` in a keybinding be interpreted as literals, not regular expressions.
 
 ## Release Notes  
 
@@ -335,7 +395,7 @@ This extension may not play well with vim or neovim or similar due to registerin
 &emsp;&emsp; &emsp; Added intellisense/completions for keybindings, including `args` options.
 
 * 0.1.0&emsp; Removed regex interpretation of keybinding queries.  
-&emsp;&emsp; &emsp; Selections are continuous - extending each current selection.  
+&emsp;&emsp; &emsp; Selections are continuous - extending each current selection, even with `^/$/^$`.  
 &emsp;&emsp; &emsp; Make all jumps reveal - at bottom.  
 &emsp;&emsp; &emsp; Fix putCursorForward/Backward if next to a match.  
 &emsp;&emsp; &emsp; Make the StatusBarItem show immediately.  
@@ -343,8 +403,8 @@ This extension may not play well with vim or neovim or similar due to registerin
 &emsp;&emsp; &emsp; Prevent multiple StatusBarItems.  
 &emsp;&emsp; &emsp; Swapped JSON Schema `keybindings.schema.jsonc` for CompletionProvider.  
 &emsp;&emsp; &emsp; Better `^`, `$`, and `^$` selecting in keybindings.  
-&emsp;&emsp; &emsp; Simplified the QueryObject and made a default noMatch.
-
-&emsp;&emsp; &emsp; Better Made a Discussions item for new features.
+&emsp;&emsp; &emsp; Simplified the QueryObject and made a default noMatch.  
+&emsp;&emsp; &emsp; Use EOL length for forward ^/$ for multi-OS lengths.  
+&emsp;&emsp; &emsp; Made a Discussions item for new features.
 
 -----------------------------------------------------------------------------------------------------------
