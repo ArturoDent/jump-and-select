@@ -26,10 +26,11 @@ exports.show = async function () {
     sbItem.tooltip = "'Return/Enter' will exit the current jump command";
         
     sbItem.backgroundColor = new vscode.ThemeColor('statusBarItem.errorBackground');
-    // sbItem.backgroundColor = new vscode.ThemeColor('statusBarItem.prominentBackground');  // not supported
-    // sbItem.backgroundColor = new vscode.ThemeColor('terminal.ansiWhite');  // doesn't work
-    sbItem.color = new vscode.ThemeColor('statusBarItem.prominentForeground');  // only works if not errorBackground
-  
+    // sbItem.backgroundColor = new vscode.ThemeColor('statusBarItem.prominentBackground');  // not supported at all??
+    // sbItem.backgroundColor = new vscode.ThemeColor('statusBarItem.warningBackground');  // works
+    // sbItem.color = new vscode.ThemeColor('statusBarItem.prominentForeground');  // only works if neither error/warningBackground
+    sbItem.color = new vscode.ThemeColor('statusBarItem.errorForeground');
+    
     sbItem.command = 'jump-and-select.abortMultiMode';
     sbItem.show();
   }

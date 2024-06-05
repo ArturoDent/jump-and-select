@@ -1,6 +1,6 @@
 # Jump and Select
 
-Jump/move the cursor to the next or previous occurrence of some character.  
+Jump/move the cursor to the next or previous occurrence of some typed character or group of characters (in a keybinding).  
 You can also optionally select the text from the current cursor position to that next/previous character while extending the current selection.  
 Works with keybindings and macros.  You can use multiple characters in a keybinding or macro.  
 Works with multiple cursors.  
@@ -15,6 +15,8 @@ Works with multiple cursors.
        1. "^" : go to start of line,
        2. "$" : go to end of line, and
        3. "^$": go to next or previous empty line.
+       
+       4. "\\$": go to a literal "$".  See below for more on escaping these characters.
 ```
 
 See [Using regular expressions in a keybinding](#using-regular-expressions-in-a-keybinding).
@@ -98,13 +100,13 @@ Example of the three settings (in `settings.json`):
 
 * `jump-and-select.abortMultiMode` &nbsp; : &nbsp; Abort or leave `multiMode` - to return to regular text entry. No default keybinding.  Appears in the Command Palette (or Keyboard Shortcuts) as `Jump-Select: Abort MultiMode` when `multimode` is active.
 
-When you trigger one of these commands, you will not see the next character you type - instead that character will trigger a search for that character.  
+When you trigger one of these commands, you will not see the next character you type - instead that character will trigger a search for that character.  A space is considered a character (but oddly tabs are not?), as well as the regular expression characters `^` and `$`.  
 
 -------
 
 ### Example Keybindings
 
-You can change the default arguments, like `restrictSearch/putCursorForward/putCursorBackward` , in your `Settigns UI`.  Search for `jump-and-select` and you should see these options.
+You can change the default arguments, like `restrictSearch/putCursorForward/putCursorBackward` , in your `Settings UI`.  Search for `jump-and-select` and you should see these options.
 
 You can set the command arguments like this in your `keybindings.json` and these will override the settings defaults for these keybindings:  
 
@@ -221,7 +223,7 @@ Another example, using a combination of `jump-and-select.jumpBackwardSelectMulti
 }
 ```
 
-<img src="https://github.com/ArturoDent/jump-and-select/blob/main/images/jumpSelectionExpandEmptyLine.gif?raw=true" width="500" height="100" alt="Error message when fail to exit MultiMode"/>
+<img src="https://github.com/ArturoDent/jump-and-select/blob/main/images/jumpSelectionExpandEmptyLine.gif?raw=true" width="800" height="300" alt="Error message when fail to exit MultiMode"/>
 
 -------------
 
@@ -298,14 +300,17 @@ The arguments `putCursorForward` or `putCursorBackward` are ignored when using `
 ```jsonc
 {
   "key": "alt+p",
-  "command": "jump-and-select.jumpForwardSelect",
+  "command": "jump-and-select.jumpForwardSelect",  // and try the other commands
   "args": {
+    
     "text": "^",
     // "text": "$", 
     // "text": "^$", 
+    
+    "restrictSearch": "document"
+    // "restrictSearch": "line"
   },
-  "restrictSearch": "document"
-  // "restrictSearch": "line"
+  // "when": ""
 }
 ```
 
@@ -315,17 +320,24 @@ to see how they work in action.
 
 ## StatusBar colors
 
-Color options for the StatusBarItem are very limited.  Right now you can use these settings:
+Color options for the StatusBarItem are very limited.  Right now these are the settings you can modify:
 
 ```jsonc
 "workbench.colorCustomizations": {
 
-  "statusBarItem.errorBackground": "#fff",   // yes, errorBackground is the only background color supported
-  "statusBarItem.errorForeground": "#000",
-  "statusBarItem.hoverBackground": "#ff0000",
+   // errorBackground and warningBackground are the only background colors supported by vscode for statusBarItems
+   // this extension uses the errorBackground (warning was not originally supported)
+   
+  "statusBarItem.errorBackground": "#fff",            // default is red
+  "statusBarItem.errorForeground": "#000",            // default is white
   
-  "statusBarItem.prominentBackground": "#ff0000",
-  "statusBarItem.prominentForeground": "#fff",
+  "statusBarItem.errorHoverBackground": "#000",       // affects the error statusBarItems only
+  "statusBarItem.errorHoverForeground": "#ff0000",    // affects the error statusBarItems only
+  
+  // or
+  
+  "statusBarItem.hoverBackground": "#000",            // affects all statusBarItems
+  "statusBarItem.hoverForeground": "#fff",            // affects all statusBarItems
 }
 ```
 
@@ -371,14 +383,15 @@ The options take precedence in that order: 1 > 2 > 3.  All the options have defa
 
 This extension may not play well with vim or neovim or similar due to registering the same `'type'` command as those extensions do.  However, this extension disposes of that binding immediately after typing one character so it may not be an issue...  
 
+For some unknown reason, tabs (`\t`) are not considered a typed character and don't work.  Spaces do work though.  
+
 ## TODO  
   
 [&emsp; ] - Explore allowing input via 'paste' as well.  
 [&emsp; ] - Consider adding a setting to make queries be interpreted as regex's in keybindings.  
-[&emsp; ] - Consider cancelling multiMode if change editor.
-[&emsp; ] - Should there be a notification for no match on a query?
-[&emsp; ] - Should before/afterCharacter do something for "^$"?
-[&emsp; ] - Make `\\^` and `\\$` in a keybinding be interpreted as literals, not regular expressions.
+[&emsp; ] - Consider cancelling multiMode if change editor.  
+[&emsp; ] - Should there be a notification for no match on a query?  
+[&emsp; ] - Should before/afterCharacter do something for `^$`?  
 
 ## Release Notes  
 
@@ -403,6 +416,7 @@ This extension may not play well with vim or neovim or similar due to registerin
 &emsp;&emsp; &emsp; Prevent multiple StatusBarItems.  
 &emsp;&emsp; &emsp; Swapped JSON Schema `keybindings.schema.jsonc` for CompletionProvider.  
 &emsp;&emsp; &emsp; Better `^`, `$`, and `^$` selecting in keybindings.  
+&emsp;&emsp; &emsp; Enable literal `\\^`and `\\$` in keybindings.  
 &emsp;&emsp; &emsp; Simplified the QueryObject and made a default noMatch.  
 &emsp;&emsp; &emsp; Use EOL length for forward ^/$ for multi-OS lengths.  
 &emsp;&emsp; &emsp; Made a Discussions item for new features.

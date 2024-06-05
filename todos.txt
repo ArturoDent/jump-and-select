@@ -1,47 +1,9 @@
-																															PASTE
+Doesn't seem necessary:
 
-	exports.jumpForward = function (restrict, after) {
-
-		// arg === { text: "a" }
-
-		// let typeDisposable7 = vscode.commands.registerCommand('paste', arg => {
-		// 	console.log(arg);   // works, and can do 'type' as well
-		// });
-
-		let typeDisposable = vscode.commands.registerCommand('type', arg => {
-		}
-	}
-
-	---------------------------------------------------------------------------------------------------------
-
-
-	// consider a select next/previous occurrence command (if multiple characters)
-
-	----------------------------------------------------------------------------------------------
-
-A setting to disable the StatusBarItem ?
-
-	----------------------------------------------------------------------------
-
-		Setting to never show infoMessage ?
-
-
-			// let showMessage = 'true';  // global
-			if (showMessage !== 'never') showMessage = 'true';
-
-		// if (showMessage === 'true') vscode.window
-    //     .showInformationMessage("Press Return to exit jump command.",
-    //       ...['Okay, show next time.', 'Don\'t show again.'])   // two buttons
-    //     .then(selected => {
-		// 			if (selected === 'Okay, show next time.') showMessage = 'false';
-		// 			else showMessage = 'never';
-    //     });
-
---------------------------------------------------------------------------
-
-		completionProvider for keybindings
-
-		// {[^{]*jump-and-select\.(?<command>.*?)\\",?[^"]*(?<args>"args\\"[^}]*})
-		// const regexp = new RegExp(/jump-and-select\.(?<command>[^"]+)/, 'g');
-		// const regexp = new RegExp(/{[^{]*jump-and-select\.(?<command>.*?)\\",?[^"]*(?<args>"args\\"[^}]*})/, 'g');
-		// const matches = [...document.getText(curStartRange).matchAll(regexp)];
+    "jsonValidation": [
+      // the below dow not seem necessary - in addition to "%APP_SETTINGS_HOME%/keybindings.json"
+      {
+        "fileMatch": "%APP_SETTINGS_HOME%/profiles/*/keybindings.json",
+        "url": "./src/keybindings.schema.jsonc"
+      }
+    ]

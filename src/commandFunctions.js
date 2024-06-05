@@ -31,6 +31,7 @@ async function typeRegisterAndRunJumps(restrictSearch, putCursor, multiMode, sel
 
   global.typeDisposable = vscode.commands.registerCommand('type', async arg => {
 
+    // a tab is not considered a character for some reason, spaces are though
     if (arg.text === '\n') {
       await statusBarItem.hide();
       await global.typeDisposable.dispose();
@@ -259,7 +260,7 @@ function getQueryLineIndexForward(cursorPosition, query, putCursorForward, selec
     let matchPos;
 
     if (putCursorForward === 'beforeCharacter') {
-      matchPos = restOfLine.substring(query.length).indexOf(query);  // if no match
+      matchPos = restOfLine.substring(query.length).indexOf(query);
       if (matchPos !== -1) matchPos += query.length;
     }
     else matchPos = restOfLine.indexOf(query);
@@ -418,7 +419,10 @@ function getQueryDocumentIndexForward(cursorPosition, query, putCursorForward, s
 
     let matchPos;
 
-    if (putCursorForward === 'beforeCharacter') matchPos = restOfText.substring(query.length).indexOf(query) + query.length;
+    if (putCursorForward === 'beforeCharacter') {
+      matchPos = restOfText.substring(query.length).indexOf(query);
+      if (matchPos !== -1) matchPos += query.length;
+    }
     else matchPos = restOfText.indexOf(query);
 
     if (matchPos !== -1) {
