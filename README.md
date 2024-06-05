@@ -7,7 +7,7 @@ Works with multiple cursors.
 
 -----------
 
-## Notable Changes in v0.1.0
+## Notable Changes in v0.5.0
 
 * In a keybinding, the `text` argument will NOT be interpreted as a regular expression.  This is a **Breaking Change**.  But these limited `text` queries are allowed:  
 
@@ -407,7 +407,7 @@ For some unknown reason, tabs (`\t`) are not considered a typed character and do
 &emsp;&emsp; &emsp; Renamed to `restrictSearch` setting and `args` option.  
 &emsp;&emsp; &emsp; Added intellisense/completions for keybindings, including `args` options.
 
-* 0.1.0&emsp; Removed regex interpretation of keybinding queries.  
+* 0.5.0&emsp; Removed regex interpretation of keybinding queries.  
 &emsp;&emsp; &emsp; Selections are continuous - extending each current selection, even with `^/$/^$`.  
 &emsp;&emsp; &emsp; Make all jumps reveal - at bottom.  
 &emsp;&emsp; &emsp; Fix putCursorForward/Backward if next to a match.  
