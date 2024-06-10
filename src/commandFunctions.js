@@ -32,7 +32,7 @@ async function typeRegisterAndRunJumps(restrictSearch, putCursor, multiMode, sel
   global.typeDisposable = vscode.commands.registerCommand('type', async arg => {
 
     // a tab is not considered a character for some reason, spaces are though
-    if (arg.text === '\n') {
+    if (arg.text === '\n') {       // escape doesn't produce an arg
       await statusBarItem.hide();
       await global.typeDisposable.dispose();
       return;
@@ -42,6 +42,10 @@ async function typeRegisterAndRunJumps(restrictSearch, putCursor, multiMode, sel
     if (!multiMode) await global.typeDisposable.dispose();
   });
 }
+
+// vscode.commands.executeCommand(
+//   'default:type', { text: args.text }
+// );
 
 
 /**
@@ -87,7 +91,7 @@ exports.jumpBackward = async function (restrictSearch, putCursor, kbText, multiM
     _jumpBackward(restrictSearch, putCursor, kbText, select);
     await typeRegisterAndRunJumps(restrictSearch, putCursor, multiMode, select, _jumpBackward);
   }
-
+  // TODO: these could be simplified
   else await typeRegisterAndRunJumps(restrictSearch, putCursor, multiMode, select, _jumpBackward);
 };
 

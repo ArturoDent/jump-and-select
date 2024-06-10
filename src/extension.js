@@ -15,7 +15,7 @@ async function activate(context) {
 	let restrict             =   _getRestrictSetting();
 	let putCursorForward     =   _getCusorPlacementForwardSetting();
 	let putCursorBackward    =   _getCusorPlacementBackwardSetting();
-
+  
     // below is handled by JSONSchema now
       // const providers = require('./completionProvider');
       // providers.makeKeybindingsCompletionProvider(context);
