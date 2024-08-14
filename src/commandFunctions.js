@@ -509,9 +509,9 @@ function getQueryDocumentIndexBackward(cursorPosition, query, purCursorBackward,
   let curStartRange;
 
   if (!selection.isReversed)
-    curStartRange = new vscode.Range(selection.anchor, firstLine.range.end);  // to end of file from the anchor
+    curStartRange = new vscode.Range(selection.anchor, firstLine.range.start);  // to end of file from the anchor
   else
-    curStartRange = new vscode.Range(cursorPosition, firstLine.range.end);  // to the end of the file from the cursor
+    curStartRange = new vscode.Range(cursorPosition, firstLine.range.start);  // to the start of the file from the cursor
 
   startText = document.getText(curStartRange);
 
