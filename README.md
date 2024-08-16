@@ -414,11 +414,14 @@ For some unknown reason, tabs (`\t`) are not considered a typed character and do
 &emsp;&emsp; &emsp; Make the StatusBarItem show immediately.  
 &emsp;&emsp; &emsp; Add `Abort MultiMode` command.  In Command Palette and clicking the StatusBarItem.  
 &emsp;&emsp; &emsp; Prevent multiple StatusBarItems.  
-&emsp;&emsp; &emsp; Swapped JSON Schema `keybindings.schema.jsonc` for CompletionProvider.  
+&emsp;&emsp; &emsp; Swapped JSON Schema `keybindings.schema.jsonc` instead of CompletionProvider.  
 &emsp;&emsp; &emsp; Better `^`, `$`, and `^$` selecting in keybindings.  
 &emsp;&emsp; &emsp; Enable literal `\\^`and `\\$` in keybindings.  
 &emsp;&emsp; &emsp; Simplified the QueryObject and made a default noMatch.  
 &emsp;&emsp; &emsp; Use EOL length for forward ^/$ for multi-OS lengths.  
 &emsp;&emsp; &emsp; Made a Discussions item for new features.
+
+* 0.5.2&emsp; Fix backwards bug not using start of first line.
+* 0.5.3&emsp; empty line (^$) jumps work in files that DON'T normalize \n to \r\n.
 
 -----------------------------------------------------------------------------------------------------------
