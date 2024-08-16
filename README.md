@@ -422,6 +422,7 @@ For some unknown reason, tabs (`\t`) are not considered a typed character and do
 &emsp;&emsp; &emsp; Made a Discussions item for new features.
 
 * 0.5.2&emsp; Fix backwards bug not using start of first line.
-* 0.5.3&emsp; empty line (^$) jumps work in files that DON'T normalize \n to \r\n.
+* 0.5.3&emsp; empty line (^$) jumps work in files that DON'T normalize \n to \r\n - specific settings-type files.
+* 0.5.4&emsp; empty line (^$) "fix" - just check for existence of \r\n in tthe file to set which regex to use.
 
 -----------------------------------------------------------------------------------------------------------

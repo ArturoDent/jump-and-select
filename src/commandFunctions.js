@@ -390,16 +390,19 @@ function getQueryDocumentIndexForward(cursorPosition, query, putCursorForward, s
 
     let regexp;
     
+    if (restOfText.includes('\r\n')) regexp = new RegExp('^(?!\n)$(?!\n)', 'gm');
+    else regexp = new RegExp('^$', 'gm');  // these use \n only
+    
     // below are a problem because vscode getText() does not include \r\n, only \n
     // C:\Users\Mark\OneDrive\Test Bed\.vscode\tasks.json
     // C:\Users\Mark\AppData\Roaming\Code\User\snippets\myGlobal-snippets.code-snippets
     
-    const tasks = document.uri.path.endsWith('.vscode/tasks.json');
-    const codeSnippets = (document.languageId === 'snippets' && path.extname(document.uri.fsPath) === '.code-snippets');    
-    const keybindings = (document.uri.scheme === 'vscode-userdata' && path.basename(document.uri.fsPath) === 'keybindings.json');
+    // const tasks = document.uri.path.endsWith('.vscode/tasks.json');
+    // const codeSnippets = (document.languageId === 'snippets' && path.extname(document.uri.fsPath) === '.code-snippets');    
+    // const keybindings = (document.uri.scheme === 'vscode-userdata' && path.basename(document.uri.fsPath) === 'keybindings.json');
     
-    if (tasks || codeSnippets || keybindings) regexp = new RegExp('^$', 'gm');  // these use \n only
-    else regexp = new RegExp('^(?!\n)$(?!\n)', 'gm');
+    // if (tasks || codeSnippets || keybindings) regexp = new RegExp('^$', 'gm');  // these use \n only
+    // else regexp = new RegExp('^(?!\n)$(?!\n)', 'gm');
     
     const matches = [...restOfText.matchAll(regexp)];
     if (matches.length && matches[0].index === 0) matches.shift();
@@ -596,16 +599,20 @@ function getQueryDocumentIndexBackward(cursorPosition, query, purCursorBackward,
     
     let regexp;
     
+    // should this be document.getText() or startText
+    if (startText.includes('\r\n')) regexp = new RegExp('^(?!\n)$(?!\n)', 'gm');
+    else regexp = new RegExp('^$', 'gm');  // these use \n only
+    
     // below are a problem because vscode getText() does not include \r\n, only \n
     // C:\Users\Mark\OneDrive\Test Bed\.vscode\tasks.json
     // C:\Users\Mark\AppData\Roaming\Code\User\snippets\myGlobal-snippets.code-snippets
     
-    const tasks = document.uri.path.endsWith('.vscode/tasks.json');
-    const codeSnippets = (document.languageId === 'snippets' && path.extname(document.uri.fsPath) === '.code-snippets');    
-    const keybindings = (document.uri.scheme === 'vscode-userdata' && path.basename(document.uri.fsPath) === 'keybindings.json');
+    // const tasks = document.uri.path.endsWith('.vscode/tasks.json');
+    // const codeSnippets = (document.languageId === 'snippets' && path.extname(document.uri.fsPath) === '.code-snippets');    
+    // const keybindings = (document.uri.scheme === 'vscode-userdata' && path.basename(document.uri.fsPath) === 'keybindings.json');
     
-    if (tasks || codeSnippets || keybindings) regexp = new RegExp('^$', 'gm');  // uses \n only
-    else regexp = new RegExp('^(?!\n)$(?!\n)', 'gm');
+    // if (tasks || codeSnippets || keybindings) regexp = new RegExp('^$', 'gm');  // uses \n only
+    // else regexp = new RegExp('^(?!\n)$(?!\n)', 'gm');
     
     const matches = Array.from(startText.matchAll(regexp));
 
