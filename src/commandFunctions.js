@@ -1,6 +1,4 @@
-const vscode = require('vscode');
-const path = require('path');
-
+const { commands, window, Range, Position, Selection, EndOfLine, TextEditorRevealType } = require('vscode');
 const statusBarItem = require('./statusBar');
 
 var global = Function('return this')();  // used for global.typeDisposable
@@ -12,17 +10,13 @@ var global = Function('return this')();  // used for global.typeDisposable
  * @typedef  {Object} QueryObject
  * @property {Number} queryIndex  - index of query character in line or document from cursor
  */
-
-// if used a regex match, might need matchLength again
-//  * @property {Number} matchLength - the length of the match, esp. useful for regexp's
-
-const noMatchQueryObject = { queryIndex: -1 };
+const noMatchQueryObject = { queryIndex: -1};
 
 // -------------------------------------------------------------------------------------------
 
 /**
  * Register the 'type' command and run runJump() in it.
- * 
+ *
  * @param {string} restrictSearch - search forward in current line or document
  * @param {string} putCursor - move cursor before/after character typed
  * @param {boolean} multiMode - in MultiMode?
@@ -31,7 +25,7 @@ const noMatchQueryObject = { queryIndex: -1 };
  */
 async function typeRegisterAndRunJumps(restrictSearch, putCursor, multiMode, select, runJump) {
 
-  global.typeDisposable = vscode.commands.registerCommand('type', async arg => {
+  global.typeDisposable = commands.registerCommand('type', async arg => {
 
     // a tab is not considered a character for some reason, spaces are though
     if (arg.text === '\n') {       // escape doesn't produce an arg
@@ -60,7 +54,7 @@ async function typeRegisterAndRunJumps(restrictSearch, putCursor, multiMode, sel
  */
 exports.jumpForward = async function (restrictSearch, putCursor, kbText, multiMode, select) {
 
-  if (multiMode && !global.statusBarItemVisible) await statusBarItem.show();
+  if (multiMode && !global.statusBarItemVisible) await statusBarItem.show("forward");
 
   // kbText = triggered via a keybinding with a text arg
   if (kbText && !multiMode) _jumpForward(restrictSearch, putCursor, kbText, select);
@@ -84,7 +78,7 @@ exports.jumpForward = async function (restrictSearch, putCursor, kbText, multiMo
  */
 exports.jumpBackward = async function (restrictSearch, putCursor, kbText, multiMode, select) {
 
-  if (multiMode && !global.statusBarItemVisible) await statusBarItem.show();
+  if (multiMode && !global.statusBarItemVisible) await statusBarItem.show("backward");
 
   // kbText = triggered via a keybinding with a text arg
   if (kbText && !multiMode) _jumpBackward(restrictSearch, putCursor, kbText, select);
@@ -107,25 +101,34 @@ exports.jumpBackward = async function (restrictSearch, putCursor, kbText, multiM
  */
 function _jumpForward(restrictSearch, putCursorForward, query, select) {
 
-  if (!vscode.window.activeTextEditor) {
+  if (!window.activeTextEditor) {
     return;
   }
-  const editor = vscode.window.activeTextEditor;
+  const editor = window.activeTextEditor;
   const selections = editor.selections;
-  
+
   let matchLength = query.length;
-  if      (query === "^" || query === "$" || query === "^$") matchLength = 0;
+  // if      (query === "^" || query === "$" || query === "^$") matchLength = 0;
+  // else if (query === "\\^" || query === "\\$") matchLength = 1;
+
+  let unescapedQuery = query.replaceAll(/\\([$^])/g, '$1');  // remove all double-escapes
+  matchLength = unescapedQuery.length;
+  
+  // if      (query === "^" || query === "$" || query === "^$") matchLength = 0;
+  if      (query === "^" || query === "$") matchLength = 0;
   else if (query === "\\^" || query === "\\$") matchLength = 1;
   
-  let unescapedQuery = query.replaceAll(/\\([$^])/g, '$1');  // remove all double-escapes
-  matchLength = unescapedQuery.length;  
+  if (query === "^$") {
+    if (editor.document.eol === EndOfLine.CRLF) matchLength = 2;
+    else if (editor.document.eol === EndOfLine.LF) matchLength = 1; // correct for Mac/Linux LF
+  }
 
   selections.forEach((selection, index) => {
 
     let curPos = selection.active;  // cursor Position
     let curAnchor = selection.anchor; // start of selection - not where the cursor is
     let cursorIndex = editor.document.offsetAt(curPos);
-    
+
     let queryObject;
 
     if (restrictSearch === "line") {
@@ -148,15 +151,15 @@ function _jumpForward(restrictSearch, putCursorForward, query, select) {
       // if selection.anchor > selection.active, swap them = selection.isReversed = true
       if (select && selections[index].isReversed) curAnchor = selections[index].active;
 
-      if (select) selections[index] = new vscode.Selection(curAnchor, queryPos);
-      else selections[index] = new vscode.Selection(queryPos, queryPos);
+      if (select) selections[index] = new Selection(curAnchor, queryPos);
+      else selections[index] = new Selection(queryPos, queryPos);
     }
   });
 
   editor.selections = selections;
 
-  // editor.revealRange(new vscode.Range(selections[0].anchor, selections[0].active), vscode.TextEditorRevealType.InCenterIfOutsideViewport);     // InCenterIfOutsideViewport = 2
-  editor.revealRange(new vscode.Range(selections[0].anchor, selections[0].active), vscode.TextEditorRevealType.Default);  // Default = 0, as little scrolling as necessary
+  // editor.revealRange(new Range(selections[0].anchor, selections[0].active), vscode.TextEditorRevealType.InCenterIfOutsideViewport);     // InCenterIfOutsideViewport = 2
+  editor.revealRange(new Range(selections[0].anchor, selections[0].active), TextEditorRevealType.Default);  // Default = 0, as little scrolling as necessary
 }
 
 
@@ -165,22 +168,29 @@ function _jumpForward(restrictSearch, putCursorForward, query, select) {
  * @param {string} restrictSearch
  * @param {string} putCursorBackward
  * @param {string} query - keybinding arg or next character typed
- * @param {boolean} select 
+ * @param {boolean} select
  */
 function _jumpBackward(restrictSearch, putCursorBackward, query, select) {
 
-  if (!vscode.window.activeTextEditor) {
+  if (!window.activeTextEditor) {
     return;
   }
-  const editor = vscode.window.activeTextEditor;
+  const editor = window.activeTextEditor;
   const selections = editor.selections;
-  
+
   let matchLength = query.length;
-  if      (query === "^" || query === "$" || query === "^$") matchLength = 0;
+
+  let unescapedQuery = query.replaceAll(/\\([$^])/g, '$1');  // remove all double-escapes
+  matchLength = unescapedQuery.length;
+  
+  // if      (query === "^" || query === "$" || query === "^$") matchLength = 0;
+  if      (query === "^" || query === "$") matchLength = 0;
   else if (query === "\\^" || query === "\\$") matchLength = 1;
   
-  let unescapedQuery = query.replaceAll(/\\([$^])/g, '$1');  // remove all double-escapes
-  matchLength = unescapedQuery.length;  
+  if (query === "^$") {
+    if (editor.document.eol === EndOfLine.CRLF) matchLength = 2;
+    else if (editor.document.eol === EndOfLine.LF) matchLength = 1; // correct for Mac/Linux LF
+  }
 
   selections.forEach((selection, index) => {
 
@@ -201,63 +211,63 @@ function _jumpBackward(restrictSearch, putCursorBackward, query, select) {
       let queryPos;
 
       if (putCursorBackward === "afterCharacter") {
-        if (restrictSearch === "line") queryPos = new vscode.Position(curPos.line, queryObject.queryIndex + matchLength);
+        if (restrictSearch === "line") queryPos = new Position(curPos.line, queryObject.queryIndex + matchLength);
         else queryPos = editor.document.positionAt(queryObject.queryIndex + matchLength);
       }
-      else {   // (putCursorBackward === "afterCharacter") effective default
-        if (restrictSearch === "line") queryPos = new vscode.Position(curPos.line, queryObject.queryIndex);
+      else {   // (putCursorBackward === "beforeCharacter") effective default
+        if (restrictSearch === "line") queryPos = new Position(curPos.line, queryObject.queryIndex);
         else queryPos = editor.document.positionAt(queryObject.queryIndex);
       }
 
       // if selection.anchor < selection.active, swap them = selection.isReversed = false
       if (select && !selections[index].isReversed) curAnchor = selections[index].active;
 
-      if (select) selections[index] = new vscode.Selection(curAnchor, queryPos);
-      else selections[index] = new vscode.Selection(queryPos, queryPos);
+      if (select) selections[index] = new Selection(curAnchor, queryPos);
+      else selections[index] = new Selection(queryPos, queryPos);
     }
   });
 
   editor.selections = selections;
 
-  // editor.revealRange(new vscode.Range(selections[0].anchor, selections[0].active), vscode.TextEditorRevealType.InCenterIfOutsideViewport);     // InCenterIfOutsideViewport = 2
-  editor.revealRange(new vscode.Range(selections[0].anchor, selections[0].active), vscode.TextEditorRevealType.Default);  // Default = 0, as little scrolling as necessary
+  // editor.revealRange(new Range(selections[0].anchor, selections[0].active), TextEditorRevealType.InCenterIfOutsideViewport);     // InCenterIfOutsideViewport = 2
+  editor.revealRange(new Range(selections[0].anchor, selections[0].active), TextEditorRevealType.Default);  // Default = 0, as little scrolling as necessary
 }
 
 
 /**
  *  Get the next query position restricted to the line of the cursor
- * @param {vscode.Position} cursorPosition
+ * @param {Position} cursorPosition
  * @param {string} query - the typed character to match
  * @param {string} putCursorForward - before/afterCharacter
- * @param {vscode.Selection} selection
+ * @param {Selection} selection
  * @returns {QueryObject}
  */
 function getQueryLineIndexForward(cursorPosition, query, putCursorForward, selection) {
 
-  const document = vscode.window.activeTextEditor?.document;
+  const document = window.activeTextEditor?.document;
 
   let queryIndex = -1;  // the match point as an index of the line
   let restOfLine = '';
 
-  if (!document) return noMatchQueryObject;    
-    
+  if (!document) return noMatchQueryObject;
+
   const line = document.lineAt(cursorPosition.line);
   const lineRange = line.range;
 
   if (query === '$') {
-    
+
     // leave as is
     // if (selection.isReversed && !selection.isSingleLine) {    // a reversed multiline selection
-    
-    return { queryIndex: lineRange.end.character - cursorPosition.character };
+
+    return { queryIndex: lineRange.end.character - cursorPosition.character};
   }
-  
+
   if (query === '\\^') query = '^';
   else if (query === '\\$') query = '$';
-  
+
   // $ must precede ^ in the [], else interpreted as not ^
   query = query.replaceAll(/\\([$^])/g, '$1');  // remove all double-escapes
-  
+
   if (selection.isReversed) restOfLine = line.text.substring(selection.anchor.character);
   else restOfLine = line.text.substring(cursorPosition.character);
 
@@ -267,6 +277,7 @@ function getQueryLineIndexForward(cursorPosition, query, putCursorForward, selec
 
     if (putCursorForward === 'beforeCharacter') {
       matchPos = restOfLine.substring(query.length).indexOf(query);
+      // TODO: if matchPos = 0/1, skip to next?
       if (matchPos !== -1) matchPos += query.length;
     }
     else matchPos = restOfLine.indexOf(query);
@@ -282,21 +293,21 @@ function getQueryLineIndexForward(cursorPosition, query, putCursorForward, selec
 
 /**
  * Get the next query position anywhere in the document after the cursor
- * @param {vscode.Position} cursorPosition
+ * @param {Position} cursorPosition
  * @param {string} query - the typed character to match
  * @param {string} putCursorForward
- * @param {vscode.Selection} selection 
+ * @param {Selection} selection
  * @returns {QueryObject}
  */
 function getQueryDocumentIndexForward(cursorPosition, query, putCursorForward, selection) {
 
-  const document = vscode.window.activeTextEditor?.document;  // TODO: exclude schemes like vscode-data, etc.
+  const document = window.activeTextEditor?.document;  // TODO: exclude schemes like vscode-data, etc.
 
   let queryIndex = -1;
   let restOfText = '';
 
-  if (!document) return noMatchQueryObject; 
-  
+  if (!document) return noMatchQueryObject;
+
   let cursorIndex = document?.offsetAt(cursorPosition);
 
   if (query === '$') {  // this line end, if already at line end go to next line end
@@ -306,77 +317,75 @@ function getQueryDocumentIndexForward(cursorPosition, query, putCursorForward, s
     if (cursorPosition.line !== document.lineCount - 1) nextLine = document.lineAt(cursorPosition.line + 1);
 
     if (selection.isReversed && !selection.isSingleLine) {   // a reversed multiline selection
-      
+
       const lineOfSelectionEnd = document.lineAt(selection.end.line);
       let lineAfterSelectionEnd;
-      
+
       if (selection.end.line !== document.lineCount - 1) lineAfterSelectionEnd = document.lineAt(selection.end.line + 1);
       if (!lineAfterSelectionEnd) return noMatchQueryObject;
-    
-      // at end of line already (reverse selection) and there is a lineAfterSelectionEnd
-      if (selection.end.isEqual(lineOfSelectionEnd.range.end)) {
-        
-        let eolLength = 1;
-        if (document.eol === vscode.EndOfLine.CRLF) eolLength = 2; // correct for Windows CRLF
-        // else if (document.eol === vscode.EndOfLine.LF) eolLength = 1; // correct for Mac/etc. LF
-
-        return {
-          queryIndex: document.offsetAt(selection.end) - document.offsetAt(selection.start) + lineAfterSelectionEnd.text.length + eolLength
-        };
-      }
-      else if (cursorPosition.isBefore(lineRange.end)) {       // not at end of currentLine 
-        // range of the selection union with the line where the selection ends
-        const rangeToEnd = selection.union(lineOfSelectionEnd.range);
-        return { queryIndex: document.offsetAt(rangeToEnd.end) - document.offsetAt(rangeToEnd.start) };
-      }
+      const rangeToEnd = selection.union(lineOfSelectionEnd.range);
+      
+      return {
+        queryIndex: document.offsetAt(rangeToEnd.end) - document.offsetAt(rangeToEnd.start)
+      };
     }
     else {
       // at end of line already and there is a nextLine
       if (cursorPosition.isEqual(lineRange.end) && nextLine) {
-          
+
         let eolLength = 1;
-        if (document.eol === vscode.EndOfLine.CRLF) eolLength = 2; // correct for Windows CRLF
-        // else if (document.eol === vscode.EndOfLine.LF) eolLength = 1; // correct for Mac/etc. LF
+        if (document.eol === EndOfLine.CRLF) eolLength = 2; // correct for Windows CRLF
+        // else if (document.eol === EndOfLine.LF) eolLength = 1; // correct for Mac/etc. LF
 
         return { queryIndex: nextLine.range.end.character + eolLength };
       }
-      else if (cursorPosition.isBefore(lineRange.end))        // not at end of currentLine 
+      else if (cursorPosition.isBefore(lineRange.end))        // not at end of currentLine
         return { queryIndex: lineRange.end.character - cursorPosition.character };
     }
   }
   else if (query === '^') {
     // if there is a next line, go to its start
     let nextLine;
-    
+
     if (cursorPosition.line !== document.lineCount - 1) nextLine = document.lineAt(cursorPosition.line + 1);
     if (!nextLine) return noMatchQueryObject;
-    
+
     const line = document.lineAt(cursorPosition.line);
     const lineRange = line.range;
 
     let eolLength = 1;
-    if (document.eol === vscode.EndOfLine.CRLF) eolLength = 2; // correct for Windows CRLF
-    // else if (document.eol === vscode.EndOfLine.LF) eolLength = 1; // correct for Mac/etc. LF
+    if (document.eol === EndOfLine.CRLF) eolLength = 2; // correct for Windows CRLF
+    // else if (document.eol === EndOfLine.LF) eolLength = 1; // correct for Mac/Linux LF
 
     if (nextLine) {
-      if (selection.isReversed && !selection.isSingleLine) {        // a reversed multiline selection   
+      if (selection.isReversed && !selection.isSingleLine) {  // a reversed multiline selection
+        
+        const lineAfterSelectionEnd = document.lineAt(selection.end.line + 1);
+        if (!lineAfterSelectionEnd) return noMatchQueryObject;
+        
         if (cursorPosition.isBefore(lineRange.end)) {
-          
-          const lineAfterSelectionEnd = document.lineAt(selection.end.line + 1);
-          if (!lineAfterSelectionEnd) return noMatchQueryObject;
-          
+
+          // const lineAfterSelectionEnd = document.lineAt(selection.end.line + 1);
+          // if (!lineAfterSelectionEnd) return noMatchQueryObject;
+
           // go to start of the line after the end of the selection
           return { queryIndex: document.offsetAt(lineAfterSelectionEnd.range.start) - cursorIndex };
         }
         
+        if (cursorPosition.isEqual(lineRange.end))  // go to end of current line and add eolLength
+          return {  queryIndex: document.offsetAt(lineAfterSelectionEnd.range.start) - cursorIndex };
+
         else if (cursorPosition.isEqual(lineRange.start)) // already at start of the current line
           // go to end of current line and add eolLength
           return { queryIndex: line.text.length + eolLength };
       }
       else {  // !selection.isReversed
         if (cursorPosition.isBefore(lineRange.end))  // go to end of current line and add eolLength
-          return {  queryIndex: line.text.length - cursorPosition.character + eolLength };
-      
+          return { queryIndex: line.text.length - cursorPosition.character + eolLength };
+        
+        if (cursorPosition.isEqual(lineRange.end))  // go to end of current line and add eolLength
+          return {  queryIndex: eolLength };
+
         else if (cursorPosition.isEqual(lineRange.start)) // already at start of the current line
                       // go to end of current line and add eolLength
           return { queryIndex: line.text.length + eolLength };
@@ -385,55 +394,54 @@ function getQueryDocumentIndexForward(cursorPosition, query, putCursorForward, s
   }
   else if (query === '^$') {  // next empty line
     let lastLine = document.lineAt(document.lineCount - 1);
-    let curEndRange = new vscode.Range(cursorPosition, lastLine.range.end);  // to end of file
+    let curEndRange = new Range(cursorPosition, lastLine.range.end);  // to end of file
     restOfText = document.getText(curEndRange);
 
-    let regexp;
-    
-    if (restOfText.includes('\r\n')) regexp = new RegExp('^(?!\n)$(?!\n)', 'gm');
-    else regexp = new RegExp('^$', 'gm');  // these use \n only
-    
+    // regexp = new RegExp('(?<=\n)(?!.)|(?<!.)(?=\n)|(?<=\n)\n', 'g');  // these use \n only
+    // regexp = new RegExp('(?<=\\n)(?!.)|(?<!.)(?=(\\r)?\\n)|(?<=\\n)(\\r)?\\n', 'g');  // these use \n only
+
+    // if (restOfText.includes('\r\n')) regexp = new RegExp('^(?!\n)$(?!\n)', 'gm');
+    // else regexp = new RegExp('^$', 'gm');  // these use \n only
+
     // below are a problem because vscode getText() does not include \r\n, only \n
     // C:\Users\Mark\OneDrive\Test Bed\.vscode\tasks.json
     // C:\Users\Mark\AppData\Roaming\Code\User\snippets\myGlobal-snippets.code-snippets
-    
+
     // const tasks = document.uri.path.endsWith('.vscode/tasks.json');
-    // const codeSnippets = (document.languageId === 'snippets' && path.extname(document.uri.fsPath) === '.code-snippets');    
+    // const codeSnippets = (document.languageId === 'snippets' && path.extname(document.uri.fsPath) === '.code-snippets');
     // const keybindings = (document.uri.scheme === 'vscode-userdata' && path.basename(document.uri.fsPath) === 'keybindings.json');
-    
+
     // if (tasks || codeSnippets || keybindings) regexp = new RegExp('^$', 'gm');  // these use \n only
     // else regexp = new RegExp('^(?!\n)$(?!\n)', 'gm');
+
     
-    const matches = [...restOfText.matchAll(regexp)];
-    if (matches.length && matches[0].index === 0) matches.shift();
+    // if (document.eol === EndOfLine.CRLF) new RegExp("(?<=\r?\n)\r?\n"); // correct for Windows CRLF
+    // else if (document.eol === EndOfLine.LF) new RegExp("(?<=\n)\n"); // correct for Mac/etc. LF
     
-    if (matches.length) {
-      queryIndex = Number(matches[0].index);
+    const match = restOfText.match(/(?<=\r?\n)\r?\n/);  // use EOL?
+    
+    if (!match) {
+      if (restOfText.endsWith('\r\n')) queryIndex = restOfText.lastIndexOf('\r\n') + 2;
+      else if (restOfText.endsWith('\n')) queryIndex = restOfText.lastIndexOf('\n') + 1;
+      else return { queryIndex };
     }
 
-    if (queryIndex === 0) {  // if on an empty line already
-      if (matches.length > 1) {
-        queryIndex = Number(matches[1].index);
-      }
-    }
-
-    return { queryIndex };
+    return { queryIndex: match?.index || queryIndex };
   }
-  
+
   if (query === '\\^') query = '^';
   else if (query === '\\$') query = '$';
-  
+
   // $ must precede ^ in the [], else interpreted as not ^
   query = query.replaceAll(/\\([$^])/g, '$1');  // remove all double-escapes
 
   let curEndRange;
-
   let lastLine = document.lineAt(document.lineCount - 1);
 
   if (selection.isReversed)
-    curEndRange = new vscode.Range(selection.anchor, lastLine.range.end);  // to end of file from the anchor
+    curEndRange = new Range(selection.anchor, lastLine.range.end);  // to end of file from the anchor
   else
-    curEndRange = new vscode.Range(cursorPosition, lastLine.range.end);  // to the end of the file from the cursor
+    curEndRange = new Range(cursorPosition, lastLine.range.end);  // to the end of the file from the cursor
 
   restOfText = document.getText(curEndRange);
 
@@ -443,6 +451,7 @@ function getQueryDocumentIndexForward(cursorPosition, query, putCursorForward, s
 
     if (putCursorForward === 'beforeCharacter') {
       matchPos = restOfText.substring(query.length).indexOf(query);
+      // TODO: if matchPos = 0/1, skip to next?
       if (matchPos !== -1) matchPos += query.length;
     }
     else matchPos = restOfText.indexOf(query);
@@ -459,26 +468,26 @@ function getQueryDocumentIndexForward(cursorPosition, query, putCursorForward, s
 
 /**
  * Get the previous query position restricted to the line of the cursor
- * @param {vscode.Position} cursorPosition
+ * @param {Position} cursorPosition
  * @param {string} query - the typed character to match
  * @param {string} purCursorBackward - before/afterCharacter
- * @param {vscode.Selection} selection 
+ * @param {Selection} selection
  * @returns {QueryObject}
  */
 function getQueryLineIndexBackward(cursorPosition, query, purCursorBackward, selection) {
 
-  const document = vscode.window.activeTextEditor?.document;
+  const document = window.activeTextEditor?.document;
 
   let queryIndex = -1;
   let startOfLine = '';
 
-  if (!document) return noMatchQueryObject; 
+  if (!document) return noMatchQueryObject;
 
   if (query === '^') return { queryIndex: 0 };
-  
+
   if (query === '\\^') query = '^';
   else if (query === '\\$') query = '$';
-  
+
   // $ must precede ^ in the [], else interpreted as not ^
   query = query.replaceAll(/\\([$^])/g, '$1');  // remove all double-escapes
 
@@ -492,6 +501,7 @@ function getQueryLineIndexBackward(cursorPosition, query, purCursorBackward, sel
 
     if (purCursorBackward === 'afterCharacter') {
       const end = startOfLine.length - query.length;
+      // TODO: if matchPos = 0/1, skip to previous?
       matchPos = startOfLine.substring(0, end).lastIndexOf(query);
     }
     else matchPos = startOfLine.lastIndexOf(query);  // is case-sensitive
@@ -506,48 +516,48 @@ function getQueryLineIndexBackward(cursorPosition, query, purCursorBackward, sel
 
 /**
  * Get the previous query position anywhere in the document prior to cursor
- * @param {vscode.Position} cursorPosition
+ * @param {Position} cursorPosition
  * @param {string} query - the typed character to match
  * @param {string} purCursorBackward - before/afterCharacter
- * @param {vscode.Selection} selection 
+ * @param {Selection} selection
  * @returns {QueryObject}
  */
 function getQueryDocumentIndexBackward(cursorPosition, query, purCursorBackward, selection) {
 
-  const document = vscode.window.activeTextEditor?.document;
+  const document = window.activeTextEditor?.document;
 
   let queryIndex = -1;
   let startText = '';
 
-  if (!document) return noMatchQueryObject; 
-  
+  if (!document) return noMatchQueryObject;
+
   let cursorIndex = document?.offsetAt(cursorPosition);
 
   const firstLine = document.lineAt(0);
   let curStartRange;
 
   if (!selection.isReversed)
-    curStartRange = new vscode.Range(selection.anchor, firstLine.range.start);  // to end of file from the anchor
+    curStartRange = new Range(selection.anchor, firstLine.range.start);  // to end of file from the anchor
   else
-    curStartRange = new vscode.Range(cursorPosition, firstLine.range.start);  // to the start of the file from the cursor
+    curStartRange = new Range(cursorPosition, firstLine.range.start);  // to the start of the file from the cursor
 
   startText = document.getText(curStartRange);
 
   if (query === '$') {   // go to end of previous line
     if (!selection.isReversed && !selection.isSingleLine) {    // a !reversed multiline selection
-    
+
       let selectionStartPreviousLine;
-        
+
       const selectionStartLine = document.lineAt(selection.start);
       if (selectionStartLine.range.start.line !== 0)
-        selectionStartPreviousLine = document.lineAt(new vscode.Position(selectionStartLine.range.start.line - 1, 0));
-      else return noMatchQueryObject;      
-      
+        selectionStartPreviousLine = document.lineAt(new Position(selectionStartLine.range.start.line - 1, 0));
+      else return noMatchQueryObject;
+
       if (selectionStartPreviousLine) {
 
         if (selection.start.isEqual(selectionStartLine.range.end)) {  // at end of line already and there is a selectionStartPreviousLine
           return { queryIndex: document.offsetAt(selectionStartLine.range.end) };
-        }        
+        }
         else if (selection.start.isBefore(selectionStartLine.range.end)) {      // not at end of selection start line
           return { queryIndex: document.offsetAt(selectionStartPreviousLine.range.end) };
         }
@@ -557,8 +567,8 @@ function getQueryDocumentIndexBackward(cursorPosition, query, purCursorBackward,
       let previousLine;
       if (cursorPosition.line !== 0) previousLine = document.lineAt(cursorPosition.line - 1);
       else return noMatchQueryObject;
-      
-      const previousLineRange = previousLine.range;  
+
+      const previousLineRange = previousLine.range;
       return { queryIndex: document.offsetAt(previousLineRange.end) };
     }
   }
@@ -566,19 +576,19 @@ function getQueryDocumentIndexBackward(cursorPosition, query, purCursorBackward,
   else if (query === '^') {  // go to start of current line, if already there go to start of previous line
     const currentLine = document.lineAt(cursorPosition.line);
     const currentLineRange = currentLine.range;
-    
+
     let previousLine;
     if (cursorPosition.line !== 0) previousLine = document.lineAt(cursorPosition.line - 1);
     else return noMatchQueryObject
-    
+
     if (!selection.isReversed && !selection.isSingleLine) {    // a !reversed multiline selection
-      
+
       let selectionStartPreviousLine;
       const selectionStartLine = document.lineAt(selection.start);
-      
-      if (selectionStartLine.range.start.line !== 0) selectionStartPreviousLine = document.lineAt(new vscode.Position(selectionStartLine.range.start.line - 1, 0));
+
+      if (selectionStartLine.range.start.line !== 0) selectionStartPreviousLine = document.lineAt(new Position(selectionStartLine.range.start.line - 1, 0));
       else return noMatchQueryObject;
-      
+
       if (selection.start.isEqual(selectionStartLine.range.start) && selectionStartPreviousLine) {  // at start of line already and there is a previousLine
         return { queryIndex: document.offsetAt(selectionStartPreviousLine.range.start) };
       }
@@ -590,59 +600,86 @@ function getQueryDocumentIndexBackward(cursorPosition, query, purCursorBackward,
       if (cursorPosition.isEqual(currentLineRange.start) && previousLine) {  // at start of line already and there is a previousLine
         return { queryIndex: document.offsetAt(previousLine.range.start) };
       }
-      else if (cursorPosition.isAfter(currentLineRange.start))        // not at start of currentLine 
+      else if (cursorPosition.isAfter(currentLineRange.start))        // not at start of currentLine
         return { queryIndex: document.offsetAt(currentLineRange.start) };
     }
   }
 
   else if (query === '^$') {  // previous empty line
+
+    let queryLength = query.length;
+    // if (document.eol === EndOfLine.CRLF) { // correct for Windows CRLF
+    //   if (query === "^$") queryLength = 2;
+    // }
+    // else if (document.eol === EndOfLine.LF) queryLength = 1; // correct for Mac/Linux LF
     
-    let regexp;
+    if (query === "^$") {
+      if (document.eol === EndOfLine.CRLF) queryLength = 2;
+      else if (document.eol === EndOfLine.LF) queryLength = 1; // correct for Mac/Linux LF
+    }
     
-    // should this be document.getText() or startText
-    if (startText.includes('\r\n')) regexp = new RegExp('^(?!\n)$(?!\n)', 'gm');
-    else regexp = new RegExp('^$', 'gm');  // these use \n only
     
+    // if (startText.includes('\r\n')) regexp = new RegExp('^(?!\n)$(?!\n)', 'gm');
+    // else regexp = new RegExp('^$', 'gm');  // these use \n only
+
     // below are a problem because vscode getText() does not include \r\n, only \n
     // C:\Users\Mark\OneDrive\Test Bed\.vscode\tasks.json
     // C:\Users\Mark\AppData\Roaming\Code\User\snippets\myGlobal-snippets.code-snippets
-    
+
     // const tasks = document.uri.path.endsWith('.vscode/tasks.json');
-    // const codeSnippets = (document.languageId === 'snippets' && path.extname(document.uri.fsPath) === '.code-snippets');    
+    // const codeSnippets = (document.languageId === 'snippets' && path.extname(document.uri.fsPath) === '.code-snippets');
     // const keybindings = (document.uri.scheme === 'vscode-userdata' && path.basename(document.uri.fsPath) === 'keybindings.json');
-    
+
     // if (tasks || codeSnippets || keybindings) regexp = new RegExp('^$', 'gm');  // uses \n only
     // else regexp = new RegExp('^(?!\n)$(?!\n)', 'gm');
-    
-    const matches = Array.from(startText.matchAll(regexp));
+
+
+    const matches = [...startText.matchAll(/(?<=\r?\n)\r?\n/g)];
+
+    if (!matches.length) {
+      // these will always be 0 ?
+      // if (startText.startsWith('\r\n')) queryIndex = startText.indexOf('\r\n');
+      if (startText.startsWith('\r\n')) return { queryIndex: 0}; 
+      // else if (startText.startsWith('\n')) queryIndex = startText.indexOf('\n');
+      else if (startText.startsWith('\n')) return { queryIndex: 0};
+      else return { queryIndex };
+    }
 
     const lastIndex = matches?.at(-1)?.index ?? -1;
     const penultimateIndex = matches?.at(-2)?.index ?? -1;
 
-    // going backward and cursor at last match, skip and go to the penultimate match
-    if ((penultimateIndex !== -1) && (lastIndex !== -1) && (cursorIndex === lastIndex)) {
-      queryIndex = penultimateIndex;
+    // if putCursorBackward = afterCharacter, add match.length (\r\n or \n) to lastIndex
+    if (purCursorBackward === "afterCharacter") {
+      // // going backward and cursor at last match, skip and go to the penultimate match
+      if ((penultimateIndex !== -1) && (lastIndex !== -1) && (cursorIndex === lastIndex + queryLength)) {
+        queryIndex = penultimateIndex;
+      }
+      else if ((lastIndex !== -1) && (cursorIndex === lastIndex + queryLength)) {
+        queryIndex = 0;
+      }
+      else if (lastIndex !== -1) {
+        queryIndex = lastIndex;
+      }
     }
-    else if (lastIndex !== -1) {
-      queryIndex = lastIndex;
-    }
+    else queryIndex = lastIndex;
 
     return { queryIndex };
   }
-  
+
   if (query === '\\^') query = '^';
   else if (query === '\\$') query = '$';
-  
+
   // $ must precede ^ in the [], else interpreted as not ^
   query = query.replaceAll(/\\([$^])/g, '$1');  // remove all double-escapes
 
-  if (startText) {  // startText = '' if already at the start of the document 
+  if (startText) {  // startText = '' if already at the start of the document
 
     let matchPos;
 
     if (purCursorBackward === 'afterCharacter') {
       const end = startText.length - query.length;
       matchPos = startText.substring(0, end).lastIndexOf(query);
+      // TODO: if matchPos = 0/1, skip to previous?
     }
     else matchPos = startText.lastIndexOf(query);  // is case-sensitive
 

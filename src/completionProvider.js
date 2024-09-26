@@ -1,12 +1,12 @@
-const vscode = require('vscode');
+const { languages, Range, Position, CompletionItem, CompletionItemKind } = require('vscode');
 
 
 /**
  * @description - register a CompletionItemProvider for keybindings.json
- * @param {vscode.ExtensionContext} context
+ * @param { import("vscode").ExtensionContext} context
  */
 exports.makeKeybindingsCompletionProvider = function(context) {
-    const configCompletionProvider = vscode.languages.registerCompletionItemProvider (
+    const configCompletionProvider = languages.registerCompletionItemProvider (
       { pattern: '**/keybindings.json' },
       {
         provideCompletionItems(document, position) {
@@ -22,7 +22,7 @@ exports.makeKeybindingsCompletionProvider = function(context) {
 						// 	}
 						// }
 
-					const linePrefix = document.lineAt(position).text.substr(0, position.character);
+					const linePrefix = document.lineAt(position).text.substring(0, position.character);
 
 					// \t\t\t\"putCursorForward
 					// \t\t\t\"putCursor  // and fix range fro replacement
@@ -39,7 +39,7 @@ exports.makeKeybindingsCompletionProvider = function(context) {
 
 					// 'args' options keys intellisense/completions
 					const firstLine = document.lineAt(0);
-					let curStartRange = new vscode.Range(position, firstLine.range.start);
+					let curStartRange = new Range(position, firstLine.range.start);
 
 					const lastCommandIndex = document.getText(curStartRange).lastIndexOf("jump-and-select");
 					const commandLinePos = document.positionAt(lastCommandIndex);
@@ -56,10 +56,10 @@ exports.makeKeybindingsCompletionProvider = function(context) {
 					const argsStartingIndex = document.offsetAt(lineAfterCommand.range.start);
 					let lastLine = document.lineAt(document.lineCount - 1);
 
-					const argSearchRange = new vscode.Range(new vscode.Position(commandLinePos.line + 1, 0), lastLine.range.end);
+					const argSearchRange = new Range(new Position(commandLinePos.line + 1, 0), lastLine.range.end);
 					const argsClosingIndex = document.getText(argSearchRange).indexOf("}");
 
-					const argsRange = new vscode.Range(lineAfterCommand.range.end, document.positionAt(argsClosingIndex + argsStartingIndex + 1));
+					const argsRange = new Range(lineAfterCommand.range.end, document.positionAt(argsClosingIndex + argsStartingIndex + 1));
 					const argsText = document.getText(argsRange);
 
 					if (!argsRange.contains(position) || linePrefix.search(/^\s*"/m) === -1) return undefined;
@@ -113,15 +113,15 @@ exports.makeKeybindingsCompletionProvider = function(context) {
  * From a string input make a CompletionItemKind.Text
  *
  * @param {string} key
- * @param {vscode.Position} position
+ * @param {Position} position
  * @param {string} defaultValue - default value for this option
- * @returns {vscode.CompletionItem} - CompletionItemKind.Text
+ * @returns {CompletionItem} - CompletionItemKind.Text
  */
 function _makeCompletionItem(key, position, defaultValue) {
 
-	let item = new vscode.CompletionItem(key, vscode.CompletionItemKind.Property);
+	let item = new CompletionItem(key, CompletionItemKind.Property);
 
-	item.range = new vscode.Range(position, position);
+	item.range = new Range(position, position);
 
 	if (defaultValue) item.detail = `default: ${defaultValue}`;
   return item;
@@ -132,8 +132,8 @@ function _makeCompletionItem(key, position, defaultValue) {
  *
  * @param {string[]} directionArray - options for forward or backward commands
  * @param {string} argsText - text of the 'args' options:  "args": { .... }
- * @param {vscode.Position} position - cursor position
- * @returns {Array<vscode.CompletionItem>}
+ * @param {Position} position - cursor position
+ * @returns {Array<CompletionItem>}
  */
 function _filterCompletionsItemsNotUsed(directionArray, argsText, position) {
 
@@ -143,7 +143,7 @@ function _filterCompletionsItemsNotUsed(directionArray, argsText, position) {
 		"putCursorBackward": "beforeCharacter",
 		"restrictSearch": "document"
 	}
-  
+
   return directionArray
     .filter(option => argsText.search(new RegExp(`^[ \t]*"${ option }"`, "gm")) === -1)
     .map(option => {

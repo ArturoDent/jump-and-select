@@ -20,31 +20,27 @@
       ],
       "default": "document"
     },
-    "putCursorForward": {
-      "description": "Where to put the cursor after any jump. Default is 'beforeCharacter' - before the matched character.",
+    "cursorJump": {
       "type": "string",
       "enum": [
         "beforeCharacter",
         "afterCharacter"
       ],
-      "enumDescriptions": [
+      "markdownEnumDescriptions": [
         "On jump, cursor will be put before the matched character.",
         "On jump, cursor will be put after the matched character."
-      ],
-      "default": "beforeCharacter"
+      ]
     },
-    "putCursorBackward": {
-      "description": "Where to put the cursor after any jump. Default is 'beforeCharacter' - before the matched character.",
+    "cursorSelect": {
       "type": "string",
       "enum": [
         "beforeCharacter",
         "afterCharacter"
       ],
-      "enumDescriptions": [
-        "On jump, cursor will be put before the matched character.",
-        "On jump, cursor will be put after the matched character."
-      ],
-      "default": "beforeCharacter"
+      "markdownEnumDescriptions": [
+        "The selection will include the matched character.",
+        "The selection will NOT include the matched character."
+      ]
     }
   },
   "type": "array",
@@ -105,49 +101,38 @@
                   "const": "jump-and-select.jumpForward"
                 },
                 {
-                  "const": "jump-and-select.jumpForwardSelect"
+                  "const": "jump-and-select.jumpForwardMultiMode"
                 }
               ]
             }
           }
         },
+
         "then": {
           "properties": {
             "args": {
-              "type": "object"
-            }
-          },
-          "if": {
-            "$comment": "args is not required",
-            "properties": {
-              "args": {
-                "type": "object"
-              }
-            }
-          },
-          "then": {
-            "properties": {
-              "args": {
-                "required": [
-                  "text"
-                ],
-                "properties": {
-                  "text": {
-                    "description": "The text to find and jump forward to.",
-                    "$ref": "#/definitions/text"
-                  },
-                  "restrictSearch": {
-                    "$ref": "#/definitions/restrictSearch"
-                  },
-                  "putCursorForward": {
-                    "$ref": "#/definitions/putCursorForward"
-                  }
+
+              "additionalProperties": false,
+              "type": "object",
+
+              "properties": {
+
+                "text": {
+                  "description": "The text to find and jump forward to.",
+                  "$ref": "#/definitions/text"
                 },
-                "additionalProperties": false
+                "restrictSearch": {
+                  "$ref": "#/definitions/restrictSearch"
+                },
+                "putCursorOnForwardJump": {
+                  "description": "On a forward jump, put the cursor before or after the matched character.",
+                  "$ref": "#/definitions/cursorJump",
+                  "default": "beforeCharacter"
+                }
               }
             }
           }
-        }
+      }
       },
       {
         "if": {
@@ -155,10 +140,10 @@
             "command": {
               "anyOf": [
                 {
-                  "const": "jump-and-select.jumpForwardSelectMultiMode"
+                  "const": "jump-and-select.jumpForwardSelect"
                 },
                 {
-                  "const": "jump-and-select.jumpForwardMultiMode"
+                  "const": "jump-and-select.jumpForwardSelectMultiMode"
                 }
               ]
             }
@@ -167,33 +152,23 @@
         "then": {
           "properties": {
             "args": {
-              "type": "object"
-            }
-          },
-          "if": {
-            "$comment": "args is not required",
-            "properties": {
-              "args": {
-                "type": "object"
-              }
-            }
-          },
-          "then": {
-            "properties": {
-              "args": {
-                "properties": {
-                  "text": {
-                    "description": "The text to find and jump forward to.",
-                    "$ref": "#/definitions/text"
-                  },
-                  "restrictSearch": {
-                    "$ref": "#/definitions/restrictSearch"
-                  },
-                  "putCursorForward": {
-                    "$ref": "#/definitions/putCursorForward"
-                  }
+
+              "additionalProperties": false,
+
+              "properties": {
+
+                "text": {
+                  "description": "The text to find and jump forward to.",
+                  "$ref": "#/definitions/text"
                 },
-                "additionalProperties": false
+                "restrictSearch": {
+                  "$ref": "#/definitions/restrictSearch"
+                },
+                "putCursorOnForwardSelect": {
+                  "description": "On a forward select, extend the selection to before or after the matched character.",
+                  "$ref": "#/definitions/cursorSelect",
+                  "default": "afterCharacter"
+                }
               }
             }
           }
@@ -208,7 +183,7 @@
                   "const": "jump-and-select.jumpBackward"
                 },
                 {
-                  "const": "jump-and-select.jumpBackwardSelect"
+                  "const": "jump-and-select.jumpBackwardMultiMode"
                 }
               ]
             }
@@ -217,35 +192,23 @@
         "then": {
           "properties": {
             "args": {
-              "type": "object"
-            }
-          },
-          "if": {
-            "properties": {
-              "args": {
-                "type": "object"
-              }
-            }
-          },
-          "then": {
-            "properties": {
-              "args": {
-                "required": [
-                  "text"
-                ],
-                "properties": {
-                  "text": {
-                    "description": "The text to jump backward to",
-                    "$ref": "#/definitions/text"
-                  },
-                  "restrictSearch": {
-                    "$ref": "#/definitions/restrictSearch"
-                  },
-                  "putCursorBackward": {
-                    "$ref": "#/definitions/putCursorBackward"
-                  }
+
+              "additionalProperties": false,
+
+              "properties": {
+
+                "text": {
+                  "description": "The text to jump backward to",
+                  "$ref": "#/definitions/text"
                 },
-                "additionalProperties": false
+                "restrictSearch": {
+                  "$ref": "#/definitions/restrictSearch"
+                },
+                "putCursorOnBackwardJump": {
+                  "description": "On a backward jump, put the cursor before or after the matched character.",
+                  "$ref": "#/definitions/cursorJump",
+                  "default": "beforeCharacter"
+                }
               }
             }
           }
@@ -257,10 +220,10 @@
             "command": {
               "anyOf": [
                 {
-                  "const": "jump-and-select.jumpBackwardSelectMultiMode"
+                  "const": "jump-and-select.jumpBackwardSelect"
                 },
                 {
-                  "const": "jump-and-select.jumpBackwardMultiMode"
+                  "const": "jump-and-select.jumpBackwardSelectMultiMode"
                 }
               ]
             }
@@ -269,32 +232,23 @@
         "then": {
           "properties": {
             "args": {
-              "type": "object"
-            }
-          },
-          "if": {
-            "properties": {
-              "args": {
-                "type": "object"
-              }
-            }
-          },
-          "then": {
-            "properties": {
-              "args": {
-                "properties": {
-                  "text": {
-                    "description": "The text to jump backward to",
-                    "$ref": "#/definitions/text"
-                  },
-                  "restrictSearch": {
-                    "$ref": "#/definitions/restrictSearch"
-                  },
-                  "putCursorBackward": {
-                    "$ref": "#/definitions/putCursorBackward"
-                  }
+
+              "additionalProperties": false,
+
+              "properties": {
+
+                "text": {
+                  "description": "The text to jump backward to.",
+                  "$ref": "#/definitions/text"
                 },
-                "additionalProperties": false
+                "restrictSearch": {
+                  "$ref": "#/definitions/restrictSearch"
+                },
+                "putCursorOnBackwardSelect": {
+                  "description": "On a backward selection, extend the selection to before or after the matched character.",
+                  "$ref": "#/definitions/cursorSelect",
+                  "default": "beforeCharacter"
+                }
               }
             }
           }

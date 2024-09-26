@@ -7,9 +7,17 @@ Works with multiple cursors.
 
 -----------
 
+## Notable Changes in v0.6.0
+
+**Deprecated** : The settings `jump-and-select.restrictSearch`, `jump-and-select.putCursorForward` and `jump-and-select.putCursorBackward` are all deprecated.  They still work in your `settings.json` but do not show up in Settings UI.  Instead use this setting:
+
+```plaintext
+jump-and-select.defaults    // See more below in Settings.
+```
+
 ## Notable Changes in v0.5.0
 
-* In a keybinding, the `text` argument will NOT be interpreted as a regular expression.  This is a **Breaking Change**.  But these limited `text` queries are allowed:  
+* In a keybinding, the `text` argument will NOT be interpreted as a regular expression.  This is a **Breaking Change**.  But these limited `text` regular expression queries are allowed:  
 
 ```plaintext
        1. "^" : go to start of line,
@@ -41,7 +49,7 @@ See the [GitHub Discussions](https://github.com/ArturoDent/jump-and-select/discu
 
 <img src="https://github.com/ArturoDent/jump-and-select/blob/main/images/jumpIntro1.gif?raw=true" width="700" height="100" alt="Move cursors forward to next character"/>
 
-### Using `jump-and-select.jumpBackwardMultiMode` and `jump-and-select.jumpForwardMultiMode` commands:
+#### Using `jump-and-select.jumpBackwardMultiMode` and `jump-and-select.jumpForwardMultiMode` commands:
 
 <img src="https://github.com/ArturoDent/jump-and-select/blob/main/images/multiModeJumping.gif?raw=true" width="700" height="150" alt="Move cursors forward to next character"/>
 
@@ -53,38 +61,70 @@ See the [GitHub Discussions](https://github.com/ArturoDent/jump-and-select/discu
 
 > &emsp;&emsp;Searches are case-sensitive.
 
-* `jump-and-select.restrictSearch`  &emsp; :  &emsp; default = `"document"`
+* `jump-and-select.defaults`
+
+<div style="border: 1px solid; border-radius: 4px; width:fit-content;">
+
+| Setting                  | options                      | Default                     |
+|--------------------------|------------------------------|-----------------------------|
+| restrictSearch           | document/line                |document                     |
+|                          |                              |                             |
+| putCursorForwardJump     |beforeCharacter/afterCharacter|beforeCharacter              |
+| putCursorForwardSelect   |beforeCharacter/afterCharacter|afterCharacter               |
+|                          |                              |                             |
+| putCursorBackwardJump    |beforeCharacter/afterCharacter|beforeCharacter              |
+| putCursorBackwardSelect  |beforeCharacter/afterCharacte |beforeCharacter              |
+
+</div>
+<br/>
+
+
+
+* `restrictSearch`
 
 &emsp;&emsp;&emsp;&emsp; `"line"` &nbsp; &nbsp; : &nbsp; Move the cursor or select within the current line only  
 &emsp;&emsp;&emsp;&emsp; `"document` &nbsp;&nbsp;: &nbsp; Move the cursor or select within the entire document  
 
-* `jump-and-select.putCursorForward` &emsp; :  &emsp; default = `"beforeCharacter"`
+* `putCursorForwardJump`: cursor is moving forward or down in the document
 
-&emsp;&emsp;&emsp;&emsp; `"beforeCharacter"` &nbsp;:&nbsp;&nbsp; Move the cursor or select to before the next chosen character  
-&emsp;&emsp;&emsp;&emsp; `"afterCharacter"` &nbsp;&nbsp; :&nbsp;&nbsp; Move the cursor or select to after the next chosen character
+&emsp;&emsp;&emsp;&emsp; `"beforeCharacter"` &nbsp;:&nbsp;&nbsp; Move the cursor to before the next chosen character  
+&emsp;&emsp;&emsp;&emsp; `"afterCharacter"` &nbsp;&nbsp; :&nbsp;&nbsp; Move the cursor to after the next chosen character
 
-* `jump-and-select.putCursorBackward` &emsp; :  &emsp; default = `"beforeCharacter"`
+* `putCursorForwardSelect`: cursor and selection is moving forward or down in the document
 
-&emsp;&emsp;&emsp;&emsp; `"beforeCharacter"` &nbsp;:&nbsp;&nbsp; Move the cursor or select to before the previous chosen character  
-&emsp;&emsp;&emsp;&emsp; `"afterCharacter"` &nbsp;&nbsp; :&nbsp;&nbsp; Move the cursor or select to after the previous chosen character
+&emsp;&emsp;&emsp;&emsp; `"beforeCharacter"` &nbsp;:&nbsp;&nbsp; Select to before the previous chosen character  
+&emsp;&emsp;&emsp;&emsp; `"afterCharacter"` &nbsp;&nbsp; :&nbsp;&nbsp; Select to after the previous chosen character  
+
+* `putCursorBackwardJump`: cursor is moving backward or up in the document
+
+&emsp;&emsp;&emsp;&emsp; `"beforeCharacter"` &nbsp;:&nbsp;&nbsp; Move the cursor to before the next chosen character  
+&emsp;&emsp;&emsp;&emsp; `"afterCharacter"` &nbsp;&nbsp; :&nbsp;&nbsp; Move the cursor to after the next chosen character
+
+* `putCursorBackwardSelect`: cursor and selection is moving backward or up in the document
+
+&emsp;&emsp;&emsp;&emsp; `"beforeCharacter"` &nbsp;:&nbsp;&nbsp; Select to before the previous chosen character  
+&emsp;&emsp;&emsp;&emsp; `"afterCharacter"` &nbsp;&nbsp; :&nbsp;&nbsp; Select to after the previous chosen character
 
 Examples:  
 
-`"jump-and-select.putCursorForward": "beforeCharacter"`  if text is&nbsp; `|abcde|f` &nbsp;jumping forward from `a` to `f` would put the cursor before `f`.  
+`"putCursorForwardJump": "beforeCharacter"`  if text is&nbsp; `|abcde|f` &nbsp;jumping forward from `a` to `f` would put the cursor before `f`.  
 
-`"jump-and-select.putCursorForward": "afterCharacter"`  &nbsp; if text is&nbsp; `|abcdef|` &nbsp;jumping forward from `a` to `f` would put the cursor after `f`.  
+`"putCursorForwardJump": "afterCharacter"`  &nbsp; if text is&nbsp; `|abcdef|` &nbsp;jumping forward from `a` to `f` would put the cursor after `f`.  
 
 Selections will act the same way: either the selection will not include the chosen character (the one you type) or the selection will include that character.  
 
-Example of the three settings (in `settings.json`):  
+Example of modified settings (in `settings.json`) after setting the values in the Settings UI (search for "jump"):  
 
 ```jsonc
-  "jump-and-select.restrictSearch"        :      "line",
-  "jump-and-select.putCursorForward"      :      "beforeCharacter",
-  "jump-and-select.putCursorBackward"     :      "afterCharacter",
+  "jump-and-select.defaults": {
+    "putCursorOnForwardSelect": "beforeCharacter",
+    "putCursorOnBackwardJump": "afterCharacter"
+  }
 ```
 
 * Note: `beforeCharacter` should really be `beforeQuery` and `afterCharacter` should be `afterQuery`.  The original names are from a time when you could only input one typed character at a time.  But in the keybindings `text` argument you can have multiple characters like `howdy` or `abc\\$` and the cursor will go before or after that entire query.  So think of them as `beforeQuery` and `afterQuery` - which may be a single or multiple characters.
+
+There is a precedence to the option values.  Any option set in a keybinding takes precedence over the `jump-and-select.defaults` setting which takes precedence over the deprecated settings mentioned above.  
 
 -----------------  
 
@@ -128,20 +168,19 @@ You can set the command arguments like this in your `keybindings.json` and these
 
     "text": "hello",                           // no default
 
-    // "putCursorForward" is used if the command is 'jumpForward..."
-    // "putCursorForward": "afterCharacter"   // or "beforeCharacter"
+    // "putCursorForwardJump" is used if the command is 'jumpForward' or 'jumpForwardMultiMode'
+    // "putCursorForwardSelect" is used if the command is 'jumpForwardSelect' or 'jumpForwardSelectMultiMode'
     
-    // "putCursorBackward" is used if the command is 'jumpBackward..."
-    "putCursorBackward": "beforeCharacter",   // or "afterCharacter"
+    // "putCursorBackwardJump" is used if the command is 'jumpBackward' or 'jumpBackwardMultiMode'
+    "putCursorBackwardSelect": "beforeCharacter",   // or "afterCharacter"
 
     "restrictSearch": "document"              // or "line" to search in the current line only
   }
 }
 ```
 
-In this last example, you would use `putCursorBackward` and **not** `putCursorForward` because the command `jumpBackwardSelect` is jumping backward and thus `putCursorForward` is ignored.  For commands that are jumping forward use `putCursorForward`.  
+In this last example, you would use `putCursorBackwardSelect` and **not** `putCursorForwardSelect` because the command `jumpBackwardSelect` is jumping backward and thus `putCursorForwardSelect` is an error.  For commands that are jumping forward use `putCursorForwardJump` or `putCursorForwardSelect`.  
 
-The available `args` have the same names as the settings, like `"jump-and-select.putCursorForward"` minus the extension name prefix.  
 
 For more on using **[keybindings and macros](keybindings.md)**.  
 
@@ -194,14 +233,14 @@ Here is a single keybinding combining the two operations from above.
         "command": "jump-and-select.jumpBackwardSelect",
         "args": {
           "text": "(",
-          "putCursorBackward": "afterCharacter"
+          "putCursorBackwardSelect": "afterCharacter"
         }
       },
       {
         "command": "jump-and-select.jumpForwardSelect",
         "args": {
           "text": ")",
-          "putCursorBackward": "beforeCharacter"
+          "putCursorForwardSelect": "beforeCharacter"
         }
       }
     ]
@@ -239,7 +278,6 @@ With a `"text": ""` argument in a keybinding, you can only use these regular exp
     "text": "^",  // go to start of line
     // "text": "$",  // go to end of line
     // "text": "^$",  // go to next/previous empty line
-    // "putCursorBackward": "beforeCharacter",   // "putCursorBackward" is ignored when using ^, $ or ^$
     // "restrictSearch": "line"   // or document
   },
 }
@@ -292,8 +330,6 @@ A. **With one of the `jumpForward...` commands:**
 3. "^$" : nothing would happen.  Never leave the current line.  
 
 ---------
-
-The arguments `putCursorForward` or `putCursorBackward` are ignored when using `^`, `$` or `^$`.
 
 * Note: `^/$/^$` also work to expand existing selections.  It is easiest to set up a simple keybinding like
 
@@ -364,10 +400,11 @@ Also, when this selection searches forward on a line, it will do so **FROM** the
 We have seen that there are three possibilities for the options (like `"restrictSearch"` for example):  
 
 1.  options in a keybinding;
-2.  options in settings; and
-3.  no options in either (1) or (2).
+2.  options in settings;
+3.  and options in the deprecated settings;
+4.  no options in  (1), (2) or (3).
 
-The options take precedence in that order: 1 > 2 > 3.  All the options have defaults, so even in case (3) the default values will be applied.
+The options take precedence in that order: 1 > 2 > 3 > 4.  All the options have defaults, so even in case (4) the default values will be applied.
 
 ------------------
 
@@ -387,11 +424,10 @@ For some unknown reason, tabs (`\t`) are not considered a typed character and do
 
 ## TODO  
   
-[&emsp; ] - Explore allowing input via 'paste' as well.  
-[&emsp; ] - Consider adding a setting to make queries be interpreted as regex's in keybindings.  
-[&emsp; ] - Consider cancelling multiMode if change editor.  
-[&emsp; ] - Should there be a notification for no match on a query?  
-[&emsp; ] - Should before/afterCharacter do something for `^$`?  
+[  ] - Explore allowing input via 'paste' as well.  
+[  ] - Consider adding a setting to make queries be interpreted as regex's in keybindings.  
+[  ] - Consider cancelling multiMode if change editor.  
+[  ] - Should there be a notification for no match on a query?  
 
 ## Release Notes  
 
@@ -424,5 +460,11 @@ For some unknown reason, tabs (`\t`) are not considered a typed character and do
 * 0.5.2&emsp; Fix backwards bug not using start of first line.
 * 0.5.3&emsp; empty line (^$) jumps work in files that DON'T normalize \n to \r\n - specific settings-type files.
 * 0.5.4&emsp; empty line (^$) "fix" - just check for existence of \r\n in tthe file to set which regex to use.
+
+* 0.6.0&emsp; Deprecated all previous settings in favor of one `defaults`.  
+&emsp;&emsp; &emsp; Added a jump and a select version of each option.  
+&emsp;&emsp; &emsp; For "^$" just use /(?<=\r?\n)\r?\n/g)/ regex.  
+&emsp;&emsp; &emsp; Use more "editor.document.eol" for match and query lengths.  
+&emsp;&emsp; &emsp; Added configs.js with `defaults.restrictSearch ?? depRestrictSearch ?? "document"`, for example.  
 
 -----------------------------------------------------------------------------------------------------------

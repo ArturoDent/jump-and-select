@@ -1,31 +1,31 @@
 {
-	"name": "jump-and-select",
-	"displayName": "Jump and select",
-	"description": "Jump or move the cursor to next or previous chosen character(s) (with optional selection).",
-	"version": "0.5.4",
-	"publisher": "ArturoDent",
-	"preview": true,
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/ArturoDent/jump-and-select"
-	},
-	"license": "MIT",
-	"engines": {
-		"vscode": "^1.75.0"
-	},
-	"main": "./src/extension.js",
+  "name": "jump-and-select",
+  "displayName": "Jump and select",
+  "description": "Jump or move the cursor to next or previous chosen character(s) (with optional selection).",
+  "version": "0.6.0",
+  "publisher": "ArturoDent",
+  "preview": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ArturoDent/jump-and-select"
+  },
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "main": "./src/extension.js",
   "browser": "./src/extension.js",
-	"categories": [
-		"Other"
-	],
-	"keywords": [
-		"jump",
-		"move",
-		"cursor",
-		"select"
-	],
-	"activationEvents": [	],
-	"contributes": {
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "jump",
+    "move",
+    "cursor",
+    "select"
+  ],
+  "activationEvents": [ "onStartupFinished" ],
+  "contributes": {
     "jsonValidation": [
       {
         "fileMatch": "%APP_SETTINGS_HOME%/keybindings.json",
@@ -36,175 +36,241 @@
         "url": "./src/keybindings.schema.jsonc"
       }
     ],
-		"commands": [
-			{
-				"command": "jump-and-select.jumpForward",
-				"title": "Jump forward to next occurrence",
-				"category": "Jump-Select"
-			},
-			{
-				"command": "jump-and-select.jumpForwardSelect",
-				"title": "Select from cursor to next occurrence",
-				"category": "Jump-Select"
-			},
-			{
-				"command": "jump-and-select.jumpBackward",
-				"title": "Jump backward to previous occurrence",
-				"category": "Jump-Select"
-			},
-			{
-				"command": "jump-and-select.jumpBackwardSelect",
-				"title": "Select from cursor to previous occurrence",
-				"category": "Jump-Select"
-			},
-
-			{
-				"command": "jump-and-select.jumpForwardMultiMode",
-				"title": "Jump forward to next occurrence repeatedly",
-				"category": "Jump-Select"
-			},
-			{
-				"command": "jump-and-select.jumpForwardSelectMultiMode",
-				"title": "Select from cursor to next occurrence repeatedly",
-				"category": "Jump-Select"
-			},
-			{
-				"command": "jump-and-select.jumpBackwardMultiMode",
-				"title": "Jump backward to previous occurrence repeatedly",
-				"category": "Jump-Select"
-			},
-			{
-				"command": "jump-and-select.jumpBackwardSelectMultiMode",
-				"title": "Select from cursor to previous occurrence repeatedly",
-				"category": "Jump-Select"
-			},
+    "commands": [
       {
-				"command": "jump-and-select.abortMultiMode",
-				"title": "Abort MultiMode",
-				"category": "Jump-Select",
+        "command": "jump-and-select.jumpForward",
+        "title": "Jump forward to next occurrence",
+        "category": "Jump-Select"
+      },
+      {
+        "command": "jump-and-select.jumpForwardSelect",
+        "title": "Select from cursor to next occurrence",
+        "category": "Jump-Select"
+      },
+      {
+        "command": "jump-and-select.jumpBackward",
+        "title": "Jump backward to previous occurrence",
+        "category": "Jump-Select"
+      },
+      {
+        "command": "jump-and-select.jumpBackwardSelect",
+        "title": "Select from cursor to previous occurrence",
+        "category": "Jump-Select"
+      },
+
+      {
+        "command": "jump-and-select.jumpForwardMultiMode",
+        "title": "Jump forward to next occurrence repeatedly",
+        "category": "Jump-Select"
+      },
+      {
+        "command": "jump-and-select.jumpForwardSelectMultiMode",
+        "title": "Select from cursor to next occurrence repeatedly",
+        "category": "Jump-Select"
+      },
+      {
+        "command": "jump-and-select.jumpBackwardMultiMode",
+        "title": "Jump backward to previous occurrence repeatedly",
+        "category": "Jump-Select"
+      },
+      {
+        "command": "jump-and-select.jumpBackwardSelectMultiMode",
+        "title": "Select from cursor to previous occurrence repeatedly",
+        "category": "Jump-Select"
+      },
+      {
+        "command": "jump-and-select.abortMultiMode",
+        "title": "Abort MultiMode",
+        "category": "Jump-Select",
         "enablement": "jumpAndSelect.statusBarItem.visible"
       }
-		],
-		"configuration": [
-			{
-				"title": "jump-and-select",
-				"type":  "string",
-				"properties": {
-					"jump-and-select.restrictSearch": {
-						"type": "string",
-						"scope": "resource",
-						"enum": ["line", "document"],
-						"default": "document",
-						"enumDescriptions": [
-							"Jump or select only within the current line.",
-							"Jump or select to next/previous character across lines if necessary."
-						],
-						"description": "Should the cursor move or select restricted to current line or entire document."
-					}
-				}
-			},
-			{
-				"title": "jump-and-select",
-				"type":  "string",
-				"properties": {
-					"jump-and-select.putCursorForward": {
-						"type": "string",
-						"scope": "resource",
-						"enum": ["beforeCharacter", "afterCharacter"],
-						"default": "beforeCharacter",
-						"enumDescriptions": [
-							"Cursor or selection moves to before next entered character.",
-							"Cursor or selection moves to after next entered character."
-						],
-						"description": "Should the cursor move or select to or after the next chosen character."
-					}
-				}
-			},
-			{
-				"title": "jump-and-select",
-				"type":  "string",
-				"properties": {
-					"jump-and-select.putCursorBackward": {
-						"type": "string",
-						"scope": "resource",
-						"enum": ["beforeCharacter", "afterCharacter"],
-						"default": "beforeCharacter",
-						"enumDescriptions": [
-							"Cursor or selection moves to before previous entered character.",
-							"Cursor or selection moves to after previous entered character."
-						],
-						"description": "Should the cursor move or select to or after the previous chosen character."
-					}
-				}
-			}
-		],
-		"keybindings": [
-			{
-				"command": "jump-and-select.jumpForward",
-				"key": "alt+f",
-				"mac": "alt+f",
-				"when": "editorTextFocus && !editorReadonly",
-        "required": ["text", "direction"]
-			},
-			{
-				"command": "jump-and-select.jumpForwardSelect",
-				"key": "shift+alt+f",
-				"mac": "shift+alt+f",
-				"when": "editorTextFocus && !editorReadonly"
-			},
-			{
-				"command": "jump-and-select.jumpBackward",
-				"key": "alt+b",
-				"mac": "alt+b",
-				"when": "editorTextFocus && !editorReadonly"
-			},
-			{
-				"command": "jump-and-select.jumpBackwardSelect",
-				"key": "shift+alt+b",
-				"mac": "shift+alt+b",
-				"when": "editorTextFocus && !editorReadonly"
-			},
+    ],
+    "configuration": [
+      {
+        "title": "Jump-and-Select",
+        "additionalProperties": false,
 
-			{
-				"command": "jump-and-select.jumpForwardMultiMode",
-				"key": "alt+m alt+f",
-				"mac": "alt+m alt+f",
-				"when": "editorTextFocus && !editorReadonly"
-			},
-			{
-				"command": "jump-and-select.jumpForwardSelectMultiMode",
-				"key": "shift+alt+m shift+alt+f",
-				"mac": "shift+alt+m shift+alt+f",
-				"when": "editorTextFocus && !editorReadonly"
-			},
-			{
-				"command": "jump-and-select.jumpBackwardMultiMode",
-				"key": "alt+m alt+b",
-				"mac": "alt+m alt+b",
-				"when": "editorTextFocus && !editorReadonly"
-			},
-			{
-				"command": "jump-and-select.jumpBackwardSelectMultiMode",
-				"key": "shift+alt+m shift+alt+b",
-				"mac": "shift+alt+m shift+alt+b",
-				"when": "editorTextFocus && !editorReadonly"
-			}
-		]
-	},
-	"scripts": {
-		"lint": "eslint .",
-		"pretest": "npm run lint",
-		"test": "node ./test/runTest.js"
-	},
-	"devDependencies": {
-		"@types/glob": "^7.1.1",
-		"@types/mocha": "^7.0.2",
-		"@types/node": "^13.13.44",
-		"@types/vscode": "^1.53.0",
-		"eslint": "^6.8.0",
-		"glob": "^7.1.6",
-		"mocha": "^7.1.2",
-		"typescript": "^3.8.3",
-		"vscode-test": "^1.3.0"
-	}
+        "properties": {
+
+          "jump-and-select.defaults": {
+
+            "markdownDescription": "Defaults to be used unless overridden in keybindings.",
+            "type": "object",
+            "scope": "resource",
+            "additionalProperties": false,
+            "properties": {
+              "restrictSearch": {
+                "order": 0,
+                "type": "string",
+                "scope": "resource",
+                "enum": [ "line", "document" ],
+                "default": "document",
+                "enumDescriptions": [
+                  "Jump or select only within the current line.",
+                  "Jump or select to next/previous character across lines if necessary."
+                ],
+                "description": "Should the cursor move or select restricted to current line or entire document."
+              },
+              "putCursorOnForwardJump": {
+                "description": "Where to put the cursor after the forward jump to the typed character.",
+                "order": 1,
+                "type": "string",
+                "scope": "resource",
+                "enum": [ "beforeCharacter", "afterCharacter" ],
+                "default": "beforeCharacter",
+                "enumDescriptions": [
+                  "Cursor moves to before the next entered character.",
+                  "Cursor moves to after the next entered character."
+                ]
+              },
+              "putCursorOnForwardSelect": {
+                "description": "Should the forward selection **include** the next chosen character.",
+                "order": 2,
+                "type": "string",
+                "scope": "resource",
+                "enum": [ "beforeCharacter", "afterCharacter" ],
+                "default": "afterCharacter",
+                "enumDescriptions": [
+                  "Cursor or selection moves to before next entered character.",
+                  "Cursor or selection moves to after next entered character."
+                ]
+              },
+              "putCursorOnBackwardJump": {
+                "description": "Where to put the cursor after the backward jump to the typed character.",
+                "type": "string",
+                "order": 3,
+                "scope": "resource",
+                "enum": [ "beforeCharacter", "afterCharacter" ],
+                "default": "beforeCharacter",
+                "enumDescriptions": [
+                  "Cursor moves to before the previous entered character.",
+                  "Cursor moves to after the previous entered character."
+                ]
+              },
+              "putCursorOnBackwardSelect": {
+                "description": "Should the backward selection **include** the next chosen character.",
+                "type": "string",
+                "order": 4,
+                "scope": "resource",
+                "enum": [ "beforeCharacter", "afterCharacter" ],
+                "default": "afterCharacter",
+                "enumDescriptions": [
+                  "Cursor or selection moves to before previous entered character.",
+                  "Cursor or selection moves to after previous entered character."
+                ]
+              }
+            }
+          },
+          "jump-and-select.restrictSearch": {
+            "type": "string",
+            "scope": "resource",
+            "enum": [ "line", "document" ],
+            "default": "document",
+            "enumDescriptions": [
+              "Jump or select only within the current line.",
+              "Jump or select to next/previous character across lines if necessary."
+            ],
+            "description": "Should the cursor move or select restricted to current line or entire document.",
+            "markdownDeprecationMessage": "**Deprecated**: Please use `#jump-and-select.defaults#` instead.",
+            "deprecationMessage": "Deprecated: Please use jump-and-select.defaults instead."
+          },
+          "jump-and-select.putCursorForward": {
+            "markdownDescription": "Where to put the cursor after the forward jump to the typed character.",
+            "markdownDeprecationMessage": "**Deprecated**: Please use `#jump-and-select.defaults#` instead.",
+            "deprecationMessage": "Deprecated: Please use jump-and-select.defaults instead.",
+            "type": "string",
+            "scope": "resource",
+            "enum": [ "beforeCharacter", "afterCharacter", null ],
+            "$comment": "removed default: beforeCharacter",
+            "default": null,
+            "markdownEnumDescriptions": [
+              "Cursor moves to before the next entered character.",
+              "Cursor moves to after the next entered character."
+            ]
+          },
+          "jump-and-select.putCursorBackward": {
+            "markdownDescription": "Where to put the cursor after the backward jump to the typed character.",
+            "markdownDeprecationMessage": "**Deprecated**: Please use `#jump-and-select.defaults#` instead.",
+            "deprecationMessage": "Deprecated: Please use jump-and-select.defaults instead.",
+            "type": "string",
+            "scope": "resource",
+            "enum": [ "beforeCharacter", "afterCharacter", null ],
+            "default": null,
+            "$comment": "removed default: beforeCharacter",
+            "markdownEnumDescriptions": [
+              "Cursor moves to before the next entered character.",
+              "Cursor moves to after the next entered character."
+            ]
+          }
+        }
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "jump-and-select.jumpForward",
+        "key": "alt+f",
+        "mac": "alt+f",
+        "when": "editorTextFocus && !editorReadonly"
+      },
+      {
+        "command": "jump-and-select.jumpForwardSelect",
+        "key": "shift+alt+f",
+        "mac": "shift+alt+f",
+        "when": "editorTextFocus && !editorReadonly"
+      },
+      {
+        "command": "jump-and-select.jumpBackward",
+        "key": "alt+b",
+        "mac": "alt+b",
+        "when": "editorTextFocus && !editorReadonly"
+      },
+      {
+        "command": "jump-and-select.jumpBackwardSelect",
+        "key": "shift+alt+b",
+        "mac": "shift+alt+b",
+        "when": "editorTextFocus && !editorReadonly"
+      },
+
+      {
+        "command": "jump-and-select.jumpForwardMultiMode",
+        "key": "alt+m alt+f",
+        "mac": "alt+m alt+f",
+        "when": "editorTextFocus && !editorReadonly"
+      },
+      {
+        "command": "jump-and-select.jumpForwardSelectMultiMode",
+        "key": "shift+alt+m shift+alt+f",
+        "mac": "shift+alt+m shift+alt+f",
+        "when": "editorTextFocus && !editorReadonly"
+      },
+      {
+        "command": "jump-and-select.jumpBackwardMultiMode",
+        "key": "alt+m alt+b",
+        "mac": "alt+m alt+b",
+        "when": "editorTextFocus && !editorReadonly"
+      },
+      {
+        "command": "jump-and-select.jumpBackwardSelectMultiMode",
+        "key": "shift+alt+m shift+alt+b",
+        "mac": "shift+alt+m shift+alt+b",
+        "when": "editorTextFocus && !editorReadonly"
+      }
+    ]
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "pretest": "npm run lint",
+    "test": "node ./test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/glob": "^7.1.1",
+    "@types/mocha": "^7.0.2",
+    "@types/node": "^13.13.44",
+    "@types/vscode": "^1.53.0",
+    "eslint": "^6.8.0",
+    "glob": "^7.1.6",
+    "mocha": "^7.1.2",
+    "typescript": "^3.8.3",
+    "vscode-test": "^1.3.0"
+  }
 }
