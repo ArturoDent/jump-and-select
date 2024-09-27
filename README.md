@@ -19,7 +19,7 @@ are all deprecated.  They still work in your `settings.json` but do not show up 
 
 * jump-and-select.defaults    // See more below in Settings.
 
-<img src="https://github.com/ArturoDent/jump-and-select/blob/main/images/settingsUIgif?raw=true" width="600" height="450" alt="Move cursors forward to next character"/>
+<img src="https://github.com/ArturoDent/jump-and-select/blob/main/images/settingsUI.gif?raw=true" width="800" height="450" alt="defaults setting in the Settings UI "/>
 
 ## Notable Changes in v0.5.0
 
