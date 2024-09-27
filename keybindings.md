@@ -20,7 +20,7 @@ We have already seen simple keybindings like
 }
 ```
 
-<img src="https://github.com/ArturoDent/jump-and-select/blob/main/images/keybindingCompletions.gif?raw=true" width="850" height="200" alt="Intellisense completion for keybindings"/>
+<img src="https://github.com/ArturoDent/jump-and-select/blob/main/images/keybindingCompletions.gif?raw=true" width="850" height="350" alt="Intellisense completion for keybindings"/>
 
 ## multiMode keybindings do not need to have a `text` argument
 
