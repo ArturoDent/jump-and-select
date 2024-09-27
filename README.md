@@ -9,11 +9,15 @@ Works with multiple cursors.
 
 ## Notable Changes in v0.6.0
 
-**Deprecated** : The settings `jump-and-select.restrictSearch`, `jump-and-select.putCursorForward` and `jump-and-select.putCursorBackward` are all deprecated.  They still work in your `settings.json` but do not show up in Settings UI.  Instead use this setting:
+**Deprecated** : The settings  
 
-```plaintext
-jump-and-select.defaults    // See more below in Settings.
-```
+`jump-and-select.restrictSearch`,  
+`jump-and-select.putCursorForward` and  
+`jump-and-select.putCursorBackward`  
+
+are all deprecated.  They still work in your `settings.json` but do not show up in Settings UI.  Instead use this setting:
+
+* jump-and-select.defaults    // See more below in Settings.
 
 ## Notable Changes in v0.5.0
 
@@ -77,8 +81,6 @@ See the [GitHub Discussions](https://github.com/ArturoDent/jump-and-select/discu
 
 </div>
 <br/>
-
-
 
 * `restrictSearch`
 
@@ -146,7 +148,7 @@ When you trigger one of these commands, you will not see the next character you 
 
 ### Example Keybindings
 
-You can change the default arguments, like `restrictSearch/putCursorForward/putCursorBackward` , in your `Settings UI`.  Search for `jump-and-select` and you should see these options.
+You can change the default arguments, like `restrictSearch/putCursorForwardJump/putCursorBackwardJump`/etc , in your `Settings UI`.  Search for `jump-and-select` and you should see these options.
 
 You can set the command arguments like this in your `keybindings.json` and these will override the settings defaults for these keybindings:  
 
@@ -180,7 +182,6 @@ You can set the command arguments like this in your `keybindings.json` and these
 ```
 
 In this last example, you would use `putCursorBackwardSelect` and **not** `putCursorForwardSelect` because the command `jumpBackwardSelect` is jumping backward and thus `putCursorForwardSelect` is an error.  For commands that are jumping forward use `putCursorForwardJump` or `putCursorForwardSelect`.  
-
 
 For more on using **[keybindings and macros](keybindings.md)**.  
 
@@ -331,7 +332,7 @@ A. **With one of the `jumpForward...` commands:**
 
 ---------
 
-* Note: `^/$/^$` also work to expand existing selections.  It is easiest to set up a simple keybinding like
+* Note: `^` or `$` or `^$` also work to expand existing selections.  It is easiest to set up a simple keybinding like
 
 ```jsonc
 {
@@ -343,7 +344,7 @@ A. **With one of the `jumpForward...` commands:**
     // "text": "$", 
     // "text": "^$", 
     
-    "restrictSearch": "document"
+    "restrictSearch": "document"  // the default so not necessary
     // "restrictSearch": "line"
   },
   // "when": ""
@@ -455,11 +456,10 @@ For some unknown reason, tabs (`\t`) are not considered a typed character and do
 &emsp;&emsp; &emsp; Enable literal `\\^`and `\\$` in keybindings.  
 &emsp;&emsp; &emsp; Simplified the QueryObject and made a default noMatch.  
 &emsp;&emsp; &emsp; Use EOL length for forward ^/$ for multi-OS lengths.  
-&emsp;&emsp; &emsp; Made a Discussions item for new features.
-
-* 0.5.2&emsp; Fix backwards bug not using start of first line.
-* 0.5.3&emsp; empty line (^$) jumps work in files that DON'T normalize \n to \r\n - specific settings-type files.
-* 0.5.4&emsp; empty line (^$) "fix" - just check for existence of \r\n in tthe file to set which regex to use.
+&emsp;&emsp; &emsp; Made a Discussions item for new features.  
+0.5.2&emsp; Fix backwards bug not using start of first line.  
+0.5.3&emsp; empty line (^$) jumps work in files that DON'T normalize \n to \r\n - specific settings-type files.  
+0.5.4&emsp; empty line (^$) "fix" - just check for existence of \r\n in tthe file to set which regex to use.  
 
 * 0.6.0&emsp; Deprecated all previous settings in favor of one `defaults`.  
 &emsp;&emsp; &emsp; Added a jump and a select version of each option.  

@@ -14,7 +14,7 @@ We have already seen simple keybindings like
   "command": "jump-and-select.jumpForward",
   "args": {                             // an example using "args"
     "text": "}",
-    "putCursorforward": "afterCharacter",
+    "putCursorForwardJump": "afterCharacter",
     "restrictSearch": "document"
   }
 }
@@ -42,7 +42,7 @@ But non-multiMode commands do require a `text` argument as it makes no sense to 
   "command": "jump-and-select.jumpForwardMultiMode",
   "args": {
     // "text": "}",   // the 'text' argument is NOT required here
-    "putCursorforward": "afterCharacter",
+    "putCursorForwardJump": "afterCharacter",
     "restrictSearch": "document"
   }
 }
@@ -62,7 +62,7 @@ Using the built-in command: `runCommands` you can chain together this extension'
         "command": "jump-and-select.jumpBackward",
         "args": {
           "text": "{",
-          "putCursorBackward": "afterCharacter",
+          "putCursorBackwardJump": "afterCharacter",
           "restrictSearch": "document"
         }
       },
@@ -70,7 +70,7 @@ Using the built-in command: `runCommands` you can chain together this extension'
         "command": "jump-and-select.jumpForwardSelect",
         "args": {
           "text": "}",
-          "putCursorForward": "beforeCharacter",
+          "putCursorForwardSelect": "beforeCharacter",
           "restrictSearch": "document"
         }
       },
