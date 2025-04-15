@@ -34,7 +34,7 @@ async function typeRegisterAndRunJumps(restrictSearch, putCursor, multiMode, sel
       return;
     }
 
-    runJump(restrictSearch, putCursor, arg.text, select);
+    await runJump(restrictSearch, putCursor, arg.text, select);
     if (!multiMode) await global.typeDisposable.dispose();
   });
 }
@@ -99,7 +99,7 @@ exports.jumpBackward = async function (restrictSearch, putCursor, kbText, multiM
  * @param {string} query - keybinding arg or next character typed
  * @param {boolean} select
  */
-function _jumpForward(restrictSearch, putCursorForward, query, select) {
+async function _jumpForward(restrictSearch, putCursorForward, query, select) {
 
   if (!window.activeTextEditor) {
     return;
@@ -123,7 +123,8 @@ function _jumpForward(restrictSearch, putCursorForward, query, select) {
     else if (editor.document.eol === EndOfLine.LF) matchLength = 1; // correct for Mac/Linux LF
   }
 
-  selections.forEach((selection, index) => {
+  let index = 0;
+  for await (const selection of selections) {
 
     let curPos = selection.active;  // cursor Position
     let curAnchor = selection.anchor; // start of selection - not where the cursor is
@@ -154,7 +155,8 @@ function _jumpForward(restrictSearch, putCursorForward, query, select) {
       if (select) selections[index] = new Selection(curAnchor, queryPos);
       else selections[index] = new Selection(queryPos, queryPos);
     }
-  });
+    index++;
+  };
 
   editor.selections = selections;
 
@@ -170,7 +172,7 @@ function _jumpForward(restrictSearch, putCursorForward, query, select) {
  * @param {string} query - keybinding arg or next character typed
  * @param {boolean} select
  */
-function _jumpBackward(restrictSearch, putCursorBackward, query, select) {
+async function _jumpBackward(restrictSearch, putCursorBackward, query, select) {
 
   if (!window.activeTextEditor) {
     return;
@@ -192,7 +194,8 @@ function _jumpBackward(restrictSearch, putCursorBackward, query, select) {
     else if (editor.document.eol === EndOfLine.LF) matchLength = 1; // correct for Mac/Linux LF
   }
 
-  selections.forEach((selection, index) => {
+  let index = 0;
+  for await (const selection of selections) {
 
     let curPos = selection.active;
     let curAnchor = selection.anchor; // start of selection - not where the cursor is
@@ -225,7 +228,8 @@ function _jumpBackward(restrictSearch, putCursorBackward, query, select) {
       if (select) selections[index] = new Selection(curAnchor, queryPos);
       else selections[index] = new Selection(queryPos, queryPos);
     }
-  });
+    index++;
+  };
 
   editor.selections = selections;
 
@@ -448,6 +452,22 @@ function getQueryDocumentIndexForward(cursorPosition, query, putCursorForward, s
   if (restOfText) {  // restOfText = '' if already at the end
 
     let matchPos;
+
+    // if (query === '!') {
+
+    //   const symbols4 = await commands.executeCommand('vscode.executeDocumentSymbolProvider',
+    //     document.uri);
+
+    //   if (symbols4) {
+    //     const thisFunction = Object.values(symbols4).find(symbol => {
+    //       return symbol.kind === SymbolKind.Function && symbol.range.contains(selection.active);
+    //     });
+    //     if (thisFunction) {
+    //       // queryIndex = document.offsetAt(thisFunction.range.end);
+    //       window.activeTextEditor.selection = new Selection(thisFunction.range.start, thisFunction.range.start);
+    //     }
+    //   }
+    // }
 
     if (putCursorForward === 'beforeCharacter') {
       matchPos = restOfText.substring(query.length).indexOf(query);

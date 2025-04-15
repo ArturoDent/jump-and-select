@@ -2,7 +2,7 @@
   "name": "jump-and-select",
   "displayName": "Jump and select",
   "description": "Jump or move the cursor to next or previous chosen character(s) (with optional selection).",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "publisher": "ArturoDent",
   "preview": true,
   "repository": {
@@ -24,7 +24,9 @@
     "cursor",
     "select"
   ],
-  "activationEvents": [ "onStartupFinished" ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
   "contributes": {
     "jsonValidation": [
       {
@@ -57,7 +59,6 @@
         "title": "Select from cursor to previous occurrence",
         "category": "Jump-Select"
       },
-
       {
         "command": "jump-and-select.jumpForwardMultiMode",
         "title": "Jump forward to next occurrence repeatedly",
@@ -83,17 +84,19 @@
         "title": "Abort MultiMode",
         "category": "Jump-Select",
         "enablement": "jumpAndSelect.statusBarItem.visible"
+      },
+      {
+        "command": "jump-and-select.byFunction",
+        "title": "Jump to start or end of a function and optionally select",
+        "category": "Jump-Select"
       }
     ],
     "configuration": [
       {
         "title": "Jump-and-Select",
         "additionalProperties": false,
-
         "properties": {
-
           "jump-and-select.defaults": {
-
             "markdownDescription": "Defaults to be used unless overridden in keybindings.",
             "type": "object",
             "scope": "resource",
@@ -103,7 +106,10 @@
                 "order": 0,
                 "type": "string",
                 "scope": "resource",
-                "enum": [ "line", "document" ],
+                "enum": [
+                  "line",
+                  "document"
+                ],
                 "default": "document",
                 "enumDescriptions": [
                   "Jump or select only within the current line.",
@@ -116,7 +122,10 @@
                 "order": 1,
                 "type": "string",
                 "scope": "resource",
-                "enum": [ "beforeCharacter", "afterCharacter" ],
+                "enum": [
+                  "beforeCharacter",
+                  "afterCharacter"
+                ],
                 "default": "beforeCharacter",
                 "enumDescriptions": [
                   "Cursor moves to before the next entered character.  Default.",
@@ -128,7 +137,10 @@
                 "order": 2,
                 "type": "string",
                 "scope": "resource",
-                "enum": [ "beforeCharacter", "afterCharacter" ],
+                "enum": [
+                  "beforeCharacter",
+                  "afterCharacter"
+                ],
                 "default": "afterCharacter",
                 "enumDescriptions": [
                   "Cursor or selection moves to before next entered character.  Default.",
@@ -140,7 +152,10 @@
                 "type": "string",
                 "order": 3,
                 "scope": "resource",
-                "enum": [ "beforeCharacter", "afterCharacter" ],
+                "enum": [
+                  "beforeCharacter",
+                  "afterCharacter"
+                ],
                 "default": "beforeCharacter",
                 "enumDescriptions": [
                   "Cursor moves to before the previous entered character.  Default.",
@@ -152,7 +167,10 @@
                 "type": "string",
                 "order": 4,
                 "scope": "resource",
-                "enum": [ "beforeCharacter", "afterCharacter" ],
+                "enum": [
+                  "beforeCharacter",
+                  "afterCharacter"
+                ],
                 "default": "afterCharacter",
                 "enumDescriptions": [
                   "Cursor or selection moves to before previous entered character.",
@@ -164,7 +182,10 @@
           "jump-and-select.restrictSearch": {
             "type": "string",
             "scope": "resource",
-            "enum": [ "line", "document" ],
+            "enum": [
+              "line",
+              "document"
+            ],
             "default": "document",
             "enumDescriptions": [
               "Jump or select only within the current line.",
@@ -180,7 +201,11 @@
             "deprecationMessage": "Deprecated: Please use jump-and-select.defaults instead.",
             "type": "string",
             "scope": "resource",
-            "enum": [ "beforeCharacter", "afterCharacter", null ],
+            "enum": [
+              "beforeCharacter",
+              "afterCharacter",
+              null
+            ],
             "$comment": "removed default: beforeCharacter",
             "default": null,
             "markdownEnumDescriptions": [
@@ -194,7 +219,11 @@
             "deprecationMessage": "Deprecated: Please use jump-and-select.defaults instead.",
             "type": "string",
             "scope": "resource",
-            "enum": [ "beforeCharacter", "afterCharacter", null ],
+            "enum": [
+              "beforeCharacter",
+              "afterCharacter",
+              null
+            ],
             "default": null,
             "$comment": "removed default: beforeCharacter",
             "markdownEnumDescriptions": [
@@ -230,7 +259,6 @@
         "mac": "shift+alt+b",
         "when": "editorTextFocus && !editorReadonly"
       },
-
       {
         "command": "jump-and-select.jumpForwardMultiMode",
         "key": "alt+m alt+f",
@@ -267,7 +295,11 @@
     "@types/mocha": "^7.0.2",
     "@types/node": "^13.13.44",
     "@types/vscode": "^1.53.0",
-    "eslint": "^6.8.0",
+    "eslint": "^8.57.1",
+    "eslint-config-standard": "^17.1.0",
+    "eslint-plugin-import": "^2.31.0",
+    "eslint-plugin-n": "^16.6.2",
+    "eslint-plugin-promise": "^6.6.0",
     "glob": "^7.1.6",
     "mocha": "^7.1.2",
     "typescript": "^3.8.3",

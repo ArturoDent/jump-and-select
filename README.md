@@ -4,8 +4,29 @@ Jump/move the cursor to the next or previous occurrence of some typed character 
 You can also optionally select the text from the current cursor position to that next/previous character while extending the current selection.  
 Works with keybindings and macros.  You can use multiple characters in a keybinding or macro.  
 Works with multiple cursors.  
+Jump between and select docuemnt symbols like functions, classes and/or methods.  
 
 -----------
+
+## Notable Changes in v0.7.0
+
+A command `jump-and-select.bySymbol` has been added.  This is used with argument options to move up and down and optionally select the previous, current, parent or next symbols.
+
+* Note: see **[Symbol Traversal](jumpSymbols.md)** for how to use these options to jump and select around document symbols like functions, classes or methods.
+
+### Example function jump keybinding
+
+```json
+{
+  "key": "alt+j",                  // whatever keybinding you want
+  "command": "jump-and-select.bySymbol",
+  "args": {
+    "symbol": ["function", "class"],
+    "where": "nextFunctionStart",
+    "select": true                 // defaults to false
+  }
+}
+```
 
 ## Notable Changes in v0.6.0
 
@@ -145,6 +166,8 @@ There is a precedence to the option values.  Any option set in a keybinding take
 * `jump-and-select.abortMultiMode` &nbsp; : &nbsp; Abort or leave `multiMode` - to return to regular text entry. No default keybinding.  Appears in the Command Palette (or Keyboard Shortcuts) as `Jump-Select: Abort MultiMode` when `multimode` is active.
 
 When you trigger one of these commands, you will not see the next character you type - instead that character will trigger a search for that character.  A space is considered a character (but oddly tabs are not?), as well as the regular expression characters `^` and `$`.  
+
+* `jump-and-select.byFunction` &nbsp; : &nbsp; Move the cursor to the previous, parent, current  or next function top or bottom and optionally select that entrei function.  See **[Function Traversal](jumpFunctions.md)** for more.  
 
 -------
 

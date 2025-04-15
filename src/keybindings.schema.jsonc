@@ -41,6 +41,67 @@
         "The selection will include the matched character.",
         "The selection will NOT include the matched character."
       ]
+    },
+    "where": {
+      "type": "string",
+      "enum": [
+        "previousStart",
+        "previousEnd",
+        "currentStart",
+        "currentEnd",
+        "nextStart",
+        "nextEnd",
+        "parentStart",
+        "parentEnd",
+        "topScopeStart",
+        "topScopeEnd"
+      ],
+      "markdownEnumDescriptions": [
+        "Jump to the start/top of the previous symbol.",
+        "Jump to the end/bottom of the previous symbol.",
+        "Jump to the start/top of the current symbol.",
+        "Jump to the end/bottom of the current symbol.",
+        "Jump to the start/top of the next symbol.",
+        "Jump to the end/bottom of the next symbol.",
+        "Jump to the start/top of the parent symbol - the immediate parent of the current symbol.",
+        "Jump to the end/bottom of the parent symbol - the immediate parent of the current symbol.",
+        "Jump to the start/top of the symbol at the most outer scope - a parent at the highest level.",
+        "Jump to the end/bottom of the symbol at the most outer scope - a parent at the highest level."
+      ]
+    },
+    "select": {
+      "description": "Select the entire symbol as indicated by the 'type' option.",
+      "type": [
+        "boolean"
+      ],
+      "default": false
+    },
+    "symbol": {
+      "description": "The type of symbol to jump to (e.g., function, class or method.",
+      "oneOf": [
+        {
+          "type": "string",
+          "enum": ["function", "class", "method"],
+          "markdownEnumDescriptions": [
+            "Jump between functions.",
+            "Jump between classes.",
+            "Jump between methods."
+          ]
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "anyOf": [
+             { "const": "function" },
+             { "const": "class" },
+             { "const": "method" }
+            ]
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        }
+      ]
     }
   },
   "type": "array",
@@ -86,11 +147,51 @@
                 },
                 {
                   "const": "jump-and-select.jumpBackwardSelectMultiMode"
+                },
+                {
+                  "const": "jump-and-select.bySymbol"
                 }
               ]
             }
           }
         }
+      },
+      {
+        "if": {
+          "properties": {
+            "command": {
+              "anyOf": [
+                {
+                  "const": "jump-and-select.bySymbol"
+                }
+              ]
+            }
+          }
+        },
+
+        "then": {
+          "properties": {
+            "args": {
+              "required": ["symbol", "where"],
+              "additionalProperties": false,
+              "type": "object",
+
+              "properties": {
+                "symbol": {
+                  "description": "Which kind symbol to jump to.",
+                  "$ref": "#/definitions/symbol"
+                },
+                "where": {
+                  "description": "Where to jump to.",
+                  "$ref": "#/definitions/where"
+                },
+                "select": {
+                  "$ref": "#/definitions/select"
+                }
+              }
+            }
+          }
+      }
       },
       {
         "if": {

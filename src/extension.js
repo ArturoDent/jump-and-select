@@ -1,17 +1,28 @@
-const { workspace, commands } = require('vscode');
+const { window, workspace, commands, Uri, DocumentSymbol } = require('vscode');
 const { getSettings } = require('./configs');
-const { jumpForward, jumpBackward  } = require('./commandFunctions');
+const { jumpForward, jumpBackward } = require('./commandFunctions');
+const { jump2Symbols } = require('./symbols');
 const statusBarItem = require('./statusBar');
 
 var global = Function('return this')();  // used for global.typeDisposable
+
+/** @type {DocumentSymbol[]|undefined} */
+globalThis.symbols = [];
+
+// /** @type {Uri} */
+// globalThis.currentUri = Uri.file("");
+globalThis.currentUri = {};
+
+globalThis.refreshSymbols = true;
+
 
 
 /**
  * @param {import ("vscode").ExtensionContext} context
  */
 async function activate(context) {
-  
-  
+
+  if (window.activeTextEditor?.document.uri) globalThis.currentUri = window.activeTextEditor?.document.uri;
 
   await commands.executeCommand('setContext', 'jumpAndSelect.statusBarItem.visible', false);
 
@@ -19,7 +30,7 @@ async function activate(context) {
 
 	let commandDisposable1 = commands.registerCommand('jump-and-select.jumpForward', async args => {
 
-    // multiple args like '{ text: "mark", putCursorOnForwardJump: "beforeCharacter", "restrictSearch": "line" }
+    // multiple args like '{ text: "mark", putCursorOnForwardJump: "beforeCharacter", restrictSearch: "line" }
     // no args are required
 
     if (statusBarItem) await statusBarItem.hide();
@@ -179,6 +190,30 @@ async function activate(context) {
 
   // Consider: turn off multiMode when change file?  make a setting? default to turn off
 
+  let runFunctions = commands.registerCommand('jump-and-select.bySymbol', async (args) => {
+
+    if (statusBarItem) await statusBarItem.hide();
+    if (global.typeDisposable) global.typeDisposable.dispose();
+
+    // defaults
+    const kbSymbol = args ? args.symbol : [];      // ["function", "class"]   method too ?
+    const kbWhere = args ? args.where : "";        // "nextTop"
+    const kbSelect = args ? args.select : false;
+
+    await jump2Symbols(kbSymbol, kbWhere, kbSelect);
+
+  });
+  context.subscriptions.push(runFunctions);
+
+  context.subscriptions.push(workspace.onDidChangeTextDocument(async (event) => {
+    globalThis.refreshSymbols = true;
+  }));
+
+  // context.subscriptions.push(window.onDidChangeActiveTextEditor(async (event) => {
+  //   if (event) globalThis.currentUri = event.document.uri;
+  //   // globalThis.refreshSymbols = true;
+  // }));
+
   context.subscriptions.push(workspace.onDidChangeConfiguration(async (event) => {
     if (event.affectsConfiguration("jump-and-select")) settings = await getSettings();
 	}));
@@ -191,6 +226,9 @@ function deactivate() {
     statusBarItem.dispose();
   }
   if (global.typeDisposable) global.typeDisposable.dispose();
+  delete globalThis.symbols;
+  // delete globalThis?.currentUri;
+  // delete globalThis?.refreshSymbols;
 }
 
 module.exports = {
