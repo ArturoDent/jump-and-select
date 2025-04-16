@@ -1,7 +1,7 @@
 Doesn't seem necessary:
 
     "jsonValidation": [
-      // the below dow not seem necessary - in addition to "%APP_SETTINGS_HOME%/keybindings.json"
+      // the below does not seem necessary - in addition to "%APP_SETTINGS_HOME%/keybindings.json"
       {
         "fileMatch": "%APP_SETTINGS_HOME%/profiles/*/keybindings.json",
         "url": "./src/keybindings.schema.jsonc"

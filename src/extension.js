@@ -196,6 +196,7 @@ async function activate(context) {
     if (global.typeDisposable) global.typeDisposable.dispose();
 
     // defaults
+    if (args && !Array.isArray(args?.symbol)) args.symbol = [args?.symbol];
     const kbSymbol = args?.symbol || ["function", "class", "method"];
     const kbWhere  = args?.where  || "nextStart";
     const kbSelect = args?.select || false;
