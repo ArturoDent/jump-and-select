@@ -457,10 +457,6 @@ For some unknown reason, tabs (`\t`) are not considered a typed character and do
 
 ## Release Notes  
 
-* 0.0.1 &emsp;  Initial release of `jump-and-select` extension.  
-
-* 0.0.2 &emsp;  Change behavior of go to previous character, put cursor before the character.
-
 * 0.0.41&emsp;Added setting to restrict movement/selection to current line or full document.  
 &emsp;&emsp; &emsp; Added setting to move/select before or after the chosen character.  
 &emsp;&emsp; &emsp; Separated settings to put cursor before/after the chosen character for both forward/backward.  
@@ -480,16 +476,19 @@ For some unknown reason, tabs (`\t`) are not considered a typed character and do
 &emsp;&emsp; &emsp; Better `^`, `$`, and `^$` selecting in keybindings.  
 &emsp;&emsp; &emsp; Enable literal `\\^`and `\\$` in keybindings.  
 &emsp;&emsp; &emsp; Simplified the QueryObject and made a default noMatch.  
-&emsp;&emsp; &emsp; Use EOL length for forward ^/$ for multi-OS lengths.  
+&emsp;&emsp; &emsp; Use EOL length for forward `^/$` for multi-OS lengths.  
 &emsp;&emsp; &emsp; Made a Discussions item for new features.  
 0.5.2&emsp; Fix backwards bug not using start of first line.  
-0.5.3&emsp; empty line (^$) jumps work in files that DON'T normalize \n to \r\n - specific settings-type files.  
-0.5.4&emsp; empty line (^$) "fix" - just check for existence of \r\n in tthe file to set which regex to use.  
+0.5.3&emsp; empty line (`^$`) jumps work in files that DON'T normalize \n to \r\n - specific settings-type files.  
+0.5.4&emsp; empty line (`^$`) "fix" - just check for existence of \r\n in tthe file to set which regex to use.  
 
 * 0.6.0&emsp; Deprecated all previous settings in favor of one `defaults`.  
 &emsp;&emsp; &emsp; Added a jump and a select version of each option.  
-&emsp;&emsp; &emsp; For "^$" just use /(?<=\r?\n)\r?\n/g)/ regex.  
+&emsp;&emsp; &emsp; For "^$" just use `/(?<=\r?\n)\r?\n/g)/` regex.  
 &emsp;&emsp; &emsp; Use more "editor.document.eol" for match and query lengths.  
 &emsp;&emsp; &emsp; Added configs.js with `defaults.restrictSearch ?? depRestrictSearch ?? "document"`, for example.  
+
+* 0.7.0&emsp; Added jump `bySymbol` command: goto function, class or method.  
+&emsp;&emsp; &emsp; Added **[jumpSymbols.md](jumpSymbols.md)**
 
 -----------------------------------------------------------------------------------------------------------

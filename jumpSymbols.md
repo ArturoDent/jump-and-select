@@ -134,13 +134,13 @@ You should get intellisense for `jump-and-select.bySymbol` and the `go` and `sel
     self.left = None*                # nextEnd
 ```
 
-## `symbol` Options: string, required
+## `symbol` Options: string or array, optional, default = ["function", "class", "method"]
 
 * function
 * class
 * method
 
-## `where` Options: string, required
+## `where` Options: string, optional, default = nextStart
 
 These are all relative to the current cursor position.  Multiple cursors are not supported, other cursor positions will be lost.  
 

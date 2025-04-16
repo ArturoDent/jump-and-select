@@ -196,9 +196,9 @@ async function activate(context) {
     if (global.typeDisposable) global.typeDisposable.dispose();
 
     // defaults
-    const kbSymbol = args ? args.symbol : [];      // ["function", "class"]   method too ?
-    const kbWhere = args ? args.where : "";        // "nextTop"
-    const kbSelect = args ? args.select : false;
+    const kbSymbol = args?.symbol || ["function", "class", "method"];
+    const kbWhere  = args?.where  || "nextStart";
+    const kbSelect = args?.select || false;
 
     await jump2Symbols(kbSymbol, kbWhere, kbSelect);
 

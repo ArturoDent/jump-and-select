@@ -44,6 +44,8 @@
     },
     "where": {
       "type": "string",
+      "description": "Jump to the start or end of the chosen symbol.",
+      "default": "nextStart",
       "enum": [
         "previousStart",
         "previousEnd",
@@ -77,7 +79,8 @@
       "default": false
     },
     "symbol": {
-      "description": "The type of symbol to jump to (e.g., function, class or method.",
+      "description": "The type of symbol to jump to (e.g., function, class and/or method.",
+      "default": ["function", "class", "method"],
       "oneOf": [
         {
           "type": "string",
@@ -172,7 +175,7 @@
         "then": {
           "properties": {
             "args": {
-              "required": ["symbol", "where"],
+              // "required": ["symbol", "where"],
               "additionalProperties": false,
               "type": "object",
 

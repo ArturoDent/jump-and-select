@@ -39,41 +39,18 @@ exports.jump2Symbols = async function (kbSymbol, kbWhere, kbSelect = false) {
 
   if (!globalThis.symbols) return;
 
-  // let gS = {
-  //   start2Start: Function('vscode', 'generic', `return [new vscode.Selection(generic.range.start, generic.range.start)]`),
-  //   end2Start: Function('vscode', 'generic', `return [new vscode.Selection(generic.range.end, generic.range.start)]`),
-  //   end2End: Function('vscode', 'generic', `return [new vscode.Selection(generic.range.end, generic.range.end)]`),
-  //   start2End: Function('vscode', 'generic', `return [new vscode.Selection(generic.range.start, generic.range.end)]`),
-  // }
-
-  let activeSymbol;
+  let targetSymbol;
 
   switch (kbWhere) {
 
     case "previousStart": case "previousEnd":
-      activeSymbol = Object.values(globalThis.symbols).findLast(childSymbol => {
+      targetSymbol = Object.values(globalThis.symbols).findLast(childSymbol => {
         return kbSymbol.some(symbol => (symMap[symbol] === childSymbol.kind) && childSymbol.range.end.isBefore(selection.active));
       });
-
-      // if (activeSymbol && kbWhere === "previousStart") {
-      //   if (!kbSelect)
-      //     editor.selections = gS.start2Start(vscode, activeSymbol);
-      //   else
-      //     editor.selections = gS.end2Start(vscode, activeSymbol);
-      // }
-      // else if (activeSymbol && kbWhere === "previousEnd") {
-      //   if (!kbSelect)
-      //     // editor.selections = [new vscode.Selection(previousSymbol.range.end, previousSymbol.range.end)];
-      //     editor.selections = gS.end2End(vscode, activeSymbol);
-      //   else // put cursor at end
-      //     // editor.selections = [new vscode.Selection(previousSymbol.range.start, previousSymbol.range.end)];
-      //     editor.selections = gS.start2End(vscode, activeSymbol);
-      // }
-      // else return;
       break;
     
     case "currentStart":  case "currentEnd":  case "parentStart":  case "parentEnd":
-      activeSymbol = Object.values(globalThis.symbols).find(childSymbol => {
+      targetSymbol = Object.values(globalThis.symbols).find(childSymbol => {
         // since methods can have classes as parents
         if (kbSymbol.length === 1 && kbSymbol[0] === "method") kbSymbol.push("class");
 
@@ -83,109 +60,38 @@ exports.jump2Symbols = async function (kbSymbol, kbWhere, kbSelect = false) {
         else return false;
       });
 
-      if (!activeSymbol) return;
+      if (!targetSymbol) return;
 
       /** @type {FlatArray<any, Infinity>} */
       let result = [];
-      let currentSymbolT;
 
-      if (activeSymbol) result = toArray(activeSymbol, symMap, kbSymbol, selection, result);
+      if (targetSymbol) result = toArray(targetSymbol, symMap, kbSymbol, selection, result);
 
       if (result.length && kbWhere.startsWith("current")) {        
-        // currentSymbolT = result[0];
-        activeSymbol = result[0];
+        targetSymbol = result[0];
       }
       else if (result.length > 1 && kbWhere.startsWith("parent"))
-        // currentSymbolT = result[1];
-        activeSymbol = result[1];
-
-      // set genericSymbol to currentSymbolT || currentSymbolTop to simplify below
-      // const symbolTarget = currentSymbolT || activeSymbol;
-      // activeSymbol = currentSymbolT || activeSymbol;
-
-      // if (kbWhere === "currentStart") {
-      //   if (!kbSelect)
-      //     // editor.selections = [new vscode.Selection(activeSymbol.range.start, activeSymbol.range.start)];
-      //     editor.selections = gS.start2Start(vscode, activeSymbol);
-      //   else  // put cursor at start
-      //     // editor.selections = [new vscode.Selection(activeSymbol.range.end, activeSymbol.range.start)];
-      //     editor.selections = gS.end2Start(vscode, activeSymbol);
-      // }
-      // else if (kbWhere === "currentEnd") {
-      //   if (!kbSelect)
-      //     // editor.selections = [new vscode.Selection(activeSymbol.range.end, activeSymbol.range.end)];
-      //     editor.selections = gS.end2End(vscode, activeSymbol);
-      //   else  // put cursor at start
-      //     // editor.selections = [new vscode.Selection(activeSymbol.range.start, activeSymbol.range.end)];
-      //     editor.selections = gS.start2End(vscode, activeSymbol);
-      // }
-      // else if (kbWhere === "parentStart") {
-      //   if (!kbSelect)
-      //     // editor.selections = [new vscode.Selection(activeSymbol.range.start, activeSymbol.range.start)];
-      //     editor.selections = gS.start2Start(vscode, activeSymbol);
-      //   else  // put cursor at start
-      //     // editor.selections = [new vscode.Selection(activeSymbol.range.end, activeSymbol.range.start)];
-      //     editor.selections = gS.end2Start(vscode, activeSymbol);
-      // }
-      // else if (kbWhere === "parentEnd") {
-      //   if (!kbSelect)
-      //     // editor.selections = [new vscode.Selection(activeSymbol.range.end, activeSymbol.range.end)];
-      //     editor.selections = gS.end2End(vscode, activeSymbol);
-      //   else  // put cursor at start
-      //     // editor.selections = [new vscode.Selection(activeSymbol.range.start, activeSymbol.range.end)];
-      //     editor.selections = gS.start2End(vscode, activeSymbol);
-      // }
+        targetSymbol = result[1];
       break;
     
     case "nextStart": case "nextEnd":
-      activeSymbol = Object.values(globalThis.symbols).find(childSymbol => {
+      targetSymbol = Object.values(globalThis.symbols).find(childSymbol => {
         return kbSymbol.some(symbol => symMap[symbol] === childSymbol.kind) && childSymbol.range.start.isAfter(selection.active);
       });
-      // if (activeSymbol && kbWhere === "nextStart") {
-      //   if (!kbSelect)
-      //     // editor.selections = [new vscode.Selection(activeSymbol.range.start, activeSymbol.range.start)];
-      //     editor.selections = gS.start2Start(vscode, activeSymbol);
-      //   else  // put cursor at start
-      //     // editor.selections = [new vscode.Selection(activeSymbol.range.end, activeSymbol.range.start)];
-      //     editor.selections = gS.end2Start(vscode, activeSymbol);
-      // }
-      // else  if (activeSymbol && kbWhere === "nextEnd") {
-      //   if (!kbSelect)
-      //     // editor.selections = [new vscode.Selection(activeSymbol.range.end, activeSymbol.range.end)];
-      //     editor.selections = gS.end2End(vscode, activeSymbol);
-      //   else  // put cursor at end
-      //     // editor.selections = [new vscode.Selection(activeSymbol.range.start, activeSymbol.range.end)];
-      //     editor.selections = gS.start2End(vscode, activeSymbol);
-      // }
       break;
     
     case "topScopeStart": case "topScopeEnd":
-      activeSymbol = Object.values(globalThis.symbols).find(childSymbol => {
+      targetSymbol = Object.values(globalThis.symbols).find(childSymbol => {
+        // childSymbol.kind === vscode.SymbolKind.Function
         return kbSymbol.some(symbol => symMap[symbol] === childSymbol.kind) && childSymbol.range.contains(selection.active);
       });
-      // if (activeSymbol && kbWhere === "topScopeStart") {
-      //   if (!kbSelect)
-      //     // editor.selections = [new vscode.Selection(topSymbol.range.start, topSymbol.range.start)];
-      //     editor.selections = gS.start2Start(vscode, activeSymbol);
-      //   else  // put cursor at start
-      //     // editor.selections = [new vscode.Selection(topSymbol.range.end, topSymbol.range.start)];
-      //     editor.selections = gS.end2Start(vscode, activeSymbol);
-      // }
-      // else  if (activeSymbol && kbWhere === "topScopeEnd") {
-      //   if(!kbSelect)
-      //     // editor.selections = [new vscode.Selection(topSymbol.range.end, topSymbol.range.end)];
-      //     editor.selections = gS.end2End(vscode, activeSymbol);
-      //   else  // put cursor at end
-      //     // editor.selections = [new vscode.Selection(topSymbol.range.start, topSymbol.range.end)];
-      //     editor.selections = gS.start2End(vscode, activeSymbol);
-      // }
       break;
     
     default:      
       break;
   }
 
-  if (!activeSymbol) return;
+  if (!targetSymbol) return;
 
   let gS = {
     start2Start: Function('vscode', 'generic', `return [new vscode.Selection(generic.range.start, generic.range.start)]`),
@@ -196,15 +102,15 @@ exports.jump2Symbols = async function (kbSymbol, kbWhere, kbSelect = false) {
 
   if (kbWhere.endsWith("Start")) {  // cursor goes to the start of the symbol
     if (!kbSelect)
-      editor.selections = gS.start2Start(vscode, activeSymbol);
+      editor.selections = gS.start2Start(vscode, targetSymbol);
     else
-      editor.selections = gS.end2Start(vscode, activeSymbol);
+      editor.selections = gS.end2Start(vscode, targetSymbol);
   }
   else if (kbWhere.endsWith("End")) {  // cursor goes to the end of the symbol
     if (!kbSelect)
-      editor.selections = gS.end2End(vscode, activeSymbol);
+      editor.selections = gS.end2End(vscode, targetSymbol);
     else
-      editor.selections = gS.start2End(vscode, activeSymbol);
+      editor.selections = gS.start2End(vscode, targetSymbol);
   }
   else return;
 
