@@ -7,3 +7,30 @@ Doesn't seem necessary:
         "url": "./src/keybindings.schema.jsonc"
       }
     ]
+    
+  let gS = {
+    start2Start:
+      Function('vscode', 'generic', `return [new vscode.Selection(generic.range.start, generic.range.start)]`),
+    end2Start:
+      Function('vscode', 'generic', `return [new vscode.Selection(generic.range.end, new vscode.Position(generic.range.start.line, 0))]`),
+    // Function('vscode', 'selection', `return [extendSelection(vscode, selection)]`),
+    end2End:
+      Function('vscode', 'generic', `return [new vscode.Selection(generic.range.end, generic.range.end)]`),
+    start2End:
+      Function('vscode', 'generic', `return [new vscode.Selection(new vscode.Position(generic.range.start.line, 0), generic.range.end)]`),
+  };
+
+  if (kbWhere.endsWith("Start")) {  // so cursor goes to the start of the symbol
+    if (!kbSelect)                  // don't select
+      editor.selections = gS.start2Start(vscode, targetSymbol);
+    else                            // do select
+      // editor.selections = gS.end2Start(vscode, targetSymbol);  // TODO: check end for a semicolon?
+      editor.selections = [extendSelection(targetSymbol, document)];  // TODO: check end for a semicolon?
+  }
+  else if (kbWhere.endsWith("End")) {  // so cursor goes to the end of the symbol
+    if (!kbSelect)
+      editor.selections = gS.end2End(vscode, targetSymbol);
+    else
+      editor.selections = gS.start2End(vscode, targetSymbol);  // TODO: check end for a semicolon?
+  }
+  else return;

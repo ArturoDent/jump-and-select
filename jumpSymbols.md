@@ -20,7 +20,7 @@ Instead, that is merely a `Variable` kind of `DocumentSymbol` and is thus not us
 
 ```json
 {
-  "key": "shift+alt+j",                  // whatever keybinding you want
+  "key": "shift+alt+c",                  // whatever keybinding you want
   "command": "jump-and-select.bySymbol",    // use this command
   "args": {
     "symbol": "function",                  // or "class" or "method"
@@ -30,7 +30,7 @@ Instead, that is merely a `Variable` kind of `DocumentSymbol` and is thus not us
 },
 
 {
-  "key": "alt+j",
+  "key": "alt+c",
   "command": "jump-and-select.bySymbol",
   "args": {
     "symbol": "class",
@@ -39,7 +39,7 @@ Instead, that is merely a `Variable` kind of `DocumentSymbol` and is thus not us
 },
 
 {
-  "key": "alt+j",
+  "key": "alt+c",
   "command": "jump-and-select.bySymbol",
   "args": {
     "symbol": ["function", "class", "method"] ,
@@ -48,7 +48,83 @@ Instead, that is merely a `Variable` kind of `DocumentSymbol` and is thus not us
 }
 ```
 
-You should get intellisense for `jump-and-select.bySymbol` and the `go` and `select` options.  
+```json
+// to cycle between methods in a class or other container
+{
+  "key": "alt+down",          // whatever keybindings you want 
+  "command": "jump-and-select.bySymbol",
+  "args": {
+    "symbol": "method",
+    "where": "nextStart",
+    "select": true
+  }
+},
+{
+  "key": "alt+up",
+  "command": "jump-and-select.bySymbol",
+  "args": {
+    "symbol": "method",
+    "where": "previousStart",
+    "select": true
+  }
+}
+```
+
+These later 2 keybindings work in files like these, for example:
+
+```javascript
+// javascript/typescript
+const car = {
+  make: 'Honda',
+  // cycle between these methods
+  method1: function () {
+    console.log(this.year + ' ' + this.make + ' ' + this.model);
+  },
+  method2: function () {
+    console.log(this.year + ' ' + this.make + ' ' + this.model);
+  },
+};
+
+class ClassWithMethods {
+  // cycle between these methods
+  method1() {
+    return "hello world";
+  }
+  method2() {
+    return "goodbye world";
+  }
+}
+```
+
+```python
+# python
+class Car():
+  n_wheels = 4
+
+  def method1(self, stuff):  # method
+    self.open_trunk
+    self.trunk.append(stuff)
+    self.close_trunk
+
+  def method2(self, stuff):  # method
+    self.open_trunk
+    self.trunk.append(stuff)
+    self.close_trunk
+```
+
+```json
+// to walk up the parent symbols
+{
+  "key": "alt+up",              // whatever keybindings you want 
+  "command": "jump-and-select.bySymbol",
+  "args": {
+    "where": "parentStart",     // or parentEnd
+    // "select": true           // optional, default === false
+  }
+}
+```
+
+You should get intellisense for `jump-and-select.bySymbol` and the `symbol` and `select` options.  
 
 ## Where the cursor jumps to:
 
@@ -139,6 +215,25 @@ You should get intellisense for `jump-and-select.bySymbol` and the `go` and `sel
 * function
 * class
 * method
+
+**Note**: if using `where` === topScope/topScopeEnd or parentStart/parentEnd or currentStart/currentEnd the `symbol` option is ignored.  You will always go to the parent or topScope no matter what kind of symbol that scope might happen to be.  For example, with this code:
+
+```javascript
+*const myVariable = {      // topScopeStart
+  alpha: 12,
+  method1: function () {
+    *const myVar2 = {      // parentStart
+    
+      *omega: 15*          // if cursor here, currentStart and currentEnd
+      
+    };*                    // parentEnd
+  }
+};*                        // topScopeEnd, with select === true the cursor goes **after** the semicolon
+```
+
+If your cursor was with `myVariable` anywhere and you wished to go to the parent scope or topMost scope (`myVariable`) you will go there even though that symbol might be of `kind: variable`.  
+
+* If `"select": true` and using one of the "...End`" where options, the trailing semicolon, if any, will be selected too.  This extension only checks for trailing semicolons after symbols, no other trailing characters.  
 
 ## `where` Options: string, optional, default = nextStart
 
