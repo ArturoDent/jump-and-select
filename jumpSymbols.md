@@ -20,7 +20,11 @@ Instead, these are merely `Variable` kind of `DocumentSymbol`'s and are thus not
 
 So, for example, arrow function traversal should work (in javascript/typescript files) as well as variable declarations that point to a function.  
 
-<img src="https://github.com/ArturoDent/jump-and-select/blob/main/images/traverse1.gif?raw=true" width="400" height="800" alt="Example of moving up and down"/>
+Example of traversal nextStart/previousStart with selection:  
+
+<img src="https://github.com/ArturoDent/jump-and-select/blob/main/images/traverse!.gif?raw=true" width="650" height="800" alt="Example of moving up and down with selection"/>
+
+<img src="" width="650" height="600" alt="Example of moving up and down with selection"/>
 
 ## Sample Keybindings
 
