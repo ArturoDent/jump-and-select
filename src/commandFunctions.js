@@ -1,4 +1,4 @@
-const { commands, window, Range, Position, Selection, EndOfLine, TextEditorRevealType } = require('vscode');
+const {commands, window, Range, Position, Selection, EndOfLine, TextEditorRevealType} = require('vscode');
 const statusBarItem = require('./statusBar');
 
 var global = Function('return this')();  // used for global.typeDisposable
@@ -10,7 +10,7 @@ var global = Function('return this')();  // used for global.typeDisposable
  * @typedef  {Object} QueryObject
  * @property {Number} queryIndex  - index of query character in line or document from cursor
  */
-const noMatchQueryObject = { queryIndex: -1};
+const noMatchQueryObject = {queryIndex: -1};
 
 // -------------------------------------------------------------------------------------------
 
@@ -113,11 +113,11 @@ async function _jumpForward(restrictSearch, putCursorForward, query, select) {
 
   let unescapedQuery = query.replaceAll(/\\([$^])/g, '$1');  // remove all double-escapes
   matchLength = unescapedQuery.length;
-  
+
   // if      (query === "^" || query === "$" || query === "^$") matchLength = 0;
-  if      (query === "^" || query === "$") matchLength = 0;
+  if (query === "^" || query === "$") matchLength = 0;
   else if (query === "\\^" || query === "\\$") matchLength = 1;
-  
+
   if (query === "^$") {
     if (editor.document.eol === EndOfLine.CRLF) matchLength = 2;
     else if (editor.document.eol === EndOfLine.LF) matchLength = 1; // correct for Mac/Linux LF
@@ -184,11 +184,11 @@ async function _jumpBackward(restrictSearch, putCursorBackward, query, select) {
 
   let unescapedQuery = query.replaceAll(/\\([$^])/g, '$1');  // remove all double-escapes
   matchLength = unescapedQuery.length;
-  
+
   // if      (query === "^" || query === "$" || query === "^$") matchLength = 0;
-  if      (query === "^" || query === "$") matchLength = 0;
+  if (query === "^" || query === "$") matchLength = 0;
   else if (query === "\\^" || query === "\\$") matchLength = 1;
-  
+
   if (query === "^$") {
     if (editor.document.eol === EndOfLine.CRLF) matchLength = 2;
     else if (editor.document.eol === EndOfLine.LF) matchLength = 1; // correct for Mac/Linux LF
@@ -263,7 +263,7 @@ function getQueryLineIndexForward(cursorPosition, query, putCursorForward, selec
     // leave as is
     // if (selection.isReversed && !selection.isSingleLine) {    // a reversed multiline selection
 
-    return { queryIndex: lineRange.end.character - cursorPosition.character};
+    return {queryIndex: lineRange.end.character - cursorPosition.character};
   }
 
   if (query === '\\^') query = '^';
@@ -291,7 +291,7 @@ function getQueryLineIndexForward(cursorPosition, query, putCursorForward, selec
       else queryIndex = matchPos;
     }
   }
-  return { queryIndex };
+  return {queryIndex};
 }
 
 
@@ -305,7 +305,7 @@ function getQueryLineIndexForward(cursorPosition, query, putCursorForward, selec
  */
 function getQueryDocumentIndexForward(cursorPosition, query, putCursorForward, selection) {
 
-  const document = window.activeTextEditor?.document;  // TODO: exclude schemes like vscode-data, etc.
+  const document = window.activeTextEditor?.document;  // TODO: exclude schemes like vscode-data, etc.?
 
   let queryIndex = -1;
   let restOfText = '';
@@ -328,7 +328,7 @@ function getQueryDocumentIndexForward(cursorPosition, query, putCursorForward, s
       if (selection.end.line !== document.lineCount - 1) lineAfterSelectionEnd = document.lineAt(selection.end.line + 1);
       if (!lineAfterSelectionEnd) return noMatchQueryObject;
       const rangeToEnd = selection.union(lineOfSelectionEnd.range);
-      
+
       return {
         queryIndex: document.offsetAt(rangeToEnd.end) - document.offsetAt(rangeToEnd.start)
       };
@@ -341,10 +341,10 @@ function getQueryDocumentIndexForward(cursorPosition, query, putCursorForward, s
         if (document.eol === EndOfLine.CRLF) eolLength = 2; // correct for Windows CRLF
         // else if (document.eol === EndOfLine.LF) eolLength = 1; // correct for Mac/etc. LF
 
-        return { queryIndex: nextLine.range.end.character + eolLength };
+        return {queryIndex: nextLine.range.end.character + eolLength};
       }
       else if (cursorPosition.isBefore(lineRange.end))        // not at end of currentLine
-        return { queryIndex: lineRange.end.character - cursorPosition.character };
+        return {queryIndex: lineRange.end.character - cursorPosition.character};
     }
   }
   else if (query === '^') {
@@ -363,36 +363,36 @@ function getQueryDocumentIndexForward(cursorPosition, query, putCursorForward, s
 
     if (nextLine) {
       if (selection.isReversed && !selection.isSingleLine) {  // a reversed multiline selection
-        
+
         const lineAfterSelectionEnd = document.lineAt(selection.end.line + 1);
         if (!lineAfterSelectionEnd) return noMatchQueryObject;
-        
+
         if (cursorPosition.isBefore(lineRange.end)) {
 
           // const lineAfterSelectionEnd = document.lineAt(selection.end.line + 1);
           // if (!lineAfterSelectionEnd) return noMatchQueryObject;
 
           // go to start of the line after the end of the selection
-          return { queryIndex: document.offsetAt(lineAfterSelectionEnd.range.start) - cursorIndex };
+          return {queryIndex: document.offsetAt(lineAfterSelectionEnd.range.start) - cursorIndex};
         }
-        
+
         if (cursorPosition.isEqual(lineRange.end))  // go to end of current line and add eolLength
-          return {  queryIndex: document.offsetAt(lineAfterSelectionEnd.range.start) - cursorIndex };
+          return {queryIndex: document.offsetAt(lineAfterSelectionEnd.range.start) - cursorIndex};
 
         else if (cursorPosition.isEqual(lineRange.start)) // already at start of the current line
           // go to end of current line and add eolLength
-          return { queryIndex: line.text.length + eolLength };
+          return {queryIndex: line.text.length + eolLength};
       }
       else {  // !selection.isReversed
         if (cursorPosition.isBefore(lineRange.end))  // go to end of current line and add eolLength
-          return { queryIndex: line.text.length - cursorPosition.character + eolLength };
-        
+          return {queryIndex: line.text.length - cursorPosition.character + eolLength};
+
         if (cursorPosition.isEqual(lineRange.end))  // go to end of current line and add eolLength
-          return {  queryIndex: eolLength };
+          return {queryIndex: eolLength};
 
         else if (cursorPosition.isEqual(lineRange.start)) // already at start of the current line
-                      // go to end of current line and add eolLength
-          return { queryIndex: line.text.length + eolLength };
+          // go to end of current line and add eolLength
+          return {queryIndex: line.text.length + eolLength};
       }
     }
   }
@@ -418,19 +418,19 @@ function getQueryDocumentIndexForward(cursorPosition, query, putCursorForward, s
     // if (tasks || codeSnippets || keybindings) regexp = new RegExp('^$', 'gm');  // these use \n only
     // else regexp = new RegExp('^(?!\n)$(?!\n)', 'gm');
 
-    
+
     // if (document.eol === EndOfLine.CRLF) new RegExp("(?<=\r?\n)\r?\n"); // correct for Windows CRLF
     // else if (document.eol === EndOfLine.LF) new RegExp("(?<=\n)\n"); // correct for Mac/etc. LF
-    
+
     const match = restOfText.match(/(?<=\r?\n)\r?\n/);  // use EOL?
-    
+
     if (!match) {
       if (restOfText.endsWith('\r\n')) queryIndex = restOfText.lastIndexOf('\r\n') + 2;
       else if (restOfText.endsWith('\n')) queryIndex = restOfText.lastIndexOf('\n') + 1;
-      else return { queryIndex };
+      else return {queryIndex};
     }
 
-    return { queryIndex: match?.index || queryIndex };
+    return {queryIndex: match?.index || queryIndex};
   }
 
   if (query === '\\^') query = '^';
@@ -482,7 +482,7 @@ function getQueryDocumentIndexForward(cursorPosition, query, putCursorForward, s
       else queryIndex = matchPos;
     }
   }
-  return { queryIndex };
+  return {queryIndex};
 }
 
 
@@ -503,7 +503,7 @@ function getQueryLineIndexBackward(cursorPosition, query, purCursorBackward, sel
 
   if (!document) return noMatchQueryObject;
 
-  if (query === '^') return { queryIndex: 0 };
+  if (query === '^') return {queryIndex: 0};
 
   if (query === '\\^') query = '^';
   else if (query === '\\$') query = '$';
@@ -530,7 +530,7 @@ function getQueryLineIndexBackward(cursorPosition, query, purCursorBackward, sel
       queryIndex = matchPos;
     }
   }
-  return { queryIndex };
+  return {queryIndex};
 }
 
 
@@ -576,10 +576,10 @@ function getQueryDocumentIndexBackward(cursorPosition, query, purCursorBackward,
       if (selectionStartPreviousLine) {
 
         if (selection.start.isEqual(selectionStartLine.range.end)) {  // at end of line already and there is a selectionStartPreviousLine
-          return { queryIndex: document.offsetAt(selectionStartLine.range.end) };
+          return {queryIndex: document.offsetAt(selectionStartLine.range.end)};
         }
         else if (selection.start.isBefore(selectionStartLine.range.end)) {      // not at end of selection start line
-          return { queryIndex: document.offsetAt(selectionStartPreviousLine.range.end) };
+          return {queryIndex: document.offsetAt(selectionStartPreviousLine.range.end)};
         }
       }
     }
@@ -589,7 +589,7 @@ function getQueryDocumentIndexBackward(cursorPosition, query, purCursorBackward,
       else return noMatchQueryObject;
 
       const previousLineRange = previousLine.range;
-      return { queryIndex: document.offsetAt(previousLineRange.end) };
+      return {queryIndex: document.offsetAt(previousLineRange.end)};
     }
   }
 
@@ -599,7 +599,7 @@ function getQueryDocumentIndexBackward(cursorPosition, query, purCursorBackward,
 
     let previousLine;
     if (cursorPosition.line !== 0) previousLine = document.lineAt(cursorPosition.line - 1);
-    else return noMatchQueryObject
+    else return noMatchQueryObject;
 
     if (!selection.isReversed && !selection.isSingleLine) {    // a !reversed multiline selection
 
@@ -610,18 +610,18 @@ function getQueryDocumentIndexBackward(cursorPosition, query, purCursorBackward,
       else return noMatchQueryObject;
 
       if (selection.start.isEqual(selectionStartLine.range.start) && selectionStartPreviousLine) {  // at start of line already and there is a previousLine
-        return { queryIndex: document.offsetAt(selectionStartPreviousLine.range.start) };
+        return {queryIndex: document.offsetAt(selectionStartPreviousLine.range.start)};
       }
       else if (selection.start.isAfter(selectionStartLine.range.start)) {      // not at start of selection start line
-        return { queryIndex: document.offsetAt(selectionStartLine.range.start) };
+        return {queryIndex: document.offsetAt(selectionStartLine.range.start)};
       }
     }
     else {
       if (cursorPosition.isEqual(currentLineRange.start) && previousLine) {  // at start of line already and there is a previousLine
-        return { queryIndex: document.offsetAt(previousLine.range.start) };
+        return {queryIndex: document.offsetAt(previousLine.range.start)};
       }
       else if (cursorPosition.isAfter(currentLineRange.start))        // not at start of currentLine
-        return { queryIndex: document.offsetAt(currentLineRange.start) };
+        return {queryIndex: document.offsetAt(currentLineRange.start)};
     }
   }
 
@@ -632,13 +632,13 @@ function getQueryDocumentIndexBackward(cursorPosition, query, purCursorBackward,
     //   if (query === "^$") queryLength = 2;
     // }
     // else if (document.eol === EndOfLine.LF) queryLength = 1; // correct for Mac/Linux LF
-    
+
     if (query === "^$") {
       if (document.eol === EndOfLine.CRLF) queryLength = 2;
       else if (document.eol === EndOfLine.LF) queryLength = 1; // correct for Mac/Linux LF
     }
-    
-    
+
+
     // if (startText.includes('\r\n')) regexp = new RegExp('^(?!\n)$(?!\n)', 'gm');
     // else regexp = new RegExp('^$', 'gm');  // these use \n only
 
@@ -659,10 +659,10 @@ function getQueryDocumentIndexBackward(cursorPosition, query, purCursorBackward,
     if (!matches.length) {
       // these will always be 0 ?
       // if (startText.startsWith('\r\n')) queryIndex = startText.indexOf('\r\n');
-      if (startText.startsWith('\r\n')) return { queryIndex: 0}; 
+      if (startText.startsWith('\r\n')) return {queryIndex: 0};
       // else if (startText.startsWith('\n')) queryIndex = startText.indexOf('\n');
-      else if (startText.startsWith('\n')) return { queryIndex: 0};
-      else return { queryIndex };
+      else if (startText.startsWith('\n')) return {queryIndex: 0};
+      else return {queryIndex};
     }
 
     const lastIndex = matches?.at(-1)?.index ?? -1;
@@ -683,7 +683,7 @@ function getQueryDocumentIndexBackward(cursorPosition, query, purCursorBackward,
     }
     else queryIndex = lastIndex;
 
-    return { queryIndex };
+    return {queryIndex};
   }
 
   if (query === '\\^') query = '^';
@@ -708,5 +708,5 @@ function getQueryDocumentIndexBackward(cursorPosition, query, purCursorBackward,
     }
   }
 
-  return { queryIndex };
+  return {queryIndex};
 }

@@ -454,6 +454,7 @@ For some unknown reason, tabs (`\t`) are not considered a typed character and do
 [  ] - Consider adding a setting to make queries be interpreted as regex's in keybindings.  
 [  ] - Consider cancelling multiMode if change editor.  
 [  ] - Should there be a notification for no match on a query?  
+[  ] - Add a kbWhere option for if no matches in remaining children?  
 
 ## Release Notes  
 

@@ -1,8 +1,9 @@
-const {window, workspace, commands, Uri, DocumentSymbol} = require('vscode');
+const {window, workspace, commands, Uri, DocumentSymbol, Range} = require('vscode');
 const {getSettings} = require('./configs');
 const {jumpForward, jumpBackward} = require('./commandFunctions');
 const {jump2Symbols} = require('./symbols');
 const statusBarItem = require('./statusBar');
+
 
 var global = Function('return this')();  // used for global.typeDisposable
 // var globalThis = Function('return this')();  // used for global.typeDisposable
@@ -10,10 +11,17 @@ var global = Function('return this')();  // used for global.typeDisposable
 /** @type {DocumentSymbol[]|undefined} */
 globalThis.symbols = [];
 
+/** @type {Range[]} */
+globalThis.arrowFunctionRanges = [];
+
 // /** @type {Uri} */
 globalThis.currentUri = {};
 
+// /** @type {Boolean} */
+globalThis.usesArrowFunctions = false;
+
 globalThis.refreshSymbols = true;
+
 
 
 /**
@@ -21,7 +29,10 @@ globalThis.refreshSymbols = true;
  */
 async function activate(context) {
 
-  if (window.activeTextEditor?.document.uri) globalThis.currentUri = window.activeTextEditor?.document.uri;
+  const document = window.activeTextEditor?.document;
+
+  if (document?.uri) globalThis.currentUri = document.uri;
+  if (document?.languageId.match(/javascript|typescript/)) globalThis.usesArrowFunctions = true;
 
   await commands.executeCommand('setContext', 'jumpAndSelect.statusBarItem.visible', false);
 
@@ -195,9 +206,8 @@ async function activate(context) {
     if (statusBarItem) await statusBarItem.hide();
     if (global.typeDisposable) global.typeDisposable.dispose();
 
-    // /** @type {{ symbol: string[], where: string, select: boolean|string }} */
     /** @type {any} */
-    const bad = checkArgs(args);
+    const bad = checkArgs(structuredClone(args));
 
     if (bad && Object.keys(bad).length) {  // not empty
       console.log(bad);
@@ -227,8 +237,10 @@ async function activate(context) {
     }
 
     // defaults
-    if (args && args.symbol && !Array.isArray(args.symbol)) args.symbol = [args.symbol];
+    if (args.symbol && !Array.isArray(args.symbol)) args.symbol = [args.symbol];
+    else if (Array.isArray(args.symbol) && args.symbol.length === 0) args.symbol = undefined;;
     const kbSymbol = args?.symbol || ["function", "class", "method"];
+
     const kbWhere = args?.where || "nextStart";
     const kbSelect = args?.select || false;
 
@@ -236,8 +248,10 @@ async function activate(context) {
   });
   context.subscriptions.push(runFunctions);
 
+  // if active document has changed or current document was edited
   context.subscriptions.push(workspace.onDidChangeTextDocument(async (event) => {
-    globalThis.refreshSymbols = true;
+    // check not keybindings/settings.json
+    if (event.contentChanges.length) globalThis.refreshSymbols = true;
   }));
 
   context.subscriptions.push(workspace.onDidChangeConfiguration(async (event) => {
@@ -273,8 +287,7 @@ function checkArgs(args) {
 
   let /** @type {string[]} */ badSymbol = [];
 
-  // if (args.symbol) badSymbol = args.symbol.find(kbSymbol => !symbols.includes(kbSymbol));
-  if (args.symbol) badSymbol = args.symbol.filter(kbSymbol => !symbols.includes(kbSymbol));
+  if (args.symbol && args.symbol[0] !== undefined) badSymbol = args.symbol.filter(kbSymbol => !symbols.includes(kbSymbol));
   if (badSymbol.length) bad.symbol = badSymbol;
 
   if (args.where && !wheres.includes(args.where)) bad.where = args.where;
@@ -291,7 +304,10 @@ function deactivate() {
     statusBarItem.dispose();
   }
   if (global.typeDisposable) global.typeDisposable.dispose();
+
   delete globalThis.symbols;
+  // delete globalThis.arrowFunctionRanges;
+
   // delete globalThis?.currentUri;
   // delete globalThis?.refreshSymbols;
 }
