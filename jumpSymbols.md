@@ -24,7 +24,9 @@ Example of traversal nextStart/previousStart with selection:
 
 <img src="https://github.com/ArturoDent/jump-and-select/blob/main/images/traverse!.gif?raw=true" width="650" height="800" alt="Example of moving up and down with selection"/>
 
-<img src="" width="650" height="600" alt="Example of moving up and down with selection"/>
+Example of toggling between the start and end of a symbol (with no selection):  
+
+<img src="https://github.com/ArturoDent/jump-and-select/blob/main/images/traverseStartEnd.gif?raw=true" width="700" height="350" alt="Example of toggling between start and end of a symbol"/>
 
 ## Sample Keybindings
 
@@ -121,6 +123,34 @@ class Car():
   "args": {
     "where": "parentStart",     // or parentEnd
     // "select": true           // optional, default === false
+  }
+}
+```
+
+```json
+// to toggle between the start and end of a symbol - no selection (gif above)
+{
+  "key": "alt+up",
+  "command": "jump-and-select.bySymbol",
+  "args": {
+    "symbol": [
+      "class",
+      "method",
+      "function"
+    ],
+    "where": "currentStart",
+  }
+},
+{
+  "key": "alt+down",
+  "command": "jump-and-select.bySymbol",
+  "args": {
+    "symbol": [
+      "class",
+      "method",
+      "function"
+    ],
+    "where": "currentEnd",
   }
 }
 ```
