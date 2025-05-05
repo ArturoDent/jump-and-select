@@ -2,7 +2,7 @@
   "name": "jump-and-select",
   "displayName": "Jump and select",
   "description": "Jump or move the cursor to next or previous chosen character(s) (with optional selection).",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "publisher": "ArturoDent",
   "preview": true,
   "repository": {
