@@ -352,14 +352,11 @@ function deepSymbolRecursion(parent, kbWhere, symMap, kbSymbol, selection, resul
         // scan previous of sortedChildren after index to see if any are functions, etc.
         const previousMatchingSymbol = sortedChildren.slice(0, index).findLast(({kind, range}) => {
 
-          // const isArrowFunction = document.languageId.match(/javascript|typescript/) ?
           const isArrowFunction = globalThis.usesArrowFunctions ?
             !!globalThis.arrowFunctionRanges.find(arrowRange => arrowRange.isEqual(range)) : false;
 
-          const isRightKind = isArrowFunction || kbSymbol.some(symbol => symMap[symbol] === kind);
-
-          const isBefore = range.start.isBefore(extendedTargetRange.end);
-          return isRightKind && isBefore;
+          // TODO: what if don't want functions, handled elsewhere
+          return isArrowFunction || kbSymbol.some(symbol => symMap[symbol] === kind);
         });
         if (previousMatchingSymbol) result.push(previousMatchingSymbol);
       }
@@ -371,16 +368,13 @@ function deepSymbolRecursion(parent, kbWhere, symMap, kbSymbol, selection, resul
         // scan rest (next) of sortedChildren after index to see if any are functions, etc.
         const nextMatchingSymbol = sortedChildren.slice(index + 1).find(({kind, range}, i) => {
 
-          // const isArrowFunction = document.languageId.match(/javascript|typescript/) ?
           const isArrowFunction = globalThis.usesArrowFunctions ?
             !!globalThis.arrowFunctionRanges.find(arrowRange => {
               return arrowRange.isEqual(range);
             }) : false;
 
-          const isRightKind = isArrowFunction || kbSymbol.some(symbol => symMap[symbol] === kind);
-
-          const isAfter = range.start.isAfter(extendedTargetRange.end);
-          return isRightKind && isAfter;
+          // TODO: what if don't want functions, handled elsewhere
+          return isArrowFunction || kbSymbol.some(symbol => symMap[symbol] === kind);
         });
         if (nextMatchingSymbol) result.push(nextMatchingSymbol);
       }
@@ -407,7 +401,7 @@ function deepSymbolRecursion(parent, kbWhere, symMap, kbSymbol, selection, resul
           !!globalThis.arrowFunctionRanges.find(arrowRange => arrowRange.isEqual(child.range)) : false;
 
         // const isRightKind = isArrowFunction || kbSymbol.some(symbol => symMap[symbol] === child.kind);
-        const isRightKind = isArrowFunction || child.kind !== vscode.SymbolKind.Variable;
+        const isRightKind = isArrowFunction || (child.kind !== vscode.SymbolKind.Variable && child.kind !== vscode.SymbolKind.Property);
 
         if (isRightKind) result.push(child);
       }
