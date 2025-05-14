@@ -362,7 +362,7 @@ function deepSymbolRecursion(parent, kbWhere, symMap, kbSymbol, selection, resul
           const isArrowFunction = globalThis.usesArrowFunctions ?
             !!globalThis.arrowFunctionRanges.find(arrowRange => arrowRange.isEqual(range)) : false;
 
-          // TODO: what if don't want functions, handled elsewhere
+          // what if don't want functions, actually handled elsewhere
           return isArrowFunction || kbSymbol.some(symbol => symMap[symbol] === kind);
         });
         if (previousMatchingSymbol) result.push(previousMatchingSymbol);

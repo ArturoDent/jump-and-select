@@ -214,6 +214,10 @@ These are all relative to the current cursor position.  Multiple cursors are not
 
 * parentEnd  
 
+* childStart - the first child symbol of the current symbol
+
+* childEnd  
+
 * topScopeStart - the outermost symbol (i.e., its top scope) containing the cursor, may contain nested symbols
 
 * topScopeEnd

@@ -206,34 +206,34 @@ async function activate(context) {
     if (global.typeDisposable) global.typeDisposable.dispose();
 
     /** @type {any} */
-    const bad = checkArgs(structuredClone(args));
+    // const bad = checkArgs(structuredClone(args));
 
-    if (bad && Object.keys(bad).length) {  // not empty
-      console.log(bad);
+    // if (bad && Object.keys(bad).length) {  // not empty
+    //   console.log(bad);
 
-      let message = "";
-      if (bad.symbol.length === 1)
-        message += `The "symbol" option "${bad.symbol[0]}" is an error. `;
-      else if (bad.symbol.length > 1)
-        message += `The "symbol" options "${bad.symbol.join('" and "')}" are errors. `;
-      if (bad.where)
-        message += `The "where" option "${bad.where}" is an error. `;
-      if (bad.select)
-        message += `The "select" option "${bad.select}" is not allowed. "select" must be a boolean.`;
+    //   let message = "";
+    //   if (bad.symbol.length === 1)
+    //     message += `The "symbol" option "${bad.symbol[0]}" is an error. `;
+    //   else if (bad.symbol.length > 1)
+    //     message += `The "symbol" options "${bad.symbol.join('" and "')}" are errors. `;
+    //   if (bad.where)
+    //     message += `The "where" option "${bad.where}" is an error. `;
+    //   if (bad.select)
+    //     message += `The "select" option "${bad.select}" is not allowed. "select" must be a boolean.`;
 
 
-      return await window.showErrorMessage(
-        message,
-        {modal: true},
-        ...['Go to keybindings'])   // two buttons - Cancel will be added
-        .then(selected => {
-          if (selected === 'Go to keybindings') commands.executeCommand('workbench.action.openGlobalKeybindingsFile');
-          // any way to navigate to this particular keybinding?
-          // Opening a file at a specific line and column: vscode:;//file/{full-path-to-file}:{line}:{column}
+    //   return await window.showErrorMessage(
+    //     message,
+    //     {modal: true},
+    //     ...['Go to keybindings'])   // two buttons - Cancel will be added
+    //     .then(selected => {
+    //       if (selected === 'Go to keybindings') commands.executeCommand('workbench.action.openGlobalKeybindingsFile');
+    //       // any way to navigate to this particular keybinding?
+    //       // Opening a file at a specific line and column: vscode:;//file/{full-path-to-file}:{line}:{column}
 
-          else commands.executeCommand('leaveEditorMessage');
-        });
-    }
+    //       else commands.executeCommand('leaveEditorMessage');
+    //     });
+    // }
 
     // defaults
     if (!!args.symbol && !Array.isArray(args.symbol)) args.symbol = [args.symbol];
