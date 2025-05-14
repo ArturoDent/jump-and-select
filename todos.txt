@@ -8,6 +8,12 @@ Doesn't seem necessary:
       }
     ]
     
+    
+    sdfsdfsdf howdy
+    
+    
+    accann howdy
+    
   let gS = {
     start2Start:
       Function('vscode', 'generic', `return [new vscode.Selection(generic.range.start, generic.range.start)]`),

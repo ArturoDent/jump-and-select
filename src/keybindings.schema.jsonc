@@ -55,6 +55,8 @@
         "nextEnd",
         "parentStart",
         "parentEnd",
+        "childStart",
+        "childEnd",
         "topScopeStart",
         "topScopeEnd"
       ],
@@ -67,6 +69,8 @@
         "Jump to the end/bottom of the next symbol.",
         "Jump to the start/top of the parent symbol - the immediate parent of the current symbol.",
         "Jump to the end/bottom of the parent symbol - the immediate parent of the current symbol.",
+        "Jump to the start/top of the parent symbol's first child symbol.",
+        "Jump to the end/bottom of the parent symbol's first child symbol.",
         "Jump to the start/top of the symbol at the most outer scope - a parent at the highest level.",
         "Jump to the end/bottom of the symbol at the most outer scope - a parent at the highest level."
       ]
@@ -80,11 +84,19 @@
     },
     "symbol": {
       "description": "The type of symbol to jump to (e.g., function, class and/or method.",
-      "default": ["function", "class", "method"],
+      "default": [
+        "function",
+        "class",
+        "method"
+      ],
       "oneOf": [
         {
           "type": "string",
-          "enum": ["function", "class", "method"],
+          "enum": [
+            "function",
+            "class",
+            "method"
+          ],
           "markdownEnumDescriptions": [
             "Jump between functions.",
             "Jump between classes.",
@@ -96,9 +108,15 @@
           "items": {
             "type": "string",
             "anyOf": [
-             { "const": "function" },
-             { "const": "class" },
-             { "const": "method" }
+              {
+                "const": "function"
+              },
+              {
+                "const": "class"
+              },
+              {
+                "const": "method"
+              }
             ]
           },
           "minItems": 1,
@@ -171,14 +189,12 @@
             }
           }
         },
-
         "then": {
           "properties": {
             "args": {
               // "required": ["symbol", "where"],
               "additionalProperties": false,
               "type": "object",
-
               "properties": {
                 "symbol": {
                   "description": "Which kind symbol to jump to.",
@@ -194,7 +210,7 @@
               }
             }
           }
-      }
+        }
       },
       {
         "if": {
@@ -211,16 +227,12 @@
             }
           }
         },
-
         "then": {
           "properties": {
             "args": {
-
               "additionalProperties": false,
               "type": "object",
-
               "properties": {
-
                 "text": {
                   "description": "The text to find and jump forward to.",
                   "$ref": "#/definitions/text"
@@ -236,7 +248,7 @@
               }
             }
           }
-      }
+        }
       },
       {
         "if": {
@@ -256,11 +268,8 @@
         "then": {
           "properties": {
             "args": {
-
               "additionalProperties": false,
-
               "properties": {
-
                 "text": {
                   "description": "The text to find and jump forward to.",
                   "$ref": "#/definitions/text"
@@ -296,11 +305,8 @@
         "then": {
           "properties": {
             "args": {
-
               "additionalProperties": false,
-
               "properties": {
-
                 "text": {
                   "description": "The text to jump backward to",
                   "$ref": "#/definitions/text"
@@ -336,11 +342,8 @@
         "then": {
           "properties": {
             "args": {
-
               "additionalProperties": false,
-
               "properties": {
-
                 "text": {
                   "description": "The text to jump backward to.",
                   "$ref": "#/definitions/text"

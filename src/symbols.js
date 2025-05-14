@@ -41,8 +41,6 @@ exports.jump2Symbols = async function (kbSymbol, kbWhere, kbSelect = false) {
     if (!!document?.languageId.match(/javascript|typescript/)) globalThis.usesArrowFunctions = true;
 
     if (kbSymbol.includes("function") && globalThis.usesArrowFunctions
-      // && (kbWhere.startsWith("previous") || kbWhere.startsWith("next"))
-      // && !kbWhere.startsWith("parent")
     ) {
       globalThis.arrowFunctionRanges = await getArrowFunctionRanges(document) || [];
     }
@@ -84,6 +82,23 @@ exports.jump2Symbols = async function (kbSymbol, kbWhere, kbSelect = false) {
 
         return isArrowFunction || kbSymbol.some(symbol => symMap[symbol] === kind);
       });
+      break;
+
+    case "childStart": case "childEnd":
+
+      parentSymbol = Object.values(globalThis.symbols).find(topSymbol => {
+        // handles when you select before or beyond the range of a symbol, but same start/end lines
+        const parentExtendedRange = extendSelection(topSymbol, kbWhere, document);
+        if (parentExtendedRange.contains(selection.active)) return true;
+        else return false;
+      });
+
+      if (parentSymbol?.children.length) {
+        // children must be sorted, they are returned in alphabetical order
+        const sortedChildren = parentSymbol.children.sort(compareRanges);
+        targetSymbol = sortedChildren[0];
+      }
+
       break;
 
     case "currentStart": case "currentEnd": case "parentStart": case "parentEnd":
@@ -214,7 +229,7 @@ async function getArrowFunctionRanges(document) {
 
     // e.g., const square1 = x => x * x;  initializer is x => x * x
     // any space/jsdoc, etc. before the name (square1) is trivia
-    else if (ts.isVariableDeclaration(node) && node.initializer && ts.isArrowFunction(node.initializer)) {
+    else if (ts.isVariableDeclaration(node) && !!node.initializer && ts.isArrowFunction(node.initializer)) {
       if (document) {
 
         // getLeadingTriviaWidth() needs to have the sourceFile parameter to work
@@ -224,7 +239,7 @@ async function getArrowFunctionRanges(document) {
         const triviaWidth = node.name.end - node.name.pos - node.name.getText(sourceFile).length;
 
         // const triviaWidth = node.initializer.getLeadingTriviaWidth(sourceFile);
-        // above DOES NOT handle "const /** @type {any} */ square2 = x => x * x;" correctly"
+        // above DOES NOT handle "const /** @type {any} */ square2 = x => x * x;" correctly
 
         const startPos = document.positionAt(node.pos).translate({characterDelta: triviaWidth});
         const fullRange = new vscode.Range(startPos, document.positionAt(node.end));
@@ -254,16 +269,7 @@ function extendSelection(target, kbWhere, document) {
 
   let extendedRange;
 
-  // to include comments at end of last line
-
-  // if (!(target instanceof vscode.DocumentSymbol) {
-  //   target = {
-  //     name: "", detail: "",
-  //     kind: target.kind,
-  //     range: target.range,
-  //     selectionRange: target.range
-  //   };
-  // }
+  // to extend selection to 0th column of the start line
 
   const lastLineLength = document.lineAt(target.range.end).text.length;
 
@@ -292,6 +298,7 @@ function extendSelection(target, kbWhere, document) {
 function symbolSelection(target, kbWhere, document) {
 
   // to include comments at end of last line
+
   const lastLineLength = document.lineAt(target.range.end).text.length;
   const firstLineStart = document.lineAt(target.range.start).firstNonWhitespaceCharacterIndex;
 
@@ -343,7 +350,7 @@ function deepSymbolRecursion(parent, kbWhere, symMap, kbSymbol, selection, resul
       }
     }
 
-    // at leaf nodes 
+    // rest are leaf nodes 
 
     if (kbWhere.startsWith("previous")) {
       const extendedTargetRange = extendSelection(child, kbWhere, document);

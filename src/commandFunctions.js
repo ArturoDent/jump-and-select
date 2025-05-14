@@ -335,7 +335,7 @@ function getQueryDocumentIndexForward(cursorPosition, query, putCursorForward, s
     }
     else {
       // at end of line already and there is a nextLine
-      if (cursorPosition.isEqual(lineRange.end) && nextLine) {
+      if (cursorPosition.isEqual(lineRange.end) && !!nextLine) {
 
         let eolLength = 1;
         if (document.eol === EndOfLine.CRLF) eolLength = 2; // correct for Windows CRLF
@@ -609,7 +609,7 @@ function getQueryDocumentIndexBackward(cursorPosition, query, purCursorBackward,
       if (selectionStartLine.range.start.line !== 0) selectionStartPreviousLine = document.lineAt(new Position(selectionStartLine.range.start.line - 1, 0));
       else return noMatchQueryObject;
 
-      if (selection.start.isEqual(selectionStartLine.range.start) && selectionStartPreviousLine) {  // at start of line already and there is a previousLine
+      if (selection.start.isEqual(selectionStartLine.range.start) && !!selectionStartPreviousLine) {  // at start of line already and there is a previousLine
         return {queryIndex: document.offsetAt(selectionStartPreviousLine.range.start)};
       }
       else if (selection.start.isAfter(selectionStartLine.range.start)) {      // not at start of selection start line
@@ -617,7 +617,7 @@ function getQueryDocumentIndexBackward(cursorPosition, query, purCursorBackward,
       }
     }
     else {
-      if (cursorPosition.isEqual(currentLineRange.start) && previousLine) {  // at start of line already and there is a previousLine
+      if (cursorPosition.isEqual(currentLineRange.start) && !!previousLine) {  // at start of line already and there is a previousLine
         return {queryIndex: document.offsetAt(previousLine.range.start)};
       }
       else if (cursorPosition.isAfter(currentLineRange.start))        // not at start of currentLine

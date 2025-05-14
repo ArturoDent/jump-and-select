@@ -6,7 +6,6 @@ const statusBarItem = require('./statusBar');
 
 
 var global = Function('return this')();  // used for global.typeDisposable
-// var globalThis = Function('return this')();  // used for global.typeDisposable
 
 /** @type {DocumentSymbol[]|undefined} */
 globalThis.symbols = [];
@@ -237,7 +236,7 @@ async function activate(context) {
     }
 
     // defaults
-    if (args.symbol && !Array.isArray(args.symbol)) args.symbol = [args.symbol];
+    if (!!args.symbol && !Array.isArray(args.symbol)) args.symbol = [args.symbol];
     else if (Array.isArray(args.symbol) && args.symbol.length === 0) args.symbol = undefined;;
     const kbSymbol = args?.symbol || ["function", "class", "method"];
 
@@ -282,17 +281,18 @@ function checkArgs(args) {
   const symbols = ["class", "method", "function"];
   const wheres = [
     "previousStart", "previousEnd", "currentStart", "currentEnd", "nextStart",
-    "nextEnd", "parentStart", "parentEnd", "topScopeStart", "topScopeEnd"
+    "nextEnd", "parentStart", "parentEnd", "childStart", "childEnd",
+    "topScopeStart", "topScopeEnd"
   ];
 
   let /** @type {string[]} */ badSymbol = [];
 
-  if (args.symbol && args.symbol[0] !== undefined) badSymbol = args.symbol.filter(kbSymbol => !symbols.includes(kbSymbol));
+  if (!!args.symbol && args.symbol[0] !== undefined) badSymbol = args.symbol.filter(kbSymbol => !symbols.includes(kbSymbol));
   if (badSymbol.length) bad.symbol = badSymbol;
 
-  if (args.where && !wheres.includes(args.where)) bad.where = args.where;
+  if (!!args.where && !wheres.includes(args.where)) bad.where = args.where;
 
-  if (args.select && typeof args.select !== "boolean") bad.select = args.select;
+  if (!!args.select && typeof args.select !== "boolean") bad.select = args.select;
 
   return bad;
 }
