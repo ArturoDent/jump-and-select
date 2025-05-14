@@ -258,44 +258,44 @@ async function activate(context) {
   }));
 }
 
-/**
- * 
- * @param {Object}           args
- * @param {string|string[]}    args.symbol
- * @param {string}             args.where
- * @param {boolean}            args.select
- * 
- * @returns {Object}    bad
- * @property {string[]}   [symbol]
- * @property {string}     [where]
- * @property {string}     [select]
- */
-function checkArgs(args) {
+// /**
+//  * 
+//  * @param {Object}           args
+//  * @param {string|string[]}    args.symbol
+//  * @param {string}             args.where
+//  * @param {boolean}            args.select
+//  * 
+//  * @returns {Object}    bad
+//  * @property {string[]}   [symbol]
+//  * @property {string}     [where]
+//  * @property {string}     [select]
+//  */
+// function checkArgs(args) {
 
-  /** @type {{ symbol: string[], where: string, select: boolean|string }} */
-  let bad = {};
+//   /** @type {{ symbol: string[], where: string, select: boolean|string }} */
+//   let bad = {};
 
-  if (!Array.isArray(args.symbol))
-    args.symbol = [args.symbol];
+//   if (!Array.isArray(args.symbol))
+//     args.symbol = [args.symbol];
 
-  const symbols = ["class", "method", "function"];
-  const wheres = [
-    "previousStart", "previousEnd", "currentStart", "currentEnd", "nextStart",
-    "nextEnd", "parentStart", "parentEnd", "childStart", "childEnd",
-    "topScopeStart", "topScopeEnd"
-  ];
+//   const symbols = ["class", "method", "function"];
+//   const wheres = [
+//     "previousStart", "previousEnd", "currentStart", "currentEnd", "nextStart",
+//     "nextEnd", "parentStart", "parentEnd", "childStart", "childEnd",
+//     "topScopeStart", "topScopeEnd"
+//   ];
 
-  let /** @type {string[]} */ badSymbol = [];
+//   let /** @type {string[]} */ badSymbol = [];
 
-  if (!!args.symbol && args.symbol[0] !== undefined) badSymbol = args.symbol.filter(kbSymbol => !symbols.includes(kbSymbol));
-  if (badSymbol.length) bad.symbol = badSymbol;
+//   if (!!args.symbol && args.symbol[0] !== undefined) badSymbol = args.symbol.filter(kbSymbol => !symbols.includes(kbSymbol));
+//   if (badSymbol.length) bad.symbol = badSymbol;
 
-  if (!!args.where && !wheres.includes(args.where)) bad.where = args.where;
+//   if (!!args.where && !wheres.includes(args.where)) bad.where = args.where;
 
-  if (!!args.select && typeof args.select !== "boolean") bad.select = args.select;
+//   if (!!args.select && typeof args.select !== "boolean") bad.select = args.select;
 
-  return bad;
-}
+//   return bad;
+// }
 
 
 function deactivate() {
