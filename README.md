@@ -16,7 +16,7 @@ A command `jump-and-select.bySymbol` has been added.  This is used with argument
 
 ### Example function jump keybinding
 
-```json
+```jsonc
 {
   "key": "alt+j",                  // whatever keybinding you want
   "command": "jump-and-select.bySymbol",

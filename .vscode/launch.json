@@ -10,8 +10,9 @@
 			"type": "extensionHost",
 			"request": "launch",
 			"runtimeExecutable": "${execPath}",
+			// "noDebug": true,
 			"args": [
-        "${workspaceFolder}/../Test Bed",
+				"${workspaceFolder}/../Test Bed",
 				// "${workspaceFolder}/../TestMultiRoot/.vscode/TestMultiRoot.code-workspace",
 				"--extensionDevelopmentPath=${workspaceFolder}"
 			]

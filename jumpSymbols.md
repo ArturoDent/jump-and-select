@@ -42,7 +42,7 @@ So, for example, arrow function traversal should work (in javascript/typescript 
 
 ## Sample Keybindings
 
-```json
+```jsonc
 {
   "key": "shift+alt+c",                     // whatever keybinding you want
   "command": "jump-and-select.bySymbol",    // use this command
@@ -63,7 +63,7 @@ So, for example, arrow function traversal should work (in javascript/typescript 
 }
 ```
 
-```json
+```jsonc
 // to cycle between methods in a class or other container
 {
   "key": "alt+down",          // whatever keybindings you want 
@@ -127,7 +127,7 @@ class Car():
     self.close_trunk
 ```
 
-```json
+```jsonc
 // to walk up the parent symbols
 {
   "key": "alt+up",              // whatever keybindings you want 
@@ -139,7 +139,7 @@ class Car():
 }
 ```
 
-```json
+```jsonc
 // to toggle between the start and end of a symbol - no selection (gif above)
 {
   "key": "alt+up",
