@@ -455,6 +455,7 @@ For some unknown reason, tabs (`\t`) are not considered a typed character and do
 [  ] - Consider cancelling multiMode if change editor.  
 [  ] - Should there be a notification for no match on a query?  
 [  ] - Add a kbWhere option for if no matches in remaining children?  
+[  ] - multimode and jumpBySymbol?  
 
 ## Release Notes  
 
@@ -491,5 +492,7 @@ For some unknown reason, tabs (`\t`) are not considered a typed character and do
 
 * 0.7.0&emsp; Added jump `bySymbol` command: goto function, class or method.  
 &emsp;&emsp; &emsp; Added **[jumpSymbols.md](jumpSymbols.md)**
+
+* 0.8.0&emsp;  Work on next and previous, deepSymbolRecursion for those options.  
 
 -----------------------------------------------------------------------------------------------------------

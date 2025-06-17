@@ -39,7 +39,7 @@ async function activate(context) {
 
   let commandDisposable1 = commands.registerCommand('jump-and-select.jumpForward', async args => {
 
-    // multiple args like '{ text: "mark", putCursorOnForwardJump: "beforeCharacter", restrictSearch: "line" }
+    // multiple args like '{ text: "mark", putCursorOnForwardjump: "beforeCharacter", restrictSearch: "line" }
     // no args are required
 
     if (statusBarItem) await statusBarItem.hide();
@@ -49,7 +49,7 @@ async function activate(context) {
     const multiMode = false;
     const select = false;
 
-    // check if args.putCursorOnForwardJump is "beforeCharacter" or "afterCharacter"
+    // check if args.putCursorOnForwardjump is "beforeCharacter" or "afterCharacter"
 
     // 2 modes of commands: single mode -  one character at a time
     //                      multiMode   -  trigger command, move cursor character by character until command disabled
@@ -201,6 +201,7 @@ async function activate(context) {
 
   let runFunctions = commands.registerCommand('jump-and-select.bySymbol', async (args) => {
 
+    // do we need a multimode ?  multiCursor aware?
     // TODO: still do this?
     if (statusBarItem) await statusBarItem.hide();
     if (global.typeDisposable) global.typeDisposable.dispose();
@@ -237,7 +238,9 @@ async function activate(context) {
 
     // defaults
     if (!!args.symbol && !Array.isArray(args.symbol)) args.symbol = [args.symbol];
-    else if (Array.isArray(args.symbol) && args.symbol.length === 0) args.symbol = undefined;;
+    else if (Array.isArray(args.symbol) && args.symbol.length === 0) args.symbol = undefined;
+
+    // TODO if no kbSymbol, use all symbols ?
     const kbSymbol = args?.symbol || ["function", "class", "method"];
 
     const kbWhere = args?.where || "nextStart";
