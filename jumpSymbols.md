@@ -2,6 +2,8 @@
 
 You can create keybindings that will allow you to move and select functions, classes or methods relative to the current selection (cursor position).
 
+* v0.8.0 Objects in a `.json` file that is a **JSON with Comments** file are considered to be "functions" (that seems strange to me but so be it) so you can traverse these objects using the `function` option.  
+
 * Important: This extension uses the `DocumentSymbols` as provided by VS Code and the language providers you may be using.  For example, in javascript this **is** a `Function` symbol:
 
 ```javascript
