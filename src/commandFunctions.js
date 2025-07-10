@@ -39,10 +39,6 @@ async function typeRegisterAndRunJumps(restrictSearch, putCursor, multiMode, sel
   });
 }
 
-// vscode.commands.executeCommand(
-//   'default:type', { text: args.text }
-// );
-
 
 /**
  * Move cursor forward to next chosen character, without selection

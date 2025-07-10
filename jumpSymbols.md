@@ -13,14 +13,14 @@ function someFunc () {}
 But the following are **not** `Function` symbols:
 
 ```javascript
-const someFunc = function () {}
+const someFunc = function () {}   // this is a 'variable' symbol, NOT a 'function' symbol
 
-const square = x => x * x;
+const square = x => x * x;        // this is a 'variable' symbol, NOT a 'function' symbol
 ```
 
-Instead, these are merely `Variable` kind of `DocumentSymbol`'s and are thus not useful for function traversal.  In order to make those work however, this extension uses the typescript compiler API to find such "nodes" and get their locations.  These are used in addition to any other symbols returned by `vscode.executeDocumentSymbolProvider`.  
+Instead, these are  of a `variable` kind of `DocumentSymbol`'s and are thus would not be captured by `function` traversal.  In order to make those work however, this extension uses the typescript compiler API to find such "nodes" and get their locations.  There may be cases where you want to include both `variable` and `function` types as `symbols`.  
 
-So, for example, arrow function traversal should work (in javascript/typescript files) as well as variable declarations that point to a function.  
+So, for example, arrow function traversal should work (in javascript/typescript files) as well as variable declarations that point to a function with just a `function` symbols option.  
 
 -----------------
 
@@ -49,7 +49,7 @@ So, for example, arrow function traversal should work (in javascript/typescript 
   "key": "shift+alt+c",                     // whatever keybinding you want
   "command": "jump-and-select.bySymbol",    // use this command
   "args": {
-    "symbol": "function",                   // or "class" or "method"
+    "symbols": "function",                  // or "class" or "method"
     "where": "currentEnd",
     "select": true                          // default is false
   }
@@ -59,7 +59,7 @@ So, for example, arrow function traversal should work (in javascript/typescript 
   "key": "alt+c",
   "command": "jump-and-select.bySymbol",
   "args": {
-    "symbol": ["function", "class", "method"] ,
+    "symbols": ["function", "class", "method"] ,
     "where": "currentStart"               // "select" defaults to false
   }
 }
@@ -71,7 +71,7 @@ So, for example, arrow function traversal should work (in javascript/typescript 
   "key": "alt+down",          // whatever keybindings you want 
   "command": "jump-and-select.bySymbol",
   "args": {
-    "symbol": "method",
+    "symbols": "method",
     "where": "nextStart",
     "select": true
   }
@@ -80,7 +80,7 @@ So, for example, arrow function traversal should work (in javascript/typescript 
   "key": "alt+up",
   "command": "jump-and-select.bySymbol",
   "args": {
-    "symbol": "method",
+    "symbols": "method",
     "where": "previousStart",
     "select": true
   }
@@ -147,7 +147,7 @@ class Car():
   "key": "alt+up",
   "command": "jump-and-select.bySymbol",
   "args": {
-    "symbol": [
+    "symbols": [
       "class",
       "method",
       "function"
@@ -159,7 +159,7 @@ class Car():
   "key": "alt+down",
   "command": "jump-and-select.bySymbol",
   "args": {
-    "symbol": [
+    "symbols": [
       "class",
       "method",
       "function"
@@ -171,21 +171,52 @@ class Car():
 
 You should get intellisense for `jump-and-select.bySymbol` and the `symbol` and `select` options.  
 
-## `symbol` Options: string or array, optional, default = ["function", "class", "method"]
+## `symbols` Options: string or array, optional, default = all symbols
 
-* function
-* class
-* method
+Here are the symbols that can be used in the `symbols` option:
 
-**Note**: if using `where` === topScope/topScopeEnd or parentStart/parentEnd or currentStart/currentEnd the `symbol` option is ignored.  You will always go to the parent or topScope no matter what kind of symbol that scope might happen to be.  For example, with this code:
+```plaintext
+  "file",
+  "module",
+  "namespace",
+  "package",
+  "class",        **
+  "method",       **
+  "property",
+  "field",
+  "constructor",
+  "enum",
+  "interface",
+  "function",     **
+  "variable",     **
+  "constant",
+  "string",
+  "number",
+  "boolean",
+  "array",
+  "object",
+  "key",
+  "null",
+  "enumMember",
+  "struct",
+  "event",
+  "operator",
+  "typeParameter"
+```
+
+If you omit the `symbols` option in you keybinding (or it is just an empty array), the default is **all** of the symbols listed above.  For any particular language or file type, most of the symbols are not used anyway.  
+
+*  If there is no parent scope for a symbol, that symbol will be selected or the cursor moved to.  If there is a parent symbol (of a kind you used in the `symbols` options) that parent will be selected or moved to.  
+
+**Note**: if using `where` === topScopeStart/topScopeEnd or Start/parentEnd the `symbols` option is ignored.  You will always go to the topScope or the parent scope no matter what kind of symbol that scope might happen to be.  For example, with this code:
 
 ```javascript
-*const myVariable = {      // topScopeStart
+*const myVariable = {      // topScopeStart or parentStart third time
   alpha: 12,
-  method1: function () {
-    *const myVar2 = {      // parentStart
+  method1: function () {   // parentStart second time
+    *const myVar2 = {      // parentStart first time
     
-      *omega: 15*          // if cursor here, currentStart and currentEnd
+      *omega: 15*          // if cursor here
       
     };*                    // parentEnd
   }
@@ -196,7 +227,7 @@ If your cursor was anywhere in `myVariable` and you wished to go to the parent s
 
 * If `"select": true` and using one of the "...End`" where options, the trailing semicolon, if any, will be selected too.  In addition, any other text, like a comment, on that last line of a symbol will be selected.  
 
-## `where` Options: string, optional, default = nextStart
+## `where` Options: string, optional, default = **nextStart**
 
 These are all relative to the current cursor position.  Multiple cursors are not supported, other cursor positions will be lost.  
 
@@ -216,7 +247,7 @@ These are all relative to the current cursor position.  Multiple cursors are not
 
 * parentEnd  
 
-* childStart - the first child symbol of the current symbol
+* childStart - the **first** child symbol (of a type from the `symbols` option) of the current symbol
 
 * childEnd  
 
@@ -224,7 +255,7 @@ These are all relative to the current cursor position.  Multiple cursors are not
 
 * topScopeEnd
 
-## `select` Option: boolean, optional, default = false
+## `select` Option: boolean, optional, default = **false**
 
 The entire symbol (function, class or method) will be selected if `select` is set to `true`.  
 

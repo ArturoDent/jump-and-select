@@ -76,31 +76,72 @@
       ]
     },
     "select": {
-      "description": "Select the entire symbol as indicated by the 'type' option.",
+      "description": "Select the entire symbol as indicated by the 'symbols' option.",
       "type": [
         "boolean"
       ],
       "default": false
     },
-    "symbol": {
-      "description": "The type of symbol to jump to (e.g., function, class and/or method.",
-      "default": [
-        "function",
-        "class",
-        "method"
-      ],
+    "symbols": {
+      "description": "The type of symbol to jump to (e.g., function, class and/or method, etc.",
       "oneOf": [
         {
           "type": "string",
           "enum": [
-            "function",
+            "file",
+            "module",
+            "namespace",
+            "package",
             "class",
-            "method"
+            "method",
+            "property",
+            "field",
+            "constructor",
+            "enum",
+            "interface",
+            "function",
+            "variable",
+            "constant",
+            "string",
+            "number",
+            "boolean",
+            "array",
+            "object",
+            "key",
+            "null",
+            "enumMember",
+            "struct",
+            "event",
+            "operator",
+            "typeParameter"
           ],
           "markdownEnumDescriptions": [
-            "Jump between functions.",
+            "Jump between files.",
+            "Jump between modules.",
+            "Jump between namespaces.",
+            "Jump between packages.",
             "Jump between classes.",
-            "Jump between methods."
+            "Jump between methods.",
+            "Jump between properties.",
+            "Jump between fields.",
+            "Jump between constructors.",
+            "Jump between enums.",
+            "Jump between interfaces.",
+            "Jump between functions.",
+            "Jump between variables.",
+            "Jump between constants.",
+            "Jump between strings.",
+            "Jump between numbers.",
+            "Jump between booleans.",
+            "Jump between arrays.",
+            "Jump between objects.",
+            "Jump between keys.",
+            "Jump between nulls.",
+            "Jump between enumMembers.",
+            "Jump between structs.",
+            "Jump between events.",
+            "Jump between operators.",
+            "Jump between typeParameters."
           ]
         },
         {
@@ -109,17 +150,85 @@
             "type": "string",
             "anyOf": [
               {
-                "const": "function"
+                "const": "file"
+              },
+              {
+                "const": "module"
+              },
+              {
+                "const": "namespace"
+              },
+              {
+                "const": "package"
               },
               {
                 "const": "class"
               },
               {
                 "const": "method"
+              },
+              {
+                "const": "property"
+              },
+              {
+                "const": "field"
+              },
+              {
+                "const": "constructor"
+              },
+              {
+                "const": "enum"
+              },
+              {
+                "const": "interface"
+              },
+              {
+                "const": "function"
+              },
+              {
+                "const": "variable"
+              },
+              {
+                "const": "constant"
+              },
+              {
+                "const": "string"
+              },
+              {
+                "const": "number"
+              },
+              {
+                "const": "boolean"
+              },
+              {
+                "const": "array"
+              },
+              {
+                "const": "object"
+              },
+              {
+                "const": "key"
+              },
+              {
+                "const": "null"
+              },
+              {
+                "const": "enumMember"
+              },
+              {
+                "const": "struct"
+              },
+              {
+                "const": "event"
+              },
+              {
+                "const": "operator"
+              },
+              {
+                "const": "typeParameter"
               }
             ]
           },
-          "minItems": 1,
           "uniqueItems": true
         }
       ]
@@ -192,13 +301,13 @@
         "then": {
           "properties": {
             "args": {
-              // "required": ["symbol", "where"],
+              // "required": ["where"],
               "additionalProperties": false,
               "type": "object",
               "properties": {
-                "symbol": {
+                "symbols": {
                   "description": "Which kind symbol to jump to.",
-                  "$ref": "#/definitions/symbol"
+                  "$ref": "#/definitions/symbols"
                 },
                 "where": {
                   "description": "Where to jump to.",

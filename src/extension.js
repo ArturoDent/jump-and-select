@@ -237,16 +237,16 @@ async function activate(context) {
     // }
 
     // defaults
-    if (!!args.symbol && !Array.isArray(args.symbol)) args.symbol = [args.symbol];
-    else if (Array.isArray(args.symbol) && args.symbol.length === 0) args.symbol = undefined;
+    if (!!args.symbols && !Array.isArray(args.symbols)) args.symbols = [args.symbols];
+    else if (Array.isArray(args.symbols) && args.symbols.length === 0) args.symbols = undefined;
 
-    // TODO if no kbSymbol, use all symbols ?
-    const kbSymbol = args?.symbol || ["function", "class", "method"];
+    // default is all symbols
+    const kbSymbols = args?.symbols || undefined;
 
     const kbWhere = args?.where || "nextStart";
     const kbSelect = args?.select || false;
 
-    await jump2Symbols(kbSymbol, kbWhere, kbSelect);
+    await jump2Symbols(kbSymbols, kbWhere, kbSelect);
   });
   context.subscriptions.push(runFunctions);
 
@@ -309,10 +309,6 @@ function deactivate() {
   if (global.typeDisposable) global.typeDisposable.dispose();
 
   delete globalThis.symbols;
-  // delete globalThis.arrowFunctionRanges;
-
-  // delete globalThis?.currentUri;
-  // delete globalThis?.refreshSymbols;
 }
 
 module.exports = {

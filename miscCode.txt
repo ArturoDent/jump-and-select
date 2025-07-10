@@ -1,0 +1,327 @@
+
+
+// const match2 = getLastMatchFromLastChildUp(previousSymbol.children.sort(compareRanges), vscode.SymbolKind.Function);
+
+// const match1 = getFirstDeepestMatchFromLastUp(previousSymbol.children.sort(compareRanges), vscode.SymbolKind.Function);
+
+// const match = getFirstMatchFromLastUp(previousSymbol.children.sort(compareRanges), vscode.SymbolKind.Function);
+
+// const symbolBest = getDeepestMatchFromLastUp(previousSymbol.children.sort(compareRanges), vscode.SymbolKind.Function);
+
+// deepest from last child forward, but doesn't start at first
+// const deepestSymbol = getDeepestKindFlexible(previousSymbol.children.sort(compareRanges), vscode.SymbolKind.Function);
+
+// only examines last child
+// const deepest = getDeepestKindFromLastChild(previousSymbol.children.sort(compareRanges), vscode.SymbolKind.Function);
+// ``;
+// let {symbol, depth} = findDeepestSymbol(previousSymbol.children.sort(compareRanges).toReversed(), vscode.SymbolKind.Function);
+
+// /**
+//  * Find the deepest matching DocumentSymbol by kind.
+//  * @param {vscode.DocumentSymbol[]} symbols
+//  * @param {vscode.SymbolKind} targetKind
+//  * @param {number} depth - Used internally to track current depth
+//  * @returns {{ symbol: vscode.DocumentSymbol|null, depth: number }}
+//  */
+// function findDeepestSymbol(symbols, targetKind, depth = 0) {
+//   let deepest = {symbol: null, depth: -1};
+
+//   for (const symbol of symbols) {
+//     if (symbol.kind === targetKind && depth > deepest.depth) {
+//       deepest = {symbol, depth};
+//     }
+
+//     if (symbol.children && symbol.children.length > 0) {
+//       const childResult = findDeepestSymbol(symbol.children, targetKind, depth + 1);
+//       if (childResult.depth > deepest.depth) {
+//         deepest = childResult;
+//       }
+//     }
+//   }
+
+//   return deepest;
+// }
+
+// /**
+//  * Performs depth-prioritized search for a symbol of specific kind.
+//  * Always returns the deepest match in this subtree.
+//  * @param {vscode.DocumentSymbol} symbol
+//  * @param {vscode.SymbolKind} kind
+//  * @param {number} depth
+//  * @returns {{ symbol: vscode.DocumentSymbol | null, depth: number }}
+//  */
+// function findDeepestInSubtree(symbol, kind, depth = 0) {
+//   let best = {symbol: null, depth: -1};
+
+//   for (const child of symbol.children ?? []) {
+//     const result = findDeepestInSubtree(child, kind, depth + 1);
+//     if (result.depth > best.depth) {
+//       best = result;
+//     }
+//   }
+
+//   if (symbol.kind === kind && depth > best.depth) {
+//     best = {symbol, depth};
+//   }
+
+//   return best;
+// }
+
+// /**
+//  * Starts at the last top-level symbol and moves upward.
+//  * Returns the first deepest match found from any subtree.
+//  * @param {vscode.DocumentSymbol[]} symbols
+//  * @param {vscode.SymbolKind} kind
+//  * @returns {vscode.DocumentSymbol | null}
+//  */
+// function getFirstDeepestMatchFromLastUp(symbols, kind) {
+//   for (let i = symbols.length - 1; i >= 0; i--) {
+//     const result = findDeepestInSubtree(symbols[i], kind);
+//     if (result.symbol) {
+//       return result.symbol; // ⛳ First deepest match found
+//     }
+//   }
+//   return null;
+// }
+
+/**
+ * Recursively finds the last match of a given kind within a symbol's subtree,
+ * prioritizing reverse-order traversal of children.
+ * @param {vscode.DocumentSymbol} symbol
+ * @param {vscode.SymbolKind} kind
+ * @returns {vscode.DocumentSymbol | null}
+ */
+function findLastMatchInSubtree(symbol, kind) {
+  const children = symbol.children ?? [];
+
+  // Search children in reverse
+  for (let i = children.length - 1; i >= 0; i--) {
+    const match = findLastMatchInSubtree(children[i], kind);
+    if (match) return match;
+  }
+
+  // Check current symbol last
+  return symbol.kind === kind ? symbol : null;
+}
+
+/**
+ * Searches top-level symbols from last to first, inspecting children in reverse order.
+ * Returns the first match it finds during that sweep.
+ * @param {vscode.DocumentSymbol[]} symbols
+ * @param {vscode.SymbolKind} kind
+ * @returns {vscode.DocumentSymbol | null}
+ */
+function getLastMatchFromLastChildUp(symbols, kind) {
+  for (let i = symbols.length - 1; i >= 0; i--) {
+    const match = findLastMatchInSubtree(symbols[i], kind);
+    if (match) return match;
+  }
+  return null;
+}
+
+// /**
+//  * Get the deepest match of a given kind starting from the last child path.
+//  * @param {vscode.DocumentSymbol[]} symbols - The top-level symbols.
+//  * @param {vscode.SymbolKind} targetKind - The SymbolKind to match.
+//  * @returns {vscode.DocumentSymbol | null}
+//  */
+// function getDeepestKindFromLastChild(symbols, targetKind) {
+//   let match = null;
+
+//   function recurse(symbol) {
+//     if (symbol.kind === targetKind) {
+//       match = symbol; // Store latest match along the descent
+//     }
+
+//     const children = symbol.children ?? [];
+//     if (children.length > 0) {
+//       recurse(children[children.length - 1]); // Only follow the last child
+//     }
+//   }
+
+//   if (symbols.length > 0) {
+//     recurse(symbols[symbols.length - 1]); // Start from the last top-level symbol
+//   }
+
+//   return match;
+// }
+
+// /**
+//  * Get the deepest match of a specific kind, favoring last-child branches,
+//  * with fallback to earlier siblings if needed.
+//  * @param {vscode.DocumentSymbol[]} symbols
+//  * @param {vscode.SymbolKind} targetKind
+//  * @returns {vscode.DocumentSymbol | null}
+//  */
+// function getDeepestKindFlexible(symbols, targetKind) {
+//   let bestMatch = null;
+//   let bestDepth = -1;
+
+//   /**
+//    * @param {vscode.DocumentSymbol} symbol 
+//    * @param {number} depth 
+//    */
+//   function recurse(symbol, depth) {
+//     if (symbol.kind === targetKind && depth > bestDepth) {
+//       bestMatch = symbol;
+//       bestDepth = depth;
+//     }
+
+//     const children = symbol.children ?? [];
+//     for (let i = children.length - 1; i >= 0; i--) {
+//       recurse(children[i], depth + 1);
+//     }
+//   }
+
+//   for (let i = symbols.length - 1; i >= 0; i--) {
+//     recurse(symbols[i], 0);
+//   }
+
+//   return bestMatch;
+// }
+
+// /**
+//  * Recursively searches for the deepest kind match in a subtree.
+//  * @param {vscode.DocumentSymbol} symbol - The root symbol.
+//  * @param {vscode.SymbolKind} targetKind - The kind to search for.
+//  * @param {number} depth - Current recursion depth.
+//  * @returns {{ symbol: vscode.DocumentSymbol | null, depth: number }}
+//  */
+// function findDeepestInSubtree(symbol, targetKind, depth = 0) {
+//   let best = {symbol: null, depth: -1};
+
+//   if (symbol.kind === targetKind) {
+//     best = {symbol, depth};
+//   }
+
+//   const children = symbol.children ?? [];
+//   for (const child of children) {
+//     const result = findDeepestInSubtree(child, targetKind, depth + 1);
+//     if (result.depth > best.depth) {
+//       best = result;
+//     }
+//   }
+
+//   return best;
+// }
+
+// /**
+//  * Searches top-level symbols in reverse for deepest kind match.
+//  * @param {vscode.DocumentSymbol[]} symbols - The top-level symbols.
+//  * @param {vscode.SymbolKind} targetKind - The kind to find.
+//  * @returns {vscode.DocumentSymbol | null}
+//  */
+// function getDeepestMatchFromLastUp(symbols, targetKind) {
+//   for (let i = symbols.length - 1; i >= 0; i--) {
+//     const result = findDeepestInSubtree(symbols[i], targetKind);
+//     if (result.symbol) {
+//       return result.symbol; // 🎯 Return the first deepest match found from the last symbol upward
+//     }
+//   }
+//   return null;
+// }
+
+// /**
+//  * Recursively find the first match of a specific SymbolKind within a subtree.
+//  * Stops immediately once a match is found.
+//  * @param {vscode.DocumentSymbol} symbol
+//  * @param {vscode.SymbolKind} kind
+//  * @returns {vscode.DocumentSymbol | null}
+//  */
+// function findFirstInSubtree(symbol, kind) {
+//   if (symbol.kind === kind) return symbol;
+
+//   const children = symbol.children ?? [];
+//   for (const child of children) {
+//     const result = findFirstInSubtree(child, kind);
+//     if (result) return result;
+//   }
+
+//   return null;
+// }
+
+
+// /**
+//  * Traverse top-level symbols in reverse, finding the first match from the last symbol upward.
+//  * Stops entirely after the first match.
+//  * @param {vscode.DocumentSymbol[]} symbols
+//  * @param {vscode.SymbolKind} kind
+//  * @returns {vscode.DocumentSymbol | null}
+//  */
+// function getFirstMatchFromLastUp(symbols, kind) {
+//   for (let i = symbols.length - 1; i >= 0; i--) {
+//     const match = findFirstInSubtree(symbols[i], kind);
+//     if (match) return match;
+//   }
+//   return null;
+// }
+
+/** 
+ * @param {vscode.DocumentSymbol} parent
+ * @param {string} kbWhere - nextStart, currentStart, etc.
+ * @param {SymMap} symMap
+ * @param {SymMapKey[]} kbSymbol
+ * @param {vscode.Selection} selection
+ * @param {vscode.DocumentSymbol[]} result
+ * @param {vscode.TextDocument} document
+ * @returns {Promise<vscode.DocumentSymbol[]>}
+ */
+async function previousRecursion(parent, kbWhere, symMap, kbSymbol, selection, result, document) {
+
+  result.push(parent);
+
+
+  /** @type {vscode.DocumentSymbol[] } */
+  // const sortedChildren = parent.children.sort(compareRanges);
+  const sortedChildren = parent.children.sort(compareRanges).toReversed();
+
+  for await (const child of sortedChildren) {
+
+    // sortedChildren.forEach(child => {
+
+    if (child.children.length) {
+      const extendedTargetRange = extendSelection(child, kbWhere, document);
+      // if (extendedTargetRange.contains(selection.active)) {
+      if (extendedTargetRange.start.isBefore(selection.active)) {
+        // result.push(parent);
+        // result.push(child);
+        await previousRecursion(child, kbWhere, symMap, kbSymbol, selection, result, document);
+      }
+    }
+
+    // rest are leaf nodes
+
+    // else if (kbWhere.startsWith("previous")) {
+    // if (kbWhere.startsWith("previous")) {
+    // else if (!child.children.length) {
+    else {
+
+      // const previousMatchingSymbol = sortedChildren.findLast(({kind, range}) => {
+      // const previousMatchingSymbol = sortedChildren.find(child => {
+
+      let previousMatchingSymbol;
+
+      if (Object.values(symMap).includes(child.kind)) previousMatchingSymbol = child;
+      // if (Object.values(symMap).includes(child.kind)) return true;
+      else if (arrowFunctionRanges) {
+        const isArrowFunction = globalThis.usesArrowFunctions ?
+          !!arrowFunctionRanges.find(arrowRange => arrowRange.isEqual(child.range)) : false;
+        // return isArrowFunction;
+        if (isArrowFunction) previousMatchingSymbol = child;
+      }
+      // });
+      // if (previousMatchingSymbol) result.push(previousMatchingSymbol);
+      if (previousMatchingSymbol) {
+        // result.push(parent);
+        // result.push(parent);
+        // result.push(child);
+        result.push(previousMatchingSymbol);
+        // return true;
+      }
+      // }
+      // });
+    }
+  }
+  // });
+  return result;
+}

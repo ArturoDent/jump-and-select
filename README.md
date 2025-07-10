@@ -8,6 +8,12 @@ Jump between and select docuemnt symbols like functions, classes and/or methods.
 
 -----------
 
+## Notable Changes in v0.8.0
+
+Support for all symbols provided by `vscode.executeDocumentSymbolProvider()`.  All symbols are **not** supported by each language service.  
+
+-----------
+
 ## Notable Changes in v0.7.0
 
 A command `jump-and-select.bySymbol` has been added.  This is used with argument options to move up and down and optionally select the previous, current, parent or next symbols.
@@ -454,8 +460,9 @@ For some unknown reason, tabs (`\t`) are not considered a typed character and do
 [  ] - Consider adding a setting to make queries be interpreted as regex's in keybindings.  
 [  ] - Consider cancelling multiMode if change editor.  
 [  ] - Should there be a notification for no match on a query?  
-[  ] - Add a kbWhere option for if no matches in remaining children?  
+[  ] - Add a kbWhere option for  no matches in remaining children?  
 [  ] - multimode and jumpBySymbol?  
+[  ] - Consider adding negated kinds of symbols in `symbols` options.  
 
 ## Release Notes  
 
@@ -494,5 +501,7 @@ For some unknown reason, tabs (`\t`) are not considered a typed character and do
 &emsp;&emsp; &emsp; Added **[jumpSymbols.md](jumpSymbols.md)**
 
 * 0.8.0&emsp;  Work on next and previous, deepSymbolRecursion for those options.  
+0.8.1&emsp; Added support for **all symbols** in vscode.SymbolKind's.  
+&emsp;&emsp; &emsp; Reworked child/next/previous
 
 -----------------------------------------------------------------------------------------------------------
