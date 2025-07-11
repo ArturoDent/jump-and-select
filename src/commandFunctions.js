@@ -1,4 +1,4 @@
-const {commands, window, Range, Position, Selection, EndOfLine, TextEditorRevealType} = require('vscode');
+const { commands, window, Range, Position, Selection, EndOfLine, TextEditorRevealType } = require('vscode');
 const statusBarItem = require('./statusBar');
 
 var global = Function('return this')();  // used for global.typeDisposable
@@ -7,21 +7,21 @@ var global = Function('return this')();  // used for global.typeDisposable
  * The Object returned contains the index of the matched query or -1.
  * This index is from the beginning of the text to be searched.
  *
- * @typedef  {Object} QueryObject
- * @property {Number} queryIndex  - index of query character in line or document from cursor
+ * @typedef  { Object } QueryObject
+ * @property { Number } queryIndex  - index of query character in line or document from cursor
  */
-const noMatchQueryObject = {queryIndex: -1};
+const noMatchQueryObject = { queryIndex: -1 };
 
 // -------------------------------------------------------------------------------------------
 
 /**
  * Register the 'type' command and run runJump() in it.
  *
- * @param {string} restrictSearch - search forward in current line or document
- * @param {string} putCursor - move cursor before/after character typed
- * @param {boolean} multiMode - in MultiMode?
- * @param {boolean} select - in select?
- * @param {Function} runJump - function, _jumpForward or _jumpBackward
+ * @param { string } restrictSearch - search forward in current line or document
+ * @param { string } putCursor - move cursor before/after character typed
+ * @param { boolean } multiMode - in MultiMode?
+ * @param { boolean } select - in select?
+ * @param { Function } runJump - function, _jumpForward or _jumpBackward
  */
 async function typeRegisterAndRunJumps(restrictSearch, putCursor, multiMode, select, runJump) {
 
@@ -42,11 +42,11 @@ async function typeRegisterAndRunJumps(restrictSearch, putCursor, multiMode, sel
 
 /**
  * Move cursor forward to next chosen character, without selection
- * @param {string} restrictSearch - search forward in current line or document
- * @param {string} putCursor - move cursor before/after character typed
- * @param {string} kbText - keybinding text, if any or empty string
- * @param {boolean} multiMode - in MultiMode?
- * @param {boolean} select - in select?
+ * @param { string } restrictSearch - search forward in current line or document
+ * @param { string } putCursor - move cursor before/after character typed
+ * @param { string } kbText - keybinding text, if any or empty string
+ * @param { boolean } multiMode - in MultiMode?
+ * @param { boolean } select - in select?
  */
 exports.jumpForward = async function (restrictSearch, putCursor, kbText, multiMode, select) {
 
@@ -66,11 +66,11 @@ exports.jumpForward = async function (restrictSearch, putCursor, kbText, multiMo
 
 /**
  * Move cursor backward to previous chosen character, without selection
- * @param {string} restrictSearch - search backward in current line or document
- * @param {string} putCursor - move cursor before/after character typed
- * @param {string} kbText - keybinding text, if any or empty string
- * @param {boolean} multiMode - in MultiMode?
- * @param {boolean} select - in select?
+ * @param { string } restrictSearch - search backward in current line or document
+ * @param { string } putCursor - move cursor before/after character typed
+ * @param { string } kbText - keybinding text, if any or empty string
+ * @param { boolean } multiMode - in MultiMode?
+ * @param { boolean } select - in select?
  */
 exports.jumpBackward = async function (restrictSearch, putCursor, kbText, multiMode, select) {
 
@@ -83,17 +83,17 @@ exports.jumpBackward = async function (restrictSearch, putCursor, kbText, multiM
     _jumpBackward(restrictSearch, putCursor, kbText, select);
     await typeRegisterAndRunJumps(restrictSearch, putCursor, multiMode, select, _jumpBackward);
   }
-  // TODO: these could be simplified
+  // could these be simplified
   else await typeRegisterAndRunJumps(restrictSearch, putCursor, multiMode, select, _jumpBackward);
 };
 
 
 /**
  * Move cursor forward to next chosen character, without selection, and reveal if necessary
- * @param {string} restrictSearch
- * @param {string} putCursorForward
- * @param {string} query - keybinding arg or next character typed
- * @param {boolean} select
+ * @param { string } restrictSearch
+ * @param { string } putCursorForward
+ * @param { string } query - keybinding arg or next character typed
+ * @param { boolean } select
  */
 async function _jumpForward(restrictSearch, putCursorForward, query, select) {
 
@@ -135,7 +135,7 @@ async function _jumpForward(restrictSearch, putCursorForward, query, select) {
       queryObject = getQueryDocumentIndexForward(curPos, query, putCursorForward, selection);
     }
 
-    if (queryObject.queryIndex !== -1) { // TODO: need both?
+    if (queryObject.queryIndex !== -1) {
 
       let queryPos;  // query Position
       if (putCursorForward === "afterCharacter") {
@@ -163,10 +163,10 @@ async function _jumpForward(restrictSearch, putCursorForward, query, select) {
 
 /**
  * Move cursor backward to next chosen character, without selection
- * @param {string} restrictSearch
- * @param {string} putCursorBackward
- * @param {string} query - keybinding arg or next character typed
- * @param {boolean} select
+ * @param { string } restrictSearch
+ * @param { string } putCursorBackward
+ * @param { string } query - keybinding arg or next character typed
+ * @param { boolean } select
  */
 async function _jumpBackward(restrictSearch, putCursorBackward, query, select) {
 
@@ -236,11 +236,12 @@ async function _jumpBackward(restrictSearch, putCursorBackward, query, select) {
 
 /**
  *  Get the next query position restricted to the line of the cursor
- * @param {Position} cursorPosition
- * @param {string} query - the typed character to match
- * @param {string} putCursorForward - before/afterCharacter
- * @param {Selection} selection
- * @returns {QueryObject}
+ * @param { Position } cursorPosition
+ * @param { string } query - the typed character to match
+ * @param { string } putCursorForward - before/afterCharacter
+ * @param { Selection } selection
+ * 
+ * @returns { QueryObject }
  */
 function getQueryLineIndexForward(cursorPosition, query, putCursorForward, selection) {
 
@@ -259,7 +260,7 @@ function getQueryLineIndexForward(cursorPosition, query, putCursorForward, selec
     // leave as is
     // if (selection.isReversed && !selection.isSingleLine) {    // a reversed multiline selection
 
-    return {queryIndex: lineRange.end.character - cursorPosition.character};
+    return { queryIndex: lineRange.end.character - cursorPosition.character };
   }
 
   if (query === '\\^') query = '^';
@@ -277,7 +278,6 @@ function getQueryLineIndexForward(cursorPosition, query, putCursorForward, selec
 
     if (putCursorForward === 'beforeCharacter') {
       matchPos = restOfLine.substring(query.length).indexOf(query);
-      // TODO: if matchPos = 0/1, skip to next?
       if (matchPos !== -1) matchPos += query.length;
     }
     else matchPos = restOfLine.indexOf(query);
@@ -287,17 +287,18 @@ function getQueryLineIndexForward(cursorPosition, query, putCursorForward, selec
       else queryIndex = matchPos;
     }
   }
-  return {queryIndex};
+  return { queryIndex };
 }
 
 
 /**
  * Get the next query position anywhere in the document after the cursor
- * @param {Position} cursorPosition
- * @param {string} query - the typed character to match
- * @param {string} putCursorForward
- * @param {Selection} selection
- * @returns {QueryObject}
+ * @param { Position } cursorPosition
+ * @param { string } query - the typed character to match
+ * @param { string } putCursorForward
+ * @param { Selection } selection
+ * 
+ * @returns { QueryObject }
  */
 function getQueryDocumentIndexForward(cursorPosition, query, putCursorForward, selection) {
 
@@ -337,10 +338,10 @@ function getQueryDocumentIndexForward(cursorPosition, query, putCursorForward, s
         if (document.eol === EndOfLine.CRLF) eolLength = 2; // correct for Windows CRLF
         // else if (document.eol === EndOfLine.LF) eolLength = 1; // correct for Mac/etc. LF
 
-        return {queryIndex: nextLine.range.end.character + eolLength};
+        return { queryIndex: nextLine.range.end.character + eolLength };
       }
       else if (cursorPosition.isBefore(lineRange.end))        // not at end of currentLine
-        return {queryIndex: lineRange.end.character - cursorPosition.character};
+        return { queryIndex: lineRange.end.character - cursorPosition.character };
     }
   }
   else if (query === '^') {
@@ -369,26 +370,26 @@ function getQueryDocumentIndexForward(cursorPosition, query, putCursorForward, s
           // if (!lineAfterSelectionEnd) return noMatchQueryObject;
 
           // go to start of the line after the end of the selection
-          return {queryIndex: document.offsetAt(lineAfterSelectionEnd.range.start) - cursorIndex};
+          return { queryIndex: document.offsetAt(lineAfterSelectionEnd.range.start) - cursorIndex };
         }
 
         if (cursorPosition.isEqual(lineRange.end))  // go to end of current line and add eolLength
-          return {queryIndex: document.offsetAt(lineAfterSelectionEnd.range.start) - cursorIndex};
+          return { queryIndex: document.offsetAt(lineAfterSelectionEnd.range.start) - cursorIndex };
 
         else if (cursorPosition.isEqual(lineRange.start)) // already at start of the current line
           // go to end of current line and add eolLength
-          return {queryIndex: line.text.length + eolLength};
+          return { queryIndex: line.text.length + eolLength };
       }
       else {  // !selection.isReversed
         if (cursorPosition.isBefore(lineRange.end))  // go to end of current line and add eolLength
-          return {queryIndex: line.text.length - cursorPosition.character + eolLength};
+          return { queryIndex: line.text.length - cursorPosition.character + eolLength };
 
         if (cursorPosition.isEqual(lineRange.end))  // go to end of current line and add eolLength
-          return {queryIndex: eolLength};
+          return { queryIndex: eolLength };
 
         else if (cursorPosition.isEqual(lineRange.start)) // already at start of the current line
           // go to end of current line and add eolLength
-          return {queryIndex: line.text.length + eolLength};
+          return { queryIndex: line.text.length + eolLength };
       }
     }
   }
@@ -423,10 +424,10 @@ function getQueryDocumentIndexForward(cursorPosition, query, putCursorForward, s
     if (!match) {
       if (restOfText.endsWith('\r\n')) queryIndex = restOfText.lastIndexOf('\r\n') + 2;
       else if (restOfText.endsWith('\n')) queryIndex = restOfText.lastIndexOf('\n') + 1;
-      else return {queryIndex};
+      else return { queryIndex };
     }
 
-    return {queryIndex: match?.index || queryIndex};
+    return { queryIndex: match?.index || queryIndex };
   }
 
   if (query === '\\^') query = '^';
@@ -467,7 +468,6 @@ function getQueryDocumentIndexForward(cursorPosition, query, putCursorForward, s
 
     if (putCursorForward === 'beforeCharacter') {
       matchPos = restOfText.substring(query.length).indexOf(query);
-      // TODO: if matchPos = 0/1, skip to next?
       if (matchPos !== -1) matchPos += query.length;
     }
     else matchPos = restOfText.indexOf(query);
@@ -478,17 +478,18 @@ function getQueryDocumentIndexForward(cursorPosition, query, putCursorForward, s
       else queryIndex = matchPos;
     }
   }
-  return {queryIndex};
+  return { queryIndex };
 }
 
 
 /**
  * Get the previous query position restricted to the line of the cursor
- * @param {Position} cursorPosition
- * @param {string} query - the typed character to match
- * @param {string} purCursorBackward - before/afterCharacter
- * @param {Selection} selection
- * @returns {QueryObject}
+ * @param { Position } cursorPosition
+ * @param { string } query - the typed character to match
+ * @param { string } purCursorBackward - before/afterCharacter
+ * @param { Selection } selection
+ * 
+ * @returns { QueryObject }
  */
 function getQueryLineIndexBackward(cursorPosition, query, purCursorBackward, selection) {
 
@@ -499,7 +500,7 @@ function getQueryLineIndexBackward(cursorPosition, query, purCursorBackward, sel
 
   if (!document) return noMatchQueryObject;
 
-  if (query === '^') return {queryIndex: 0};
+  if (query === '^') return { queryIndex: 0 };
 
   if (query === '\\^') query = '^';
   else if (query === '\\$') query = '$';
@@ -517,7 +518,6 @@ function getQueryLineIndexBackward(cursorPosition, query, purCursorBackward, sel
 
     if (purCursorBackward === 'afterCharacter') {
       const end = startOfLine.length - query.length;
-      // TODO: if matchPos = 0/1, skip to previous?
       matchPos = startOfLine.substring(0, end).lastIndexOf(query);
     }
     else matchPos = startOfLine.lastIndexOf(query);  // is case-sensitive
@@ -526,17 +526,18 @@ function getQueryLineIndexBackward(cursorPosition, query, purCursorBackward, sel
       queryIndex = matchPos;
     }
   }
-  return {queryIndex};
+  return { queryIndex };
 }
 
 
 /**
  * Get the previous query position anywhere in the document prior to cursor
- * @param {Position} cursorPosition
- * @param {string} query - the typed character to match
- * @param {string} purCursorBackward - before/afterCharacter
- * @param {Selection} selection
- * @returns {QueryObject}
+ * @param { Position } cursorPosition
+ * @param { string } query - the typed character to match
+ * @param { string } purCursorBackward - before/afterCharacter
+ * @param { Selection } selection
+ * 
+ * @returns { QueryObject }
  */
 function getQueryDocumentIndexBackward(cursorPosition, query, purCursorBackward, selection) {
 
@@ -572,10 +573,10 @@ function getQueryDocumentIndexBackward(cursorPosition, query, purCursorBackward,
       if (selectionStartPreviousLine) {
 
         if (selection.start.isEqual(selectionStartLine.range.end)) {  // at end of line already and there is a selectionStartPreviousLine
-          return {queryIndex: document.offsetAt(selectionStartLine.range.end)};
+          return { queryIndex: document.offsetAt(selectionStartLine.range.end) };
         }
         else if (selection.start.isBefore(selectionStartLine.range.end)) {      // not at end of selection start line
-          return {queryIndex: document.offsetAt(selectionStartPreviousLine.range.end)};
+          return { queryIndex: document.offsetAt(selectionStartPreviousLine.range.end) };
         }
       }
     }
@@ -585,7 +586,7 @@ function getQueryDocumentIndexBackward(cursorPosition, query, purCursorBackward,
       else return noMatchQueryObject;
 
       const previousLineRange = previousLine.range;
-      return {queryIndex: document.offsetAt(previousLineRange.end)};
+      return { queryIndex: document.offsetAt(previousLineRange.end) };
     }
   }
 
@@ -606,18 +607,18 @@ function getQueryDocumentIndexBackward(cursorPosition, query, purCursorBackward,
       else return noMatchQueryObject;
 
       if (selection.start.isEqual(selectionStartLine.range.start) && !!selectionStartPreviousLine) {  // at start of line already and there is a previousLine
-        return {queryIndex: document.offsetAt(selectionStartPreviousLine.range.start)};
+        return { queryIndex: document.offsetAt(selectionStartPreviousLine.range.start) };
       }
       else if (selection.start.isAfter(selectionStartLine.range.start)) {      // not at start of selection start line
-        return {queryIndex: document.offsetAt(selectionStartLine.range.start)};
+        return { queryIndex: document.offsetAt(selectionStartLine.range.start) };
       }
     }
     else {
       if (cursorPosition.isEqual(currentLineRange.start) && !!previousLine) {  // at start of line already and there is a previousLine
-        return {queryIndex: document.offsetAt(previousLine.range.start)};
+        return { queryIndex: document.offsetAt(previousLine.range.start) };
       }
       else if (cursorPosition.isAfter(currentLineRange.start))        // not at start of currentLine
-        return {queryIndex: document.offsetAt(currentLineRange.start)};
+        return { queryIndex: document.offsetAt(currentLineRange.start) };
     }
   }
 
@@ -655,10 +656,10 @@ function getQueryDocumentIndexBackward(cursorPosition, query, purCursorBackward,
     if (!matches.length) {
       // these will always be 0 ?
       // if (startText.startsWith('\r\n')) queryIndex = startText.indexOf('\r\n');
-      if (startText.startsWith('\r\n')) return {queryIndex: 0};
+      if (startText.startsWith('\r\n')) return { queryIndex: 0 };
       // else if (startText.startsWith('\n')) queryIndex = startText.indexOf('\n');
-      else if (startText.startsWith('\n')) return {queryIndex: 0};
-      else return {queryIndex};
+      else if (startText.startsWith('\n')) return { queryIndex: 0 };
+      else return { queryIndex };
     }
 
     const lastIndex = matches?.at(-1)?.index ?? -1;
@@ -679,7 +680,7 @@ function getQueryDocumentIndexBackward(cursorPosition, query, purCursorBackward,
     }
     else queryIndex = lastIndex;
 
-    return {queryIndex};
+    return { queryIndex };
   }
 
   if (query === '\\^') query = '^';
@@ -695,7 +696,6 @@ function getQueryDocumentIndexBackward(cursorPosition, query, purCursorBackward,
     if (purCursorBackward === 'afterCharacter') {
       const end = startText.length - query.length;
       matchPos = startText.substring(0, end).lastIndexOf(query);
-      // TODO: if matchPos = 0/1, skip to previous?
     }
     else matchPos = startText.lastIndexOf(query);  // is case-sensitive
 
@@ -704,5 +704,5 @@ function getQueryDocumentIndexBackward(cursorPosition, query, purCursorBackward,
     }
   }
 
-  return {queryIndex};
+  return { queryIndex };
 }

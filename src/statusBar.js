@@ -1,4 +1,4 @@
-const {commands, window, StatusBarAlignment, ThemeColor} = require('vscode');
+const { commands, window, StatusBarAlignment, ThemeColor } = require('vscode');
 
 var global = Function('return this')();  // used for global.typeDisposable
 global.statusBarItemVisible = false;
@@ -12,7 +12,7 @@ let sbItem;
  * Create and show a StatusBarItem
  * advising to press 'Return' to exit multiMode
  * 
- * @param {string} direction - going "forward" or "backward" 
+ * @param { string } direction - going "forward" or "backward" 
  */
 exports.show = async function (direction) {
 

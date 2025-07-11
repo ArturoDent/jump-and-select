@@ -1,20 +1,21 @@
 const vscode = require('vscode');
 const ts = require('typescript');
-const {compareRanges} = require('./sort');
-const {visitAllSymbols, isRightKind} = require('./visitor');
-const {symbolKindMap} = require('./symbolKindMap.js');
+const { compareRanges, compareRangesReverse } = require('./sort');
+const { visitAllSymbols, isRightKind } = require('./visitor');
+const { symbolKindMap } = require('./symbolKindMap.js');
 
 /** @import { SymMap, SymMapKey } from "./types.js" */
 
 
 /**
  * 
- * @param {SymMapKey[]|undefined} kbSymbols 
- * @returns {SymMap}
+ * @param { SymMapKey[] | undefined } kbSymbols
+ * 
+ * @returns { SymMap }
  */
 function buildSymMap(kbSymbols) {
 
-  /** @type {SymMap} */
+  /** @type { SymMap } */
   const symMap = {};
 
   if (kbSymbols) {
@@ -32,9 +33,9 @@ function buildSymMap(kbSymbols) {
 
 
 /** 
- * @param {SymMapKey[]} kbSymbols
- * @param {string} kbWhere
- * @param {boolean} kbSelect
+ * @param { SymMapKey[] } kbSymbols
+ * @param { string } kbWhere
+ * @param { boolean } kbSelect
  */
 exports.jump2Symbols = async function (kbSymbols, kbWhere, kbSelect = false) {
 
@@ -50,7 +51,7 @@ exports.jump2Symbols = async function (kbSymbols, kbWhere, kbSelect = false) {
   if (globalThis.refreshSymbols || globalThis.currentUri !== document.uri) {
     globalThis.symbols = await vscode.commands.executeCommand('vscode.executeDocumentSymbolProvider', document.uri);
 
-    // // filter symbols ??
+    // TODO:  filter symbols ??
 
     globalThis.refreshSymbols = false;
     globalThis.currentUri = document.uri;
@@ -63,11 +64,11 @@ exports.jump2Symbols = async function (kbSymbols, kbWhere, kbSelect = false) {
 
   if (!globalThis.symbols?.length) return;
 
-  /** @type {vscode.DocumentSymbol | undefined} */
+  /** @type { vscode.DocumentSymbol | undefined } */
   let parentSymbol, targetSymbol;
   let foundIndex = -1;
 
-  /** @type {vscode.DocumentSymbol[]} */
+  /** @type { vscode.DocumentSymbol[] } */
   let result = [];
 
   switch (kbWhere) {
@@ -90,7 +91,7 @@ exports.jump2Symbols = async function (kbSymbols, kbWhere, kbSelect = false) {
       if (parentSymbol?.children.length &&
         selection.active.line !== parentSymbol.range.start.line   // cursor on end line, if previousEnd
       ) {
-        visitAllSymbols(parentSymbol.children.sort(compareRanges).toReversed(), symbol => {
+        visitAllSymbols(parentSymbol.children.sort(compareRangesReverse), symbol => {
 
           if (result.length) return;  // does short-circuit rest of this function
           // but this line is still visited for each symbol
@@ -111,29 +112,12 @@ exports.jump2Symbols = async function (kbSymbols, kbWhere, kbSelect = false) {
       // if (!parentSymbol || (parentSymbol && !targetSymbol)) {
       if (parentSymbol && !targetSymbol && parentSymbol.range.start.isBefore(selection.start)
         &&
-        // TODO : on end line ??
         selection.active.line !== parentSymbol.range.start.line) { // cursor on start line, if previousEnd
 
         if (isRightKind(parentSymbol, symMap)) {
           targetSymbol = parentSymbol;
           break;   // success
         }
-
-        // if (Object.values(symMap).includes(parentSymbol.kind)) {
-        //   targetSymbol = parentSymbol;
-        //   break;   // success
-        // }
-        // else if (arrowFunctionRanges) {
-        //   let isArrowFunction = globalThis.usesArrowFunctions ?
-        //     !!arrowFunctionRanges.find(arrowRange => {
-        //       /** @ts-ignore */  // parentSymbol may be undefined?
-        //       return arrowRange.isEqual(parentSymbol.range);
-        //     }) : false;
-        //   if (isArrowFunction) {
-        //     targetSymbol = parentSymbol;
-        //     break;   // success
-        //   }
-        // }
       }
 
       // reverse and get only those preceding the selection
@@ -141,34 +125,17 @@ exports.jump2Symbols = async function (kbSymbols, kbWhere, kbSelect = false) {
 
       for await (let previousSymbol of reversedGlobalSymbols) {
 
-        let isArrowFunction = false;
-
         if (!previousSymbol.children.length) {
 
           if (isRightKind(previousSymbol, symMap)) {
             targetSymbol = previousSymbol;
             break;   // success
           }
-
-          // if (Object.values(symMap).includes(previousSymbol.kind)) {
-          //   targetSymbol = previousSymbol;
-          //   break;   // success
-          // }
-          // else if (arrowFunctionRanges) {
-          //   isArrowFunction = globalThis.usesArrowFunctions ?
-          //     !!arrowFunctionRanges.find(arrowRange => {
-          //       return arrowRange.isEqual(previousSymbol.range);
-          //     }) : false;
-          //   if (isArrowFunction) {
-          //     targetSymbol = previousSymbol;
-          //     break;   // success
-          //   }
-          // }
         }
 
         else if (previousSymbol.children.length) {
 
-          visitAllSymbols(previousSymbol.children.sort(compareRanges).toReversed(), symbol => {
+          visitAllSymbols(previousSymbol.children.sort(compareRangesReverse), symbol => {
 
             if (result.length) return;  // does short-circuit rest of this function
 
@@ -213,16 +180,6 @@ exports.jump2Symbols = async function (kbSymbols, kbWhere, kbSelect = false) {
         if (child.range.start.isAfter(selection.start)) {
 
           return isRightKind(child, symMap);
-
-          let isArrowFunction = false;
-
-          if (arrowFunctionRanges) {
-            isArrowFunction = globalThis.usesArrowFunctions ?
-              !!arrowFunctionRanges.find(arrowRange => {
-                return arrowRange.isEqual(child.range);
-              }) : false;
-          }
-          return isArrowFunction || Object.values(symMap).includes(child.kind);
         }
       });
       break;
@@ -245,24 +202,6 @@ exports.jump2Symbols = async function (kbSymbols, kbWhere, kbSelect = false) {
           targetSymbol = parentSymbol;
           break;   // success
         }
-
-        // if (Object.values(symMap).includes(parentSymbol.kind)) {
-        //   targetSymbol = parentSymbol;
-        //   break;   // success
-        // }
-
-        // let isArrowFunction = false;
-
-        // isArrowFunction = globalThis.usesArrowFunctions ?
-        //   !!arrowFunctionRanges.find(arrowRange => {
-        //     // @ts-ignore parentSymbol may be undefined?
-        //     return arrowRange.isEqual(parentSymbol.range);
-        //   }) : false;
-
-        // if (isArrowFunction) {
-        //   targetSymbol = parentSymbol;
-        //   break;   // success
-        // }
       }
 
       else if (result.length && kbWhere.startsWith("current")) {   // could be combined with parent if !result.push(child) below
@@ -305,21 +244,6 @@ exports.jump2Symbols = async function (kbSymbols, kbWhere, kbSelect = false) {
             targetSymbol = nextSymbol;
             break;   // success
           }
-
-          // if (Object.values(symMap).includes(nextSymbol.kind)) {
-          //   targetSymbol = nextSymbol;
-          //   break;   // success
-          // }
-          // else if (arrowFunctionRanges) {
-          //   isArrowFunction = globalThis.usesArrowFunctions ?
-          //     !!arrowFunctionRanges.find(arrowRange => {
-          //       return arrowRange.isEqual(nextSymbol.range);
-          //     }) : false;
-          //   if (isArrowFunction) {
-          //     targetSymbol = nextSymbol;
-          //     break;   // success
-          //   }
-          // }
         }
 
         if (nextSymbol.children.length) {
@@ -370,21 +294,22 @@ exports.jump2Symbols = async function (kbSymbols, kbWhere, kbSelect = false) {
 
 /**
  * 
- * @param {vscode.TextDocument} document 
- * @returns {Promise<vscode.Range[]|undefined>}
+ * @param { vscode.TextDocument } document
+ * 
+ * @returns { Promise<vscode.Range[] | undefined >}
  */
 async function getArrowFunctionRanges(document) {
 
-  /** @type {vscode.Range[]} */
+  /** @type { vscode.Range[] } */
   const arrowFunctionRanges = [];
 
-  const program = ts.createProgram([document.fileName], {allowJs: true});
+  const program = ts.createProgram([document.fileName], { allowJs: true });
   const sourceFile = program.getSourceFile(document.fileName);
   // const checker = program.getTypeChecker();
   if (!sourceFile) return;
 
 
-  function visit(/** @type {ts.Node} */ node) {
+  function visit(/** @type { ts.Node } */ node) {
 
     // e.g., const someFunc = function () {};
     // ts.isVariableStatement(node);  // true for the above
@@ -395,7 +320,7 @@ async function getArrowFunctionRanges(document) {
 
         const triviaWidth = node.declarationList.declarations[0].initializer.getLeadingTriviaWidth(sourceFile);
 
-        const startPos = document.positionAt(node.declarationList.declarations.pos).translate({characterDelta: triviaWidth});
+        const startPos = document.positionAt(node.declarationList.declarations.pos).translate({ characterDelta: triviaWidth });
         // use this to match the symbol locations provided by vscode documentSymbol
         const fullRange = new vscode.Range(startPos, document.positionAt(node.declarationList.declarations.end));
 
@@ -417,9 +342,9 @@ async function getArrowFunctionRanges(document) {
         const triviaWidth = node.name.end - node.name.pos - node.name.getText(sourceFile).length;
 
         // const triviaWidth = node.initializer.getLeadingTriviaWidth(sourceFile);
-        // above DOES NOT handle "const /** @type {any} */ square2 = x => x * x;" correctly
+        // above DOES NOT handle "const /** @type { any } */ square2 = x => x * x;" correctly
 
-        const startPos = document.positionAt(node.pos).translate({characterDelta: triviaWidth});
+        const startPos = document.positionAt(node.pos).translate({ characterDelta: triviaWidth });
         const fullRange = new vscode.Range(startPos, document.positionAt(node.end));
 
         arrowFunctionRanges.push(fullRange);
@@ -438,10 +363,11 @@ async function getArrowFunctionRanges(document) {
  * Extend the selection to the 0th column of the start line and
  * to the end of any text on the end line, so include a trailing comment.
  * Used for comparing the cursor position to the "extended" document selection.
- * @param {vscode.DocumentSymbol|{range: vscode.Range, kind: vscode.SymbolKind}} target
- * @param {string} kbWhere
- * @param {vscode.TextDocument} document
- * @returns {vscode.Selection}
+ * @param { vscode.DocumentSymbol | { range: vscode.Range, kind: vscode.SymbolKind } } target
+ * @param { string } kbWhere
+ * @param { vscode.TextDocument } document
+ * 
+ * @returns { vscode.Selection }
  */
 function extendSelection(target, kbWhere, document) {
 
@@ -465,10 +391,11 @@ function extendSelection(target, kbWhere, document) {
  * to the end of any text on the end line, so include a trailing comment.
  * 
  * Used for making the actual selection if that option in the keybinding.
- * @param {vscode.DocumentSymbol} target
- * @param {string} kbWhere
- * @param {vscode.TextDocument} document
- * @returns {vscode.Selection}
+ * @param { vscode.DocumentSymbol } target
+ * @param { string } kbWhere
+ * @param { vscode.TextDocument } document
+ * 
+ * @returns { vscode.Selection }
  */
 function symbolSelection(target, kbWhere, document) {
 
@@ -487,45 +414,20 @@ function symbolSelection(target, kbWhere, document) {
 }
 
 
-// /**   
-//  * For .sort(compareRanges): put them into their proper positional order
-//  * @param {vscode.DocumentSymbol} symbol1
-//  * @param {vscode.DocumentSymbol} symbol2
-//  */
-// exports.compareRanges = function (symbol1, symbol2) {
-//   if ((symbol1.range.start.isBefore(symbol2.range.start))) return -1;
-//   else if ((symbol1.range.start.isAfter(symbol2.range.start))) return 1;
-//   else return 0;
-// };
-
-// /**
-//  * Recursively visit all nested DocumentSymbols.
-//  * @param {vscode.DocumentSymbol[]} symbols - An array of DocumentSymbol objects.
-//  * @param {(symbol: vscode.DocumentSymbol) => void} callback - Function to execute on each symbol.
-//  */
-// function visitAllSymbols(symbols, callback) {
-//   for (const symbol of symbols) {
-//     if (symbol.children.length) {
-//       visitAllSymbols(symbol.children.sort(compareRanges).toReversed(), callback);
-//     }
-//     callback(symbol);
-//   }
-// }
-
-
 /** 
- * @param {vscode.DocumentSymbol} parent
- * @param {string} kbWhere - nextStart, currentStart, etc.
- * @param {SymMap} symMap
- * @param {SymMapKey[]} kbSymbol
- * @param {vscode.Selection} selection
- * @param {vscode.DocumentSymbol[]} result
- * @param {vscode.TextDocument} document
- * @returns {vscode.DocumentSymbol[]}
+ * @param { vscode.DocumentSymbol } parent
+ * @param { string } kbWhere - nextStart, currentStart, etc.
+ * @param { SymMap } symMap
+ * @param { SymMapKey[] } kbSymbol
+ * @param { vscode.Selection } selection
+ * @param { vscode.DocumentSymbol[] } result
+ * @param { vscode.TextDocument } document
+ * 
+ * @returns { vscode.DocumentSymbol[] }
  */
 function deepSymbolRecursion(parent, kbWhere, symMap, kbSymbol, selection, result, document) {
 
-  /** @type {vscode.DocumentSymbol[] } */
+  /** @type { vscode.DocumentSymbol[] } */
   const sortedChildren = parent.children.sort(compareRanges);
 
   sortedChildren.forEach((child, index) => {
@@ -543,20 +445,8 @@ function deepSymbolRecursion(parent, kbWhere, symMap, kbSymbol, selection, resul
 
       const extendedChildRange = extendSelection(child, kbWhere, document);
 
-      // TODO: add contains() ?
       if (extendedChildRange.end.isBefore(selection.active)) {
-        // if (extendedChildRange.end.isBefore(selection.active) || selection.contains(extendedChildRange)) {
-
         if (isRightKind(child, symMap)) result.push(child);
-
-        // if (Object.values(symMap).includes(child.kind)) result.push(child);
-        // else if (arrowFunctionRanges) {
-        //   const isArrowFunction = globalThis.usesArrowFunctions ?
-        //     !!arrowFunctionRanges.find(arrowRange => {
-        //       return arrowRange.isEqual(child.range);
-        //     }) : false;
-        //   if (isArrowFunction) result.push(child);
-        // }
       }
 
       else {
@@ -565,17 +455,9 @@ function deepSymbolRecursion(parent, kbWhere, symMap, kbSymbol, selection, resul
 
         if (extendedTargetRange.contains(selection.active)) {
           // scan previous of sortedChildren after index to see if any are functions, etc.
-          // const previousMatchingSymbol = sortedChildren.slice(0, index).findLast(({kind, range}) => {
           const previousMatchingSymbol = sortedChildren.slice(0, index).findLast(child => {
 
             if (isRightKind(child, symMap)) return true;
-
-            // if (Object.values(symMap).includes(kind)) return true;
-            // else if (arrowFunctionRanges) {
-            //   const isArrowFunction = globalThis.usesArrowFunctions ?
-            //     !!arrowFunctionRanges.find(arrowRange => arrowRange.isEqual(range)) : false;
-            //   return isArrowFunction;
-            // }
           });
           if (previousMatchingSymbol) result.push(previousMatchingSymbol);
         }
@@ -588,17 +470,7 @@ function deepSymbolRecursion(parent, kbWhere, symMap, kbSymbol, selection, resul
       // isAfter isn't depth-first if select to end of symbol
       // for depth-first next's use contains
       if (extendedChildRange.start.isAfter(selection.active) || selection.contains(extendedChildRange)) {
-
         if (isRightKind(child, symMap)) result.push(child);
-
-        // if (Object.values(symMap).includes(child.kind)) result.push(child);
-        // else if (arrowFunctionRanges) {
-        //   const isArrowFunction = globalThis.usesArrowFunctions ?
-        //     !!arrowFunctionRanges.find(arrowRange => {
-        //       return arrowRange.isEqual(child.range);
-        //     }) : false;
-        //   if (isArrowFunction) result.push(child);
-        // }
       }
 
       else {
@@ -607,19 +479,9 @@ function deepSymbolRecursion(parent, kbWhere, symMap, kbSymbol, selection, resul
 
         if (extendedTargetRange.contains(selection.active)) {
           // scan rest (next) of sortedChildren after index to see if any are functions, etc.
-          // const nextMatchingSymbol = sortedChildren.slice(index + 1).find(({kind, range}, i) => {
           const nextMatchingSymbol = sortedChildren.slice(index + 1).find((child, i) => {
 
             if (isRightKind(child, symMap)) return true;
-
-            // if (Object.values(symMap).includes(kind)) return true;
-            // else if (arrowFunctionRanges) {
-            //   const isArrowFunction = globalThis.usesArrowFunctions ?
-            //     !!arrowFunctionRanges.find(arrowRange => {
-            //       return arrowRange.isEqual(range);
-            //     }) : false;
-            //   return isArrowFunction;
-            // }
           });
           if (nextMatchingSymbol) result.push(nextMatchingSymbol);
         }
@@ -640,16 +502,7 @@ function deepSymbolRecursion(parent, kbWhere, symMap, kbSymbol, selection, resul
 
       // will ignore variables unless arrow function
       if (extendedTargetRange.contains(selection.active)) {
-
         if (isRightKind(child, symMap)) result.push(child);
-
-        // previously wanted this to exclude Variable and Property ?
-        // if (Object.values(symMap).includes(child.kind)) result.push(child);
-        // else if (arrowFunctionRanges) {  // if symMap.includes("function") ?
-        //   const isArrowFunction = globalThis.usesArrowFunctions ?
-        //     !!arrowFunctionRanges.find(arrowRange => arrowRange.isEqual(child.range)) : false;
-        //   if (isArrowFunction) result.push(child);
-        // }
       }
     }
     else if (kbWhere.startsWith("child")) {   // currentStart/currentEnd
@@ -663,18 +516,19 @@ function deepSymbolRecursion(parent, kbWhere, symMap, kbSymbol, selection, resul
 
 
 /** 
- * @param {vscode.DocumentSymbol} parent
- * @param {string} kbWhere - nextStart, currentStart, etc.
- * @param {SymMap} symMap
- * @param {SymMapKey[]} kbSymbol
- * @param {vscode.Selection} selection
- * @param {vscode.DocumentSymbol[]} result
- * @param {vscode.TextDocument} document
- * @returns {vscode.DocumentSymbol[]}
+ * @param { vscode.DocumentSymbol } parent
+ * @param { string } kbWhere - nextStart, currentStart, etc.
+ * @param { SymMap } symMap
+ * @param { SymMapKey[] } kbSymbol
+ * @param { vscode.Selection } selection
+ * @param { vscode.DocumentSymbol[] } result
+ * @param { vscode.TextDocument } document
+ * 
+ * @returns { vscode.DocumentSymbol[] }
  */
 function nextRecursion(parent, kbWhere, symMap, kbSymbol, selection, result, document) {
 
-  /** @type {vscode.DocumentSymbol[] } */
+  /** @type { vscode.DocumentSymbol[] } */
   const sortedChildren = parent.children.sort(compareRanges);
 
   sortedChildren.forEach(child => {
@@ -695,16 +549,6 @@ function nextRecursion(parent, kbWhere, symMap, kbSymbol, selection, result, doc
       const nextMatchingSymbol = sortedChildren.find(child => {
 
         if (isRightKind(child, symMap)) return true;
-
-        // if (Object.values(symMap).includes(child.kind)) return true;
-        // else if (arrowFunctionRanges) {
-        //   const isArrowFunction = globalThis.usesArrowFunctions ?
-        //     !!arrowFunctionRanges.find(arrowRange => {
-        //       return arrowRange.isEqual(child.range);
-        //     })
-        //     : false;
-        //   return isArrowFunction;
-        // }
       });
       if (nextMatchingSymbol) result.push(nextMatchingSymbol);
     }

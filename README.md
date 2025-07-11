@@ -502,6 +502,6 @@ For some unknown reason, tabs (`\t`) are not considered a typed character and do
 
 * 0.8.0&emsp;  Work on next and previous, deepSymbolRecursion for those options.  
 0.8.1&emsp; Added support for **all symbols** in vscode.SymbolKind's.  
-&emsp;&emsp; &emsp; Reworked child/next/previous
+&emsp;&emsp; &emsp; Reworked child/next/previous. Added visitAllSymbols() and isRightKind().  
 
 -----------------------------------------------------------------------------------------------------------

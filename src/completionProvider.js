@@ -1,4 +1,4 @@
-const {languages, Range, Position, CompletionItem, CompletionItemKind} = require('vscode');
+const { languages, Range, Position, CompletionItem, CompletionItemKind } = require('vscode');
 
 
 /**
@@ -7,7 +7,7 @@ const {languages, Range, Position, CompletionItem, CompletionItemKind} = require
  */
 exports.makeKeybindingsCompletionProvider = function (context) {
 	const configCompletionProvider = languages.registerCompletionItemProvider(
-		{pattern: '**/keybindings.json'},
+		{ pattern: '**/keybindings.json' },
 		{
 			provideCompletionItems(document, position) {
 
@@ -64,7 +64,6 @@ exports.makeKeybindingsCompletionProvider = function (context) {
 
 				if (!argsRange.contains(position) || linePrefix.search(/^\s*"/m) === -1) return undefined;
 
-				// TODO: should restrict these to within the 'jump-and-select....' keybinding to avoid name clashes
 				// intellisense/completion for 'args' options values
 				if (argsRange.contains(position) && linePrefix.endsWith('"putCursorForward": "')) {
 					return [
@@ -112,10 +111,11 @@ exports.makeKeybindingsCompletionProvider = function (context) {
 /**
  * From a string input make a CompletionItemKind.Text
  *
- * @param {string} key
- * @param {Position} position
- * @param {string} defaultValue - default value for this option
- * @returns {CompletionItem} - CompletionItemKind.Text
+ * @param { string } key
+ * @param { Position } position
+ * @param { string } defaultValue - default value for this option
+ * 
+ * @returns { CompletionItem } - CompletionItemKind.Text
  */
 function _makeCompletionItem(key, position, defaultValue) {
 
@@ -130,10 +130,11 @@ function _makeCompletionItem(key, position, defaultValue) {
 /**
  * Make CompletionItem arrays, eliminate already used option keys found in the args text
  *
- * @param {string[]} directionArray - options for forward or backward commands
- * @param {string} argsText - text of the 'args' options:  "args": { .... }
- * @param {Position} position - cursor position
- * @returns {Array<CompletionItem>}
+ * @param { string[] } directionArray - options for forward or backward commands
+ * @param { string } argsText - text of the 'args' options:  "args": { .... }
+ * @param { Position } position - cursor position
+ * 
+ * @returns { Array<CompletionItem> }
  */
 function _filterCompletionsItemsNotUsed(directionArray, argsText, position) {
 

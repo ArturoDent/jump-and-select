@@ -1,22 +1,22 @@
-const {window, workspace, commands, Uri, DocumentSymbol, Range} = require('vscode');
-const {getSettings} = require('./configs');
-const {jumpForward, jumpBackward} = require('./commandFunctions');
-const {jump2Symbols} = require('./symbols');
+const { window, workspace, commands, Uri, DocumentSymbol, Range } = require('vscode');
+const { getSettings } = require('./configs');
+const { jumpForward, jumpBackward } = require('./commandFunctions');
+const { jump2Symbols } = require('./symbols');
 const statusBarItem = require('./statusBar');
 
 
 var global = Function('return this')();  // used for global.typeDisposable
 
-/** @type {DocumentSymbol[]|undefined} */
+/** @type { DocumentSymbol[] | undefined } */
 globalThis.symbols = [];
 
-/** @type {Range[]} */
+/** @type { Range[] } */
 globalThis.arrowFunctionRanges = [];
 
-// /** @type {Uri} */
+// /** @type { Uri } */
 globalThis.currentUri = {};
 
-// /** @type {Boolean} */
+// /** @type { Boolean } */
 globalThis.usesArrowFunctions = false;
 
 globalThis.refreshSymbols = true;
@@ -24,7 +24,7 @@ globalThis.refreshSymbols = true;
 
 
 /**
- * @param {import ("vscode").ExtensionContext} context
+ * @param { import ("vscode").ExtensionContext } context
  */
 async function activate(context) {
 
@@ -206,7 +206,7 @@ async function activate(context) {
     if (statusBarItem) await statusBarItem.hide();
     if (global.typeDisposable) global.typeDisposable.dispose();
 
-    /** @type {any} */
+    // /** @type { any } */
     // const bad = checkArgs(structuredClone(args));
 
     // if (bad && Object.keys(bad).length) {  // not empty
@@ -263,15 +263,15 @@ async function activate(context) {
 
 // /**
 //  * 
-//  * @param {Object}           args
-//  * @param {string|string[]}    args.symbol
-//  * @param {string}             args.where
-//  * @param {boolean}            args.select
+//  * @param { Object }           args
+//  * @param { string | string[] }    args.symbol
+//  * @param { string }             args.where
+//  * @param { boolean }            args.select
 //  * 
-//  * @returns {Object}    bad
-//  * @property {string[]}   [symbol]
-//  * @property {string}     [where]
-//  * @property {string}     [select]
+//  * @returns { Object }    bad
+//  * @property { string[] }   [symbol]
+//  * @property { string }     [where]
+//  * @property { string }     [select]
 //  */
 // function checkArgs(args) {
 
@@ -288,7 +288,7 @@ async function activate(context) {
 //     "topScopeStart", "topScopeEnd"
 //   ];
 
-//   let /** @type {string[]} */ badSymbol = [];
+//   let /** @type { string[] } */ badSymbol = [];
 
 //   if (!!args.symbol && args.symbol[0] !== undefined) badSymbol = args.symbol.filter(kbSymbol => !symbols.includes(kbSymbol));
 //   if (badSymbol.length) bad.symbol = badSymbol;

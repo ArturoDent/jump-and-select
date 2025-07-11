@@ -1,18 +1,19 @@
-const {DocumentSymbol} = require('vscode');
-const {compareRanges} = require('./sort');
+const { DocumentSymbol } = require('vscode');
+const { compareRangesReverse } = require('./sort');
 
-/** @import { SymMap, SymMapKey } from "./types.js" */
+/** @import { SymMap } from "./types.js" */
 
 
+// this could be generalized as to direction - pass reverse or not
 /**
- * Recursively visit all nested DocumentSymbols, from last child to first.
- * @param {DocumentSymbol[]} symbols - An array of DocumentSymbol objects.
- * @param {(symbol: DocumentSymbol) => void} callback - Function to execute on each symbol.
+ * Recursively visit all nested DocumentSymbols, from LAST child to FIRST.
+ * @param { DocumentSymbol[] } symbols
+ * @param { (symbol: DocumentSymbol) => void } callback - Function to execute on each symbol.
  */
 exports.visitAllSymbols = function (symbols, callback) {
   for (const symbol of symbols) {
     if (symbol.children.length) {
-      exports.visitAllSymbols(symbol.children.sort(compareRanges).toReversed(), callback);
+      exports.visitAllSymbols(symbol.children.sort(compareRangesReverse), callback);
     }
     callback(symbol);
   }
@@ -20,30 +21,23 @@ exports.visitAllSymbols = function (symbols, callback) {
 
 
 /**
+ * Is the 'symbol' either in the symbols option or an arrowFunction (and wants functions)
+ * @param { DocumentSymbol } symbol 
+ * @param { SymMap } symMap
  * 
- * @param {DocumentSymbol} symbol 
- * @param {SymMap} symMap
- * @returns {boolean}
+ * @returns { boolean }
  */
 exports.isRightKind = function (symbol, symMap) {
 
-  let isArrowFunction = false;
+  if (Object.values(symMap).includes(symbol.kind)) return true;
 
-  if (arrowFunctionRanges) {
-    isArrowFunction = globalThis.usesArrowFunctions ?
+  else if (arrowFunctionRanges) {
+    let isArrowFunction = globalThis.usesArrowFunctions ?
       !!arrowFunctionRanges.find(arrowRange => {
         return arrowRange.isEqual(symbol.range);
       }) : false;
+    if (isArrowFunction) return true;
   }
-  return isArrowFunction || Object.values(symMap).includes(symbol.kind);
+
+  return false;
 };
-
-
-// if (Object.values(symMap).includes(symbol.kind)) result.push(symbol);
-// else if (arrowFunctionRanges) {
-//   let isArrowFunction = globalThis.usesArrowFunctions ?
-//     !!arrowFunctionRanges.find(arrowRange => {
-//       return arrowRange.isEqual(symbol.range);
-//     }) : false;
-//   if (isArrowFunction) result.push(symbol);
-// }

@@ -325,3 +325,12 @@ async function previousRecursion(parent, kbWhere, symMap, kbSymbol, selection, r
   // });
   return result;
 }
+
+// if (Object.values(symMap).includes(symbol.kind)) result.push(symbol);
+// else if (arrowFunctionRanges) {
+//   let isArrowFunction = globalThis.usesArrowFunctions ?
+//     !!arrowFunctionRanges.find(arrowRange => {
+//       return arrowRange.isEqual(symbol.range);
+//     }) : false;
+//   if (isArrowFunction) result.push(symbol);
+// }
