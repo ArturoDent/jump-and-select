@@ -175,43 +175,25 @@ You should get intellisense for `jump-and-select.bySymbol` and the `symbol` and 
 
 Here are the symbols that can be used in the `symbols` option:
 
-```plaintext
-  "file",
-  "module",
-  "namespace",
-  "package",
-  "class",        **
-  "method",       **
-  "property",
-  "field",
-  "constructor",
-  "enum",
-  "interface",
-  "function",     **
-  "variable",     **
-  "constant",
-  "string",
-  "number",
-  "boolean",
-  "array",
-  "object",
-  "key",
-  "null",
-  "enumMember",
-  "struct",
-  "event",
-  "operator",
-  "typeParameter"
-```
+|              | symbols     |               |               |
+|--------------|-------------|---------------|---------------|
+| class **     | method **   |               |               |
+| function **  | variable ** |               |               |
+| file         | module      | event         | operator      |
+| namespace    | package     | struct        | typeParameter |
+| property     | field       | constant      | null          |
+| enum         | interface   | constructor   | enumMember    |
+| string       | number      | boolean       |               |
+| array        | object      | key           |               |
 
 If you omit the `symbols` option in you keybinding (or it is just an empty array), the default is **all** of the symbols listed above.  For any particular language or file type, most of the symbols are not used anyway.  
 
 *  If there is no parent scope for a symbol, that symbol will be selected or the cursor moved to.  If there is a parent symbol (of a kind you used in the `symbols` options) that parent will be selected or moved to.  
 
-**Note**: if using `where` === topScopeStart/topScopeEnd or Start/parentEnd the `symbols` option is ignored.  You will always go to the topScope or the parent scope no matter what kind of symbol that scope might happen to be.  For example, with this code:
+**Note**: if using `where` === topStart/topEnd or Start/parentEnd the `symbols` option is ignored.  You will always go to the top scope or the parent scope no matter what kind of symbol that scope might happen to be.  For example, with this code:
 
 ```javascript
-*const myVariable = {      // topScopeStart or parentStart third time
+*const myVariable = {      // topStart or parentStart third time
   alpha: 12,
   method1: function () {   // parentStart second time
     *const myVar2 = {      // parentStart first time
@@ -220,7 +202,7 @@ If you omit the `symbols` option in you keybinding (or it is just an empty array
       
     };*                    // parentEnd
   }
-};*                        // topScopeEnd, with select === true the cursor goes **after** the semicolon
+};*                        // topEnd, with select === true the cursor goes **after** the semicolon
 ```
 
 If your cursor was anywhere in `myVariable` and you wished to go to the parent scope or topMost scope (`myVariable`) you will go there even though that symbol might be of `kind: variable`.  
@@ -251,9 +233,9 @@ These are all relative to the current cursor position.  Multiple cursors are not
 
 * childEnd  
 
-* topScopeStart - the outermost symbol (i.e., its top scope) containing the cursor, may contain nested symbols
+* topStart - the outermost symbol (i.e., its top scope) containing the cursor, may contain nested symbols
 
-* topScopeEnd
+* topEnd
 
 ## `select` Option: boolean, optional, default = **false**
 

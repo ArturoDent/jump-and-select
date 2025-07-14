@@ -10,7 +10,7 @@ Jump between and select docuemnt symbols like functions, classes and/or methods.
 
 ## Notable Changes in v0.8.0
 
-Support for all symbols provided by `vscode.executeDocumentSymbolProvider()`.  All symbols are **not** supported by each language service.  
+Support for all symbols provided by `vscode.executeDocumentSymbolProvider for the current file's language.  All symbols are **not** supported by each language service.  
 
 -----------
 
@@ -27,7 +27,7 @@ A command `jump-and-select.bySymbol` has been added.  This is used with argument
   "key": "alt+j",                  // whatever keybinding you want
   "command": "jump-and-select.bySymbol",
   "args": {
-    "symbol": ["function", "class"],
+    "symbols": ["function", "class"],
     "where": "nextFunctionStart",
     "select": true                 // defaults to false
   }
@@ -463,6 +463,7 @@ For some unknown reason, tabs (`\t`) are not considered a typed character and do
 [  ] - Add a kbWhere option for  no matches in remaining children?  
 [  ] - multimode and jumpBySymbol?  
 [  ] - Consider adding negated kinds of symbols in `symbols` options.  
+[  ] - Consider adding topScopeNextStart/topScopeNextEnd and topScopePreviousStart/topScopePreviousEnd?  
 
 ## Release Notes  
 
@@ -481,7 +482,7 @@ For some unknown reason, tabs (`\t`) are not considered a typed character and do
 &emsp;&emsp; &emsp; Make the StatusBarItem show immediately.  
 &emsp;&emsp; &emsp; Add `Abort MultiMode` command.  In Command Palette and clicking the StatusBarItem.  
 &emsp;&emsp; &emsp; Prevent multiple StatusBarItems.  
-&emsp;&emsp; &emsp; Swapped JSON Schema `keybindings.schema.jsonc` instead of CompletionProvider.  
+&emsp;&emsp; &emsp; Swapped in JSON Schema `keybindings.schema.jsonc` instead of CompletionProvider.  
 &emsp;&emsp; &emsp; Better `^`, `$`, and `^$` selecting in keybindings.  
 &emsp;&emsp; &emsp; Enable literal `\\^`and `\\$` in keybindings.  
 &emsp;&emsp; &emsp; Simplified the QueryObject and made a default noMatch.  
@@ -489,13 +490,13 @@ For some unknown reason, tabs (`\t`) are not considered a typed character and do
 &emsp;&emsp; &emsp; Made a Discussions item for new features.  
 0.5.2&emsp; Fix backwards bug not using start of first line.  
 0.5.3&emsp; empty line (`^$`) jumps work in files that DON'T normalize \n to \r\n - specific settings-type files.  
-0.5.4&emsp; empty line (`^$`) "fix" - just check for existence of \r\n in tthe file to set which regex to use.  
+0.5.4&emsp; empty line (`^$`) "fix" - just check for existence of \r\n in the file to set which regex to use.  
 
 * 0.6.0&emsp; Deprecated all previous settings in favor of one `defaults`.  
 &emsp;&emsp; &emsp; Added a jump and a select version of each option.  
 &emsp;&emsp; &emsp; For "^$" just use `/(?<=\r?\n)\r?\n/g)/` regex.  
 &emsp;&emsp; &emsp; Use more "editor.document.eol" for match and query lengths.  
-&emsp;&emsp; &emsp; Added configs.js with `defaults.restrictSearch ?? depRestrictSearch ?? "document"`, for example.  
+&emsp;&emsp; &emsp; Added configs.js with `defaults.restrictSearch ?? "document"`, for example.  
 
 * 0.7.0&emsp; Added jump `bySymbol` command: goto function, class or method.  
 &emsp;&emsp; &emsp; Added **[jumpSymbols.md](jumpSymbols.md)**

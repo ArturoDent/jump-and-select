@@ -257,13 +257,21 @@ exports.jump2Symbols = async function (kbSymbols, kbWhere, kbSelect = false) {
 
       break;
 
-    case "topScopeStart": case "topScopeEnd":
+    case "topStart": case "topEnd":
       // ignore kbSymbol, e.g., methods can be in variables, classes, etc.
       targetSymbol = Object.values(globalThis.symbols).find(topSymbol => {
-        const topScopeSymbolExtendedRange = extendSelection(topSymbol, kbWhere, document);
-        return topScopeSymbolExtendedRange.contains(selection.active);
+        const topSymbolExtendedRange = extendSelection(topSymbol, kbWhere, document);
+        return topSymbolExtendedRange.contains(selection.active);
       });
       break;
+
+    // case "topNextStart": case "topEnd":
+    //   // ignore kbSymbol, e.g., methods can be in variables, classes, etc.
+    //   targetSymbol = Object.values(globalThis.symbols).find(topSymbol => {
+    //     const topSymbolExtendedRange = extendSelection(topSymbol, kbWhere, document);
+    //     return topSymbolExtendedRange.contains(selection.active);
+    //   });
+    //   break;
 
     default:
       break;

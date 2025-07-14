@@ -104,13 +104,10 @@ async function _jumpForward(restrictSearch, putCursorForward, query, select) {
   const selections = editor.selections;
 
   let matchLength = query.length;
-  // if      (query === "^" || query === "$" || query === "^$") matchLength = 0;
-  // else if (query === "\\^" || query === "\\$") matchLength = 1;
 
   let unescapedQuery = query.replaceAll(/\\([$^])/g, '$1');  // remove all double-escapes
   matchLength = unescapedQuery.length;
 
-  // if      (query === "^" || query === "$" || query === "^$") matchLength = 0;
   if (query === "^" || query === "$") matchLength = 0;
   else if (query === "\\^" || query === "\\$") matchLength = 1;
 
@@ -272,7 +269,7 @@ function getQueryLineIndexForward(cursorPosition, query, putCursorForward, selec
   if (selection.isReversed) restOfLine = line.text.substring(selection.anchor.character);
   else restOfLine = line.text.substring(cursorPosition.character);
 
-  if (restOfLine) {   // restOfLine if already at end = ''
+  if (restOfLine) {   // else restOfLine if already at end = ''
 
     let matchPos;
 
@@ -450,24 +447,12 @@ function getQueryDocumentIndexForward(cursorPosition, query, putCursorForward, s
 
     let matchPos;
 
-    // if (query === '!') {
-
-    //   const symbols4 = await commands.executeCommand('vscode.executeDocumentSymbolProvider',
-    //     document.uri);
-
-    //   if (symbols4) {
-    //     const thisFunction = Object.values(symbols4).find(symbol => {
-    //       return symbol.kind === SymbolKind.Function && symbol.range.contains(selection.active);
-    //     });
-    //     if (thisFunction) {
-    //       // queryIndex = document.offsetAt(thisFunction.range.end);
-    //       window.activeTextEditor.selection = new Selection(thisFunction.range.start, thisFunction.range.start);
-    //     }
-    //   }
-    // }
-
     if (putCursorForward === 'beforeCharacter') {
       matchPos = restOfText.substring(query.length).indexOf(query);
+
+      // const regex1 = /[\t]/g;
+      // const res = regex1.exec(restOfText.substring(query.length));
+
       if (matchPos !== -1) matchPos += query.length;
     }
     else matchPos = restOfText.indexOf(query);
