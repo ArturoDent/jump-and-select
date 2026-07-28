@@ -57,8 +57,8 @@
         "parentEnd",
         "childStart",
         "childEnd",
-        "topScopeStart",
-        "topScopeEnd"
+        "topStart",
+        "topEnd"
       ],
       "markdownEnumDescriptions": [
         "Jump to the start/top of the previous symbol.",
@@ -71,8 +71,8 @@
         "Jump to the end/bottom of the parent symbol - the immediate parent of the current symbol.",
         "Jump to the start/top of the parent symbol's first child symbol.",
         "Jump to the end/bottom of the parent symbol's first child symbol.",
-        "Jump to the start/top of the symbol at the most outer scope - a parent at the highest level.",
-        "Jump to the end/bottom of the symbol at the most outer scope - a parent at the highest level."
+        "Jump to the start/top of the symbol at the outermost scope - a parent at the highest level.",
+        "Jump to the end/bottom of the symbol at the outermost scope - a parent at the highest level."
       ]
     },
     "select": {

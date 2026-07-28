@@ -334,3 +334,72 @@ async function previousRecursion(parent, kbWhere, symMap, kbSymbol, selection, r
 //     }) : false;
 //   if (isArrowFunction) result.push(symbol);
 // }
+
+   // /** @type { any } */
+    // const bad = checkArgs(structuredClone(args));
+
+    // if (bad && Object.keys(bad).length) {  // not empty
+    //   console.log(bad);
+
+    //   let message = "";
+    //   if (bad.symbol.length === 1)
+    //     message += `The "symbol" option "${bad.symbol[0]}" is an error. `;
+    //   else if (bad.symbol.length > 1)
+    //     message += `The "symbol" options "${bad.symbol.join('" and "')}" are errors. `;
+    //   if (bad.where)
+    //     message += `The "where" option "${bad.where}" is an error. `;
+    //   if (bad.select)
+    //     message += `The "select" option "${bad.select}" is not allowed. "select" must be a boolean.`;
+
+
+    //   return await window.showErrorMessage(
+    //     message,
+    //     {modal: true},
+    //     ...['Go to keybindings'])   // two buttons - Cancel will be added
+    //     .then(selected => {
+    //       if (selected === 'Go to keybindings') commands.executeCommand('workbench.action.openGlobalKeybindingsFile');
+    //       // any way to navigate to this particular keybinding?
+    //       // Opening a file at a specific line and column: vscode:;//file/{full-path-to-file}:{line}:{column}
+
+    //       else commands.executeCommand('leaveEditorMessage');
+    //     });
+    // }
+    
+    // /**
+//  * 
+//  * @param { Object }           args
+//  * @param { string | string[] }    args.symbol
+//  * @param { string }             args.where
+//  * @param { boolean }            args.select
+//  * 
+//  * @returns { Object }    bad
+//  * @property { string[] }   [symbol]
+//  * @property { string }     [where]
+//  * @property { string }     [select]
+//  */
+// function checkArgs(args) {
+
+//   /** @type {{ symbol: string[], where: string, select: boolean|string }} */
+//   let bad = {};
+
+//   if (!Array.isArray(args.symbol))
+//     args.symbol = [args.symbol];
+
+//   const symbols = ["class", "method", "function"];
+//   const wheres = [
+//     "previousStart", "previousEnd", "currentStart", "currentEnd", "nextStart",
+//     "nextEnd", "parentStart", "parentEnd", "childStart", "childEnd",
+//     "topScopeStart", "topScopeEnd"
+//   ];
+
+//   let /** @type { string[] } */ badSymbol = [];
+
+//   if (!!args.symbol && args.symbol[0] !== undefined) badSymbol = args.symbol.filter(kbSymbol => !symbols.includes(kbSymbol));
+//   if (badSymbol.length) bad.symbol = badSymbol;
+
+//   if (!!args.where && !wheres.includes(args.where)) bad.where = args.where;
+
+//   if (!!args.select && typeof args.select !== "boolean") bad.select = args.select;
+
+//   return bad;
+// }

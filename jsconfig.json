@@ -1,15 +1,19 @@
 {
-	"compilerOptions": {
-		"strict": true,
-		"module": "commonJS",
-		"target": "ESNext",
-		"checkJs": true,  /* Typecheck .js files. */
+  "compilerOptions": {
+    "strict": true,
+    "module": "commonJS",
+    "target": "ESNext",
+    "checkJs": true, /* Typecheck .js files. */
     "noImplicitAny": true,
-		"lib": [
-			"ESNext"
-		]
-	},
-	"exclude": [
-		"node_modules"
-	]
+    "lib": [
+      "ESNext",
+    ],
+    "types": [
+      "node",
+      "mocha"
+    ]
+  },
+  "exclude": [
+    "node_modules"
+  ]
 }

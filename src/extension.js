@@ -5,8 +5,6 @@ const { jump2Symbols } = require('./symbols');
 const statusBarItem = require('./statusBar');
 
 
-var global = Function('return this')();  // used for global.typeDisposable
-
 /** @type { DocumentSymbol[] | undefined } */
 globalThis.symbols = [];
 
@@ -20,6 +18,12 @@ globalThis.currentUri = {};
 globalThis.usesArrowFunctions = false;
 
 globalThis.refreshSymbols = true;
+
+/** @type { import("vscode").Disposable | undefined } */
+globalThis.typeDisposable = undefined;
+
+/** @type { boolean } */
+globalThis.statusBarItemVisible = false;
 
 
 
@@ -43,7 +47,7 @@ async function activate(context) {
     // no args are required
 
     if (statusBarItem) await statusBarItem.hide();
-    if (global.typeDisposable) await global.typeDisposable.dispose();
+    if (globalThis.typeDisposable) await globalThis.typeDisposable.dispose();
 
     let kbText = args ? args.text : "";  // if args means triggered via a keybinding
     const multiMode = false;
@@ -65,7 +69,7 @@ async function activate(context) {
   let commandDisposable1m = commands.registerCommand('jump-and-select.jumpForwardMultiMode', async args => {
 
     if (statusBarItem) await statusBarItem.hide();
-    if (global.typeDisposable) await global.typeDisposable.dispose();
+    if (globalThis.typeDisposable) await globalThis.typeDisposable.dispose();
 
     let kbText = args ? args.text : "";  // if args means triggered via a keybinding
     const multiMode = true;
@@ -83,7 +87,7 @@ async function activate(context) {
   let commandDisposable2 = commands.registerCommand('jump-and-select.jumpForwardSelect', async args => {
 
     if (statusBarItem) await statusBarItem.hide();
-    if (global.typeDisposable) await global.typeDisposable.dispose();
+    if (globalThis.typeDisposable) await globalThis.typeDisposable.dispose();
 
     let kbText = args ? args.text : "";
     const multiMode = false;
@@ -100,7 +104,7 @@ async function activate(context) {
   let commandDisposable2m = commands.registerCommand('jump-and-select.jumpForwardSelectMultiMode', async args => {
 
     if (statusBarItem) await statusBarItem.hide();
-    if (global.typeDisposable) await global.typeDisposable.dispose();
+    if (globalThis.typeDisposable) await globalThis.typeDisposable.dispose();
 
     let kbText = args ? args.text : "";
     const multiMode = true;
@@ -118,7 +122,7 @@ async function activate(context) {
   let commandDisposable3 = commands.registerCommand('jump-and-select.jumpBackward', async args => {
 
     if (statusBarItem) await statusBarItem.hide();
-    if (global.typeDisposable) await global.typeDisposable.dispose();
+    if (globalThis.typeDisposable) await globalThis.typeDisposable.dispose();
 
     let kbText = args ? args.text : "";
     const multiMode = false;
@@ -135,7 +139,7 @@ async function activate(context) {
   let commandDisposable3m = commands.registerCommand('jump-and-select.jumpBackwardMultiMode', async args => {
 
     if (statusBarItem) await statusBarItem.hide();
-    if (global.typeDisposable) await global.typeDisposable.dispose();
+    if (globalThis.typeDisposable) await globalThis.typeDisposable.dispose();
 
     let kbText = args ? args.text : "";
     const multiMode = true;
@@ -153,7 +157,7 @@ async function activate(context) {
   let commandDisposable4 = commands.registerCommand('jump-and-select.jumpBackwardSelect', async args => {
 
     if (statusBarItem) await statusBarItem.hide();
-    if (global.typeDisposable) await global.typeDisposable.dispose();
+    if (globalThis.typeDisposable) await globalThis.typeDisposable.dispose();
 
     let kbText = args ? args.text : "";
     const multiMode = false;
@@ -170,7 +174,7 @@ async function activate(context) {
   let commandDisposable4m = commands.registerCommand('jump-and-select.jumpBackwardSelectMultiMode', async args => {
 
     if (statusBarItem) await statusBarItem.hide();
-    if (global.typeDisposable) await global.typeDisposable.dispose();
+    if (globalThis.typeDisposable) await globalThis.typeDisposable.dispose();
 
     let kbText = args ? args.text : "";
     const multiMode = true;
@@ -189,7 +193,7 @@ async function activate(context) {
 
   let abortMultimode = commands.registerCommand('jump-and-select.abortMultiMode', async () => {
     if (statusBarItem) await statusBarItem.hide();
-    if (global.typeDisposable) global.typeDisposable.dispose();
+    if (globalThis.typeDisposable) globalThis.typeDisposable.dispose();
 
     // because focus is lost from the editor when you click the StatusBarItem
     await commands.executeCommand('workbench.action.focusLastEditorGroup');
@@ -204,37 +208,7 @@ async function activate(context) {
     // do we need a multimode ?  multiCursor aware?
     // TODO: still do this?
     if (statusBarItem) await statusBarItem.hide();
-    if (global.typeDisposable) global.typeDisposable.dispose();
-
-    // /** @type { any } */
-    // const bad = checkArgs(structuredClone(args));
-
-    // if (bad && Object.keys(bad).length) {  // not empty
-    //   console.log(bad);
-
-    //   let message = "";
-    //   if (bad.symbol.length === 1)
-    //     message += `The "symbol" option "${bad.symbol[0]}" is an error. `;
-    //   else if (bad.symbol.length > 1)
-    //     message += `The "symbol" options "${bad.symbol.join('" and "')}" are errors. `;
-    //   if (bad.where)
-    //     message += `The "where" option "${bad.where}" is an error. `;
-    //   if (bad.select)
-    //     message += `The "select" option "${bad.select}" is not allowed. "select" must be a boolean.`;
-
-
-    //   return await window.showErrorMessage(
-    //     message,
-    //     {modal: true},
-    //     ...['Go to keybindings'])   // two buttons - Cancel will be added
-    //     .then(selected => {
-    //       if (selected === 'Go to keybindings') commands.executeCommand('workbench.action.openGlobalKeybindingsFile');
-    //       // any way to navigate to this particular keybinding?
-    //       // Opening a file at a specific line and column: vscode:;//file/{full-path-to-file}:{line}:{column}
-
-    //       else commands.executeCommand('leaveEditorMessage');
-    //     });
-    // }
+    if (globalThis.typeDisposable) globalThis.typeDisposable.dispose();
 
     // defaults
     if (!!args.symbols && !Array.isArray(args.symbols)) args.symbols = [args.symbols];
@@ -261,52 +235,13 @@ async function activate(context) {
   }));
 }
 
-// /**
-//  * 
-//  * @param { Object }           args
-//  * @param { string | string[] }    args.symbol
-//  * @param { string }             args.where
-//  * @param { boolean }            args.select
-//  * 
-//  * @returns { Object }    bad
-//  * @property { string[] }   [symbol]
-//  * @property { string }     [where]
-//  * @property { string }     [select]
-//  */
-// function checkArgs(args) {
-
-//   /** @type {{ symbol: string[], where: string, select: boolean|string }} */
-//   let bad = {};
-
-//   if (!Array.isArray(args.symbol))
-//     args.symbol = [args.symbol];
-
-//   const symbols = ["class", "method", "function"];
-//   const wheres = [
-//     "previousStart", "previousEnd", "currentStart", "currentEnd", "nextStart",
-//     "nextEnd", "parentStart", "parentEnd", "childStart", "childEnd",
-//     "topScopeStart", "topScopeEnd"
-//   ];
-
-//   let /** @type { string[] } */ badSymbol = [];
-
-//   if (!!args.symbol && args.symbol[0] !== undefined) badSymbol = args.symbol.filter(kbSymbol => !symbols.includes(kbSymbol));
-//   if (badSymbol.length) bad.symbol = badSymbol;
-
-//   if (!!args.where && !wheres.includes(args.where)) bad.where = args.where;
-
-//   if (!!args.select && typeof args.select !== "boolean") bad.select = args.select;
-
-//   return bad;
-// }
-
 
 function deactivate() {
   if (statusBarItem) {
     statusBarItem.hide();
     statusBarItem.dispose();
   }
-  if (global.typeDisposable) global.typeDisposable.dispose();
+  if (globalThis.typeDisposable) globalThis.typeDisposable.dispose();
 
   delete globalThis.symbols;
 }
