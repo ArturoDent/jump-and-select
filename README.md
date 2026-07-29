@@ -296,6 +296,25 @@ Another example, using a combination of `jump-and-select.jumpBackwardSelectMulti
 
 <img src="https://github.com/ArturoDent/jump-and-select/blob/main/images/jumpSelectionExpandEmptyLine.gif?raw=true" width="800" height="300" alt="Error message when fail to exit MultiMode"/>
 
+### Selecting only the match with `selectMatch`
+
+By default, a `...Select` command **extends** the selection: the anchor stays where it was and only the active end moves to the match, so everything between the old and new position gets selected. Add `"selectMatch": true` to select only the matched text itself instead:
+
+```jsonc
+{
+  "key": "shift+alt+r",
+  "command": "jump-and-select.jumpForwardSelect",
+  "args": {
+    "text": "^${selectedText}(?:(?=\\w))",
+    "isRegex": true,
+    "selectMatch": true
+    // "restrictSearch": "document",
+  }
+}
+```
+
+With `selectMatch: true`, the resulting selection covers exactly the matched text (e.g. `foo` in `foobar`), not the span from your original cursor position to the match. `putCursorOnForwardSelect`/`putCursorOnBackwardSelect` still control which end of the match the cursor lands on (`active`) - only where the *other* end (`anchor`) comes from changes, from "your original position" to "the other edge of the match". `selectMatch` works with both literal and `isRegex: true` searches, and with `${selectedText}` per selection when using multiple cursors.
+
 -------------
 
 ## Using regular expressions in a keybinding
@@ -383,6 +402,34 @@ A. **With one of the `jumpForward...` commands:**
 ```
 
 to see how they work in action.  
+
+---------------
+
+## Full regular expressions with `isRegex`
+
+The `^`, `$`, and `^$` patterns above are the only regular expressions evaluated by default. To use a **full regular expression** in `text`, add `"isRegex": true` to the keybinding's `args`:
+
+```jsonc
+{
+  "key": "alt+r",
+  "command": "jump-and-select.jumpForward",
+  "args": {
+    "text": "^${selectedText}(?:(?=\\w))",
+    "isRegex": true
+    // "restrictSearch": "document",
+  }
+}
+```
+
+With `isRegex: true`:
+
+* `text` is passed directly to JavaScript's `RegExp`, with the `m` (multiline) flag, so `^`/`$` anchor to line boundaries even when `restrictSearch` is `document`.
+* Regex metacharacters follow normal regex escaping rules, not the `^`/`$` double-escaping convention described above. Because the pattern lives inside a JSON string in keybindings.json, you still need to **double-escape** backslashes - e.g. `\w` must be written as `"\\w"`.
+* An invalid regular expression is treated as "no match" rather than throwing an error.
+
+### `${selectedText}`
+
+`text` may contain the literal template `${selectedText}`, which is replaced **per selection** with that selection's currently highlighted text before matching. With multiple cursors, each selection can have different selected text, so each cursor searches for its own selection's text. This works whether or not `isRegex` is set - for example, without `isRegex`, `"text": "${selectedText}"` jumps to the next literal occurrence of whatever you have selected.
 
 ---------------
 

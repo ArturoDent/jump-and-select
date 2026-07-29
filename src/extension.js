@@ -52,6 +52,7 @@ async function activate(context) {
     let kbText = args ? args.text : "";  // if args means triggered via a keybinding
     const multiMode = false;
     const select = false;
+    const isRegex = args?.isRegex ?? false;
 
     // check if args.putCursorOnForwardjump is "beforeCharacter" or "afterCharacter"
 
@@ -63,7 +64,9 @@ async function activate(context) {
       args?.putCursorOnForwardJump ?? settings.putCursorOnForwardJump,
       kbText,
       multiMode,
-      select);
+      select,
+      isRegex,
+      false);
   });
 
   let commandDisposable1m = commands.registerCommand('jump-and-select.jumpForwardMultiMode', async args => {
@@ -74,13 +77,16 @@ async function activate(context) {
     let kbText = args ? args.text : "";  // if args means triggered via a keybinding
     const multiMode = true;
     const select = false;
+    const isRegex = args?.isRegex ?? false;
 
     jumpForward(
       args?.restrictSearch ?? settings.restrictSearch,
       args?.putCursorOnForwardJump ?? settings.putCursorOnForwardJump,
       kbText,
       multiMode,
-      select);
+      select,
+      isRegex,
+      false);
   });
 
 
@@ -92,13 +98,17 @@ async function activate(context) {
     let kbText = args ? args.text : "";
     const multiMode = false;
     const select = true;
+    const isRegex = args?.isRegex ?? false;
+    const selectMatch = args?.selectMatch ?? false;
 
     jumpForward(
       args?.restrictSearch ?? settings.restrictSearch,
       args?.putCursorOnForwardSelect ?? settings.putCursorOnForwardSelect,
       kbText,
       multiMode,
-      select);
+      select,
+      isRegex,
+      selectMatch);
   });
 
   let commandDisposable2m = commands.registerCommand('jump-and-select.jumpForwardSelectMultiMode', async args => {
@@ -109,13 +119,17 @@ async function activate(context) {
     let kbText = args ? args.text : "";
     const multiMode = true;
     const select = true;
+    const isRegex = args?.isRegex ?? false;
+    const selectMatch = args?.selectMatch ?? false;
 
     jumpForward(
       args?.restrictSearch ?? settings.restrictSearch,
       args?.putCursorOnForwardSelect ?? settings.putCursorOnForwardSelect,
       kbText,
       multiMode,
-      select);
+      select,
+      isRegex,
+      selectMatch);
   });
 
 
@@ -127,13 +141,16 @@ async function activate(context) {
     let kbText = args ? args.text : "";
     const multiMode = false;
     const select = false;
+    const isRegex = args?.isRegex ?? false;
 
     jumpBackward(
       args?.restrictSearch ?? settings.restrictSearch,
       args?.putCursorOnBackwardJump ?? settings.putCursorOnBackwardJump,
       kbText,
       multiMode,
-      select);
+      select,
+      isRegex,
+      false);
   });
 
   let commandDisposable3m = commands.registerCommand('jump-and-select.jumpBackwardMultiMode', async args => {
@@ -144,13 +161,16 @@ async function activate(context) {
     let kbText = args ? args.text : "";
     const multiMode = true;
     const select = false;
+    const isRegex = args?.isRegex ?? false;
 
     jumpBackward(
       args?.restrictSearch ?? settings.restrictSearch,
       args?.putCursorOnBackwardJump ?? settings.putCursorOnBackwardJump,
       kbText,
       multiMode,
-      select);
+      select,
+      isRegex,
+      false);
   });
 
 
@@ -162,13 +182,17 @@ async function activate(context) {
     let kbText = args ? args.text : "";
     const multiMode = false;
     const select = true;
+    const isRegex = args?.isRegex ?? false;
+    const selectMatch = args?.selectMatch ?? false;
 
     jumpBackward(
       args?.restrictSearch ?? settings.restrictSearch,
       args?.putCursorOnBackwardSelect ?? settings.putCursorOnBackwardSelect,
       kbText,
       multiMode,
-      select);
+      select,
+      isRegex,
+      selectMatch);
   });
 
   let commandDisposable4m = commands.registerCommand('jump-and-select.jumpBackwardSelectMultiMode', async args => {
@@ -179,13 +203,17 @@ async function activate(context) {
     let kbText = args ? args.text : "";
     const multiMode = true;
     const select = true;
+    const isRegex = args?.isRegex ?? false;
+    const selectMatch = args?.selectMatch ?? false;
 
     jumpBackward(
       args?.restrictSearch ?? settings.restrictSearch,
       args?.putCursorOnBackwardSelect ?? settings.putCursorOnBackwardSelect,
       kbText,
       multiMode,
-      select);
+      select,
+      isRegex,
+      selectMatch);
   });
 
   context.subscriptions.push(commandDisposable1, commandDisposable2, commandDisposable3, commandDisposable4);

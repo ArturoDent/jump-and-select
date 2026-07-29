@@ -83,12 +83,24 @@ exports.makeKeybindingsCompletionProvider = function (context) {
 						_makeCompletionItem("document", position, "document")
 					];
 				}
+				else if (argsRange.contains(position) && linePrefix.endsWith('"isRegex": ')) {
+					return [
+						_makeCompletionItem("true", position, "false"),
+						_makeCompletionItem("false", position, "false")
+					];
+				}
+				else if (argsRange.contains(position) && linePrefix.endsWith('"selectMatch": ')) {
+					return [
+						_makeCompletionItem("true", position, "false"),
+						_makeCompletionItem("false", position, "false")
+					];
+				}
 				else if (argsRange.contains(position) && linePrefix.endsWith('"text": "')) {
 					return undefined;
 				}
 
-				const forwardArray = ["text", "putCursorForward", "restrictSearch"];
-				const backwardArray = ["text", "putCursorBackward", "restrictSearch"];
+				const forwardArray = ["text", "putCursorForward", "restrictSearch", "isRegex", "selectMatch"];
+				const backwardArray = ["text", "putCursorBackward", "restrictSearch", "isRegex", "selectMatch"];
 
 				// eliminate any options already used
 				if ((command === "jumpForward") || (command === "jumpForwardSelect")) {
@@ -142,7 +154,9 @@ function _filterCompletionsItemsNotUsed(directionArray, argsText, position) {
 		"text": "",
 		"putCursorForward": "beforeCharacter",
 		"putCursorBackward": "beforeCharacter",
-		"restrictSearch": "document"
+		"restrictSearch": "document",
+		"isRegex": "false",
+		"selectMatch": "false"
 	};
 
 	return directionArray
