@@ -1,16 +1,97 @@
 const { commands, window, Range, Position, Selection, EndOfLine, TextEditorRevealType } = require('vscode');
 const statusBarItem = require('./statusBar');
 
-var global = Function('return this')();  // used for global.typeDisposable
-
 /**
  * The Object returned contains the index of the matched query or -1.
  * This index is from the beginning of the text to be searched.
  *
  * @typedef  { Object } QueryObject
  * @property { Number } queryIndex  - index of query character in line or document from cursor
+ * @property { Number } [matchLength] - length of the actual match; only set by regex searches, where it can't be derived from the pattern string
  */
 const noMatchQueryObject = { queryIndex: -1 };
+
+// -------------------------------------------------------------------------------------------
+
+/**
+ * Remove single-backslash-escaping of '^' and '$' so they are matched literally.
+ *
+ * @param { string } query
+ * @returns { string }
+ */
+function unescapeQuery(query) {
+  if (query === '\\^') return '^';
+  if (query === '\\$') return '$';
+  // $ must precede ^ in the [], else interpreted as not ^
+  return query.replaceAll(/\\([$^])/g, '$1');  // remove all double-escapes
+}
+
+/**
+ * Length (in characters) of what `query` will match, accounting for the
+ * special '^', '$', and '^$' queries and the document's line ending.
+ *
+ * @param { string } query
+ * @param { import("vscode").TextEditor } editor
+ * @returns { number }
+ */
+function getMatchLength(query, editor) {
+  if (query === '^' || query === '$') return 0;
+  if (query === '\\^' || query === '\\$') return 1;
+  if (query === '^$') return editor.document.eol === EndOfLine.CRLF ? 2 : 1;
+  return unescapeQuery(query).length;
+}
+
+/**
+ * Resolve the '${selectedText}' template in a query to the given selection's
+ * own selected text (each selection may have different selected text).
+ *
+ * @param { string } query
+ * @param { import("vscode").TextEditor } editor
+ * @param { Selection } selection
+ * @returns { string }
+ */
+function resolveSelectedText(query, editor, selection) {
+  if (!query.includes('${selectedText}')) return query;
+  return query.replaceAll('${selectedText}', editor.document.getText(selection));
+}
+
+/**
+ * Find the first regex match in `text`, skipping a match sitting at index 0
+ * when putCursorForward is 'beforeCharacter' (the cursor is already right
+ * before it, so a repeated jump should keep advancing rather than no-op).
+ *
+ * @param { string } text
+ * @param { string } pattern
+ * @param { string } putCursorForward
+ * @returns { RegExpMatchArray | null }
+ */
+function regexMatchForward(text, pattern, putCursorForward) {
+  let re;
+  try { re = new RegExp(pattern, 'mg'); } catch { return null; }
+  const matches = [...text.matchAll(re)];
+  return (putCursorForward === 'beforeCharacter'
+    ? matches.find(m => m.index > 0)
+    : matches[0]) ?? null;
+}
+
+/**
+ * Find the last regex match in `text`, skipping a match ending exactly at
+ * the end of `text` when putCursorBackward is 'afterCharacter' (the cursor
+ * is already right after it, so a repeated jump should keep advancing).
+ *
+ * @param { string } text
+ * @param { string } pattern
+ * @param { string } putCursorBackward
+ * @returns { RegExpMatchArray | null }
+ */
+function regexMatchBackward(text, pattern, putCursorBackward) {
+  let re;
+  try { re = new RegExp(pattern, 'mg'); } catch { return null; }
+  const matches = [...text.matchAll(re)];
+  return (putCursorBackward === 'afterCharacter'
+    ? matches.findLast(m => m.index + m[0].length < text.length)
+    : matches.at(-1)) ?? null;
+}
 
 // -------------------------------------------------------------------------------------------
 
@@ -22,20 +103,22 @@ const noMatchQueryObject = { queryIndex: -1 };
  * @param { boolean } multiMode - in MultiMode?
  * @param { boolean } select - in select?
  * @param { Function } runJump - function, _jumpForward or _jumpBackward
+ * @param { boolean } [isRegex] - treat query as a regular expression?
+ * @param { boolean } [selectMatch] - when selecting, select only the matched text instead of extending from the current position
  */
-async function typeRegisterAndRunJumps(restrictSearch, putCursor, multiMode, select, runJump) {
+async function typeRegisterAndRunJumps(restrictSearch, putCursor, multiMode, select, runJump, isRegex, selectMatch) {
 
-  global.typeDisposable = commands.registerCommand('type', async arg => {
+  globalThis.typeDisposable = commands.registerCommand('type', async arg => {
 
     // a tab is not considered a character for some reason, spaces are though
     if (arg.text === '\n') {       // escape doesn't produce an arg
       await statusBarItem.hide();
-      await global.typeDisposable.dispose();
+      await globalThis.typeDisposable?.dispose();
       return;
     }
 
-    await runJump(restrictSearch, putCursor, arg.text, select);
-    if (!multiMode) await global.typeDisposable.dispose();
+    await runJump(restrictSearch, putCursor, arg.text, select, isRegex, selectMatch);
+    if (!multiMode) await globalThis.typeDisposable?.dispose();
   });
 }
 
@@ -47,20 +130,20 @@ async function typeRegisterAndRunJumps(restrictSearch, putCursor, multiMode, sel
  * @param { string } kbText - keybinding text, if any or empty string
  * @param { boolean } multiMode - in MultiMode?
  * @param { boolean } select - in select?
+ * @param { boolean } [isRegex] - treat kbText as a regular expression?
+ * @param { boolean } [selectMatch] - when selecting, select only the matched text instead of extending from the current position
  */
-exports.jumpForward = async function (restrictSearch, putCursor, kbText, multiMode, select) {
+exports.jumpForward = async function (restrictSearch, putCursor, kbText, multiMode, select, isRegex, selectMatch) {
 
-  if (multiMode && !global.statusBarItemVisible) await statusBarItem.show("forward");
+  if (multiMode && !globalThis.statusBarItemVisible) await statusBarItem.show("forward");
 
   // kbText = triggered via a keybinding with a text arg
-  if (kbText && !multiMode) _jumpForward(restrictSearch, putCursor, kbText, select);
-
-  else if (kbText && multiMode) {
-    _jumpForward(restrictSearch, putCursor, kbText, select);
-    await typeRegisterAndRunJumps(restrictSearch, putCursor, multiMode, select, _jumpForward);
+  if (kbText) {
+    await _jumpForward(restrictSearch, putCursor, kbText, select, isRegex, selectMatch);
+    if (!multiMode) return;
   }
 
-  else await typeRegisterAndRunJumps(restrictSearch, putCursor, multiMode, select, _jumpForward);
+  await typeRegisterAndRunJumps(restrictSearch, putCursor, multiMode, select, _jumpForward, isRegex, selectMatch);
 };
 
 
@@ -71,20 +154,20 @@ exports.jumpForward = async function (restrictSearch, putCursor, kbText, multiMo
  * @param { string } kbText - keybinding text, if any or empty string
  * @param { boolean } multiMode - in MultiMode?
  * @param { boolean } select - in select?
+ * @param { boolean } [isRegex] - treat kbText as a regular expression?
+ * @param { boolean } [selectMatch] - when selecting, select only the matched text instead of extending from the current position
  */
-exports.jumpBackward = async function (restrictSearch, putCursor, kbText, multiMode, select) {
+exports.jumpBackward = async function (restrictSearch, putCursor, kbText, multiMode, select, isRegex, selectMatch) {
 
-  if (multiMode && !global.statusBarItemVisible) await statusBarItem.show("backward");
+  if (multiMode && !globalThis.statusBarItemVisible) await statusBarItem.show("backward");
 
   // kbText = triggered via a keybinding with a text arg
-  if (kbText && !multiMode) _jumpBackward(restrictSearch, putCursor, kbText, select);
-
-  else if (kbText && multiMode) {
-    _jumpBackward(restrictSearch, putCursor, kbText, select);
-    await typeRegisterAndRunJumps(restrictSearch, putCursor, multiMode, select, _jumpBackward);
+  if (kbText) {
+    await _jumpBackward(restrictSearch, putCursor, kbText, select, isRegex, selectMatch);
+    if (!multiMode) return;
   }
-  // could these be simplified
-  else await typeRegisterAndRunJumps(restrictSearch, putCursor, multiMode, select, _jumpBackward);
+
+  await typeRegisterAndRunJumps(restrictSearch, putCursor, multiMode, select, _jumpBackward, isRegex, selectMatch);
 };
 
 
@@ -94,20 +177,24 @@ exports.jumpBackward = async function (restrictSearch, putCursor, kbText, multiM
  * @param { string } putCursorForward
  * @param { string } query - keybinding arg or next character typed
  * @param { boolean } select
+ * @param { boolean } [isRegex] - treat query (after ${selectedText} resolution) as a regular expression?
+ * @param { boolean } [selectMatch] - when selecting, select only the matched text instead of extending from the current position
  */
-async function _jumpForward(restrictSearch, putCursorForward, query, select) {
+async function _jumpForward(restrictSearch, putCursorForward, query, select, isRegex, selectMatch) {
 
-  if (!window.activeTextEditor) {
-    return;
-  }
+  if (!window.activeTextEditor) return;
+
   const editor = window.activeTextEditor;
-  const selections = editor.selections;
 
+<<<<<<< HEAD
   let matchLength = query.length;
+=======
+  const newSelections = [...editor.selections];
+>>>>>>> cleanup/command-functions
 
-  let unescapedQuery = query.replaceAll(/\\([$^])/g, '$1');  // remove all double-escapes
-  matchLength = unescapedQuery.length;
+  newSelections.forEach((selection, index) => {
 
+<<<<<<< HEAD
   if (query === "^" || query === "$") matchLength = 0;
   else if (query === "\\^" || query === "\\$") matchLength = 1;
 
@@ -120,41 +207,43 @@ async function _jumpForward(restrictSearch, putCursorForward, query, select) {
   for await (const selection of selections) {
 
     let curPos = selection.active;  // cursor Position
+=======
+    const curPos = selection.active;  // cursor Position
+>>>>>>> cleanup/command-functions
     let curAnchor = selection.anchor; // start of selection - not where the cursor is
-    let cursorIndex = editor.document.offsetAt(curPos);
+    const cursorIndex = editor.document.offsetAt(curPos);
 
-    let queryObject;
+    const resolvedQuery = resolveSelectedText(query, editor, selection);
 
-    if (restrictSearch === "line") {
-      queryObject = getQueryLineIndexForward(curPos, query, putCursorForward, selection);
+    const queryObject = restrictSearch === "line"
+      ? getQueryLineIndexForward(curPos, resolvedQuery, putCursorForward, selection, isRegex)
+      : getQueryDocumentIndexForward(curPos, resolvedQuery, putCursorForward, selection, isRegex);
+
+    if (queryObject.queryIndex === -1) return;
+
+    const matchLength = isRegex ? (queryObject.matchLength ?? 0) : getMatchLength(resolvedQuery, editor);
+
+    const matchStartOffset = queryObject.queryIndex + cursorIndex;
+    const matchEndOffset = matchStartOffset + matchLength;
+
+    // effective default = "beforeCharacter"
+    const queryPos = putCursorForward === "afterCharacter"
+      ? editor.document.positionAt(matchEndOffset)
+      : editor.document.positionAt(matchStartOffset);
+
+    if (select && selectMatch) {
+      curAnchor = putCursorForward === "afterCharacter"
+        ? editor.document.positionAt(matchStartOffset)
+        : editor.document.positionAt(matchEndOffset);
     }
-    else {
-      queryObject = getQueryDocumentIndexForward(curPos, query, putCursorForward, selection);
-    }
+    // if selection.anchor > selection.active, swap them = selection.isReversed = true
+    else if (select && selection.isReversed) curAnchor = selection.active;
 
-    if (queryObject.queryIndex !== -1) {
+    newSelections[index] = select ? new Selection(curAnchor, queryPos) : new Selection(queryPos, queryPos);
+  });
 
-      let queryPos;  // query Position
-      if (putCursorForward === "afterCharacter") {
-        const finalCurPos = queryObject.queryIndex + cursorIndex + matchLength;
-        queryPos = editor.document.positionAt(finalCurPos);
-      }
-      // effective default = "beforeCharacter"
-      else queryPos = editor.document.positionAt(queryObject.queryIndex + cursorIndex);
-
-      // if selection.anchor > selection.active, swap them = selection.isReversed = true
-      if (select && selections[index].isReversed) curAnchor = selections[index].active;
-
-      if (select) selections[index] = new Selection(curAnchor, queryPos);
-      else selections[index] = new Selection(queryPos, queryPos);
-    }
-    index++;
-  };
-
-  editor.selections = selections;
-
-  // editor.revealRange(new Range(selections[0].anchor, selections[0].active), vscode.TextEditorRevealType.InCenterIfOutsideViewport);     // InCenterIfOutsideViewport = 2
-  editor.revealRange(new Range(selections[0].anchor, selections[0].active), TextEditorRevealType.Default);  // Default = 0, as little scrolling as necessary
+  editor.selections = newSelections;
+  editor.revealRange(new Range(newSelections[0].anchor, newSelections[0].active), TextEditorRevealType.Default);  // Default = 0, as little scrolling as necessary
 }
 
 
@@ -164,70 +253,57 @@ async function _jumpForward(restrictSearch, putCursorForward, query, select) {
  * @param { string } putCursorBackward
  * @param { string } query - keybinding arg or next character typed
  * @param { boolean } select
+ * @param { boolean } [isRegex] - treat query (after ${selectedText} resolution) as a regular expression?
+ * @param { boolean } [selectMatch] - when selecting, select only the matched text instead of extending from the current position
  */
-async function _jumpBackward(restrictSearch, putCursorBackward, query, select) {
+async function _jumpBackward(restrictSearch, putCursorBackward, query, select, isRegex, selectMatch) {
 
-  if (!window.activeTextEditor) {
-    return;
-  }
+  if (!window.activeTextEditor) return;
+
   const editor = window.activeTextEditor;
-  const selections = editor.selections;
 
-  let matchLength = query.length;
+  const newSelections = [...editor.selections];
 
-  let unescapedQuery = query.replaceAll(/\\([$^])/g, '$1');  // remove all double-escapes
-  matchLength = unescapedQuery.length;
+  newSelections.forEach((selection, index) => {
 
-  // if      (query === "^" || query === "$" || query === "^$") matchLength = 0;
-  if (query === "^" || query === "$") matchLength = 0;
-  else if (query === "\\^" || query === "\\$") matchLength = 1;
-
-  if (query === "^$") {
-    if (editor.document.eol === EndOfLine.CRLF) matchLength = 2;
-    else if (editor.document.eol === EndOfLine.LF) matchLength = 1; // correct for Mac/Linux LF
-  }
-
-  let index = 0;
-  for await (const selection of selections) {
-
-    let curPos = selection.active;
+    const curPos = selection.active;
     let curAnchor = selection.anchor; // start of selection - not where the cursor is
 
-    let queryObject;
+    const resolvedQuery = resolveSelectedText(query, editor, selection);
 
-    if (restrictSearch === "line") {
-      queryObject = getQueryLineIndexBackward(curPos, query, putCursorBackward, selection);
+    const queryObject = restrictSearch === "line"
+      ? getQueryLineIndexBackward(curPos, resolvedQuery, putCursorBackward, selection, isRegex)
+      : getQueryDocumentIndexBackward(curPos, resolvedQuery, putCursorBackward, selection, isRegex);
+
+    if (queryObject.queryIndex === -1) return;
+
+    const matchLength = isRegex ? (queryObject.matchLength ?? 0) : getMatchLength(resolvedQuery, editor);
+
+    const matchStartIndex = queryObject.queryIndex;
+    const matchEndIndex = matchStartIndex + matchLength;
+
+    const positionFor = (/** @type { number } */ idx) => restrictSearch === "line"
+      ? new Position(curPos.line, idx)
+      : editor.document.positionAt(idx);
+
+    // effective default = "beforeCharacter"
+    const queryPos = putCursorBackward === "afterCharacter"
+      ? positionFor(matchEndIndex)
+      : positionFor(matchStartIndex);
+
+    if (select && selectMatch) {
+      curAnchor = putCursorBackward === "afterCharacter"
+        ? positionFor(matchStartIndex)
+        : positionFor(matchEndIndex);
     }
-    else {
-      queryObject = getQueryDocumentIndexBackward(curPos, query, putCursorBackward, selection);
-    }
+    // if selection.anchor < selection.active, swap them = selection.isReversed = false
+    else if (select && !selection.isReversed) curAnchor = selection.active;
 
-    if (queryObject.queryIndex !== -1) {
+    newSelections[index] = select ? new Selection(curAnchor, queryPos) : new Selection(queryPos, queryPos);
+  });
 
-      let queryPos;
-
-      if (putCursorBackward === "afterCharacter") {
-        if (restrictSearch === "line") queryPos = new Position(curPos.line, queryObject.queryIndex + matchLength);
-        else queryPos = editor.document.positionAt(queryObject.queryIndex + matchLength);
-      }
-      else {   // (putCursorBackward === "beforeCharacter") effective default
-        if (restrictSearch === "line") queryPos = new Position(curPos.line, queryObject.queryIndex);
-        else queryPos = editor.document.positionAt(queryObject.queryIndex);
-      }
-
-      // if selection.anchor < selection.active, swap them = selection.isReversed = false
-      if (select && !selections[index].isReversed) curAnchor = selections[index].active;
-
-      if (select) selections[index] = new Selection(curAnchor, queryPos);
-      else selections[index] = new Selection(queryPos, queryPos);
-    }
-    index++;
-  };
-
-  editor.selections = selections;
-
-  // editor.revealRange(new Range(selections[0].anchor, selections[0].active), TextEditorRevealType.InCenterIfOutsideViewport);     // InCenterIfOutsideViewport = 2
-  editor.revealRange(new Range(selections[0].anchor, selections[0].active), TextEditorRevealType.Default);  // Default = 0, as little scrolling as necessary
+  editor.selections = newSelections;
+  editor.revealRange(new Range(newSelections[0].anchor, newSelections[0].active), TextEditorRevealType.Default);  // Default = 0, as little scrolling as necessary
 }
 
 
@@ -237,10 +313,11 @@ async function _jumpBackward(restrictSearch, putCursorBackward, query, select) {
  * @param { string } query - the typed character to match
  * @param { string } putCursorForward - before/afterCharacter
  * @param { Selection } selection
- * 
+ * @param { boolean } [isRegex] - treat query as a regular expression?
+ *
  * @returns { QueryObject }
  */
-function getQueryLineIndexForward(cursorPosition, query, putCursorForward, selection) {
+function getQueryLineIndexForward(cursorPosition, query, putCursorForward, selection, isRegex) {
 
   const document = window.activeTextEditor?.document;
 
@@ -252,23 +329,31 @@ function getQueryLineIndexForward(cursorPosition, query, putCursorForward, selec
   const line = document.lineAt(cursorPosition.line);
   const lineRange = line.range;
 
-  if (query === '$') {
-
-    // leave as is
-    // if (selection.isReversed && !selection.isSingleLine) {    // a reversed multiline selection
-
-    return { queryIndex: lineRange.end.character - cursorPosition.character };
-  }
-
-  if (query === '\\^') query = '^';
-  else if (query === '\\$') query = '$';
-
-  // $ must precede ^ in the [], else interpreted as not ^
-  query = query.replaceAll(/\\([$^])/g, '$1');  // remove all double-escapes
-
   if (selection.isReversed) restOfLine = line.text.substring(selection.anchor.character);
   else restOfLine = line.text.substring(cursorPosition.character);
 
+<<<<<<< HEAD
+=======
+  if (isRegex) {
+    if (!restOfLine) return noMatchQueryObject;
+
+    const match = regexMatchForward(restOfLine, query, putCursorForward);
+    if (!match) return noMatchQueryObject;
+    const matchPos = match.index ?? 0;
+
+    if (selection.isReversed) queryIndex = document.offsetAt(selection.end) - document.offsetAt(selection.start) + matchPos;
+    else queryIndex = matchPos;
+
+    return { queryIndex, matchLength: match[0].length };
+  }
+
+  if (query === '$') {
+    return { queryIndex: lineRange.end.character - cursorPosition.character };
+  }
+
+  query = unescapeQuery(query);
+
+>>>>>>> cleanup/command-functions
   if (restOfLine) {   // else restOfLine if already at end = ''
 
     let matchPos;
@@ -294,12 +379,13 @@ function getQueryLineIndexForward(cursorPosition, query, putCursorForward, selec
  * @param { string } query - the typed character to match
  * @param { string } putCursorForward
  * @param { Selection } selection
- * 
+ * @param { boolean } [isRegex] - treat query as a regular expression?
+ *
  * @returns { QueryObject }
  */
-function getQueryDocumentIndexForward(cursorPosition, query, putCursorForward, selection) {
+function getQueryDocumentIndexForward(cursorPosition, query, putCursorForward, selection, isRegex) {
 
-  const document = window.activeTextEditor?.document;  // TODO: exclude schemes like vscode-data, etc.?
+  const document = window.activeTextEditor?.document;
 
   let queryIndex = -1;
   let restOfText = '';
@@ -307,6 +393,24 @@ function getQueryDocumentIndexForward(cursorPosition, query, putCursorForward, s
   if (!document) return noMatchQueryObject;
 
   let cursorIndex = document?.offsetAt(cursorPosition);
+
+  if (isRegex) {
+    const lastLine = document.lineAt(document.lineCount - 1);
+    const curEndRange = selection.isReversed
+      ? new Range(selection.anchor, lastLine.range.end)
+      : new Range(cursorPosition, lastLine.range.end);
+    const text = document.getText(curEndRange);
+    if (!text) return noMatchQueryObject;
+
+    const match = regexMatchForward(text, query, putCursorForward);
+    if (!match) return noMatchQueryObject;
+    const matchPos = match.index ?? 0;
+
+    if (selection.isReversed) queryIndex = document.offsetAt(selection.end) - document.offsetAt(selection.start) + matchPos;
+    else queryIndex = matchPos;
+
+    return { queryIndex, matchLength: match[0].length };
+  }
 
   if (query === '$') {  // this line end, if already at line end go to next line end
     const line = document.lineAt(cursorPosition.line);
@@ -333,7 +437,6 @@ function getQueryDocumentIndexForward(cursorPosition, query, putCursorForward, s
 
         let eolLength = 1;
         if (document.eol === EndOfLine.CRLF) eolLength = 2; // correct for Windows CRLF
-        // else if (document.eol === EndOfLine.LF) eolLength = 1; // correct for Mac/etc. LF
 
         return { queryIndex: nextLine.range.end.character + eolLength };
       }
@@ -353,7 +456,6 @@ function getQueryDocumentIndexForward(cursorPosition, query, putCursorForward, s
 
     let eolLength = 1;
     if (document.eol === EndOfLine.CRLF) eolLength = 2; // correct for Windows CRLF
-    // else if (document.eol === EndOfLine.LF) eolLength = 1; // correct for Mac/Linux LF
 
     if (nextLine) {
       if (selection.isReversed && !selection.isSingleLine) {  // a reversed multiline selection
@@ -362,10 +464,6 @@ function getQueryDocumentIndexForward(cursorPosition, query, putCursorForward, s
         if (!lineAfterSelectionEnd) return noMatchQueryObject;
 
         if (cursorPosition.isBefore(lineRange.end)) {
-
-          // const lineAfterSelectionEnd = document.lineAt(selection.end.line + 1);
-          // if (!lineAfterSelectionEnd) return noMatchQueryObject;
-
           // go to start of the line after the end of the selection
           return { queryIndex: document.offsetAt(lineAfterSelectionEnd.range.start) - cursorIndex };
         }
@@ -395,28 +493,7 @@ function getQueryDocumentIndexForward(cursorPosition, query, putCursorForward, s
     let curEndRange = new Range(cursorPosition, lastLine.range.end);  // to end of file
     restOfText = document.getText(curEndRange);
 
-    // regexp = new RegExp('(?<=\n)(?!.)|(?<!.)(?=\n)|(?<=\n)\n', 'g');  // these use \n only
-    // regexp = new RegExp('(?<=\\n)(?!.)|(?<!.)(?=(\\r)?\\n)|(?<=\\n)(\\r)?\\n', 'g');  // these use \n only
-
-    // if (restOfText.includes('\r\n')) regexp = new RegExp('^(?!\n)$(?!\n)', 'gm');
-    // else regexp = new RegExp('^$', 'gm');  // these use \n only
-
-    // below are a problem because vscode getText() does not include \r\n, only \n
-    // C:\Users\Mark\OneDrive\Test Bed\.vscode\tasks.json
-    // C:\Users\Mark\AppData\Roaming\Code\User\snippets\myGlobal-snippets.code-snippets
-
-    // const tasks = document.uri.path.endsWith('.vscode/tasks.json');
-    // const codeSnippets = (document.languageId === 'snippets' && path.extname(document.uri.fsPath) === '.code-snippets');
-    // const keybindings = (document.uri.scheme === 'vscode-userdata' && path.basename(document.uri.fsPath) === 'keybindings.json');
-
-    // if (tasks || codeSnippets || keybindings) regexp = new RegExp('^$', 'gm');  // these use \n only
-    // else regexp = new RegExp('^(?!\n)$(?!\n)', 'gm');
-
-
-    // if (document.eol === EndOfLine.CRLF) new RegExp("(?<=\r?\n)\r?\n"); // correct for Windows CRLF
-    // else if (document.eol === EndOfLine.LF) new RegExp("(?<=\n)\n"); // correct for Mac/etc. LF
-
-    const match = restOfText.match(/(?<=\r?\n)\r?\n/);  // use EOL?
+    const match = restOfText.match(/(?<=\r?\n)\r?\n/);
 
     if (!match) {
       if (restOfText.endsWith('\r\n')) queryIndex = restOfText.lastIndexOf('\r\n') + 2;
@@ -427,11 +504,7 @@ function getQueryDocumentIndexForward(cursorPosition, query, putCursorForward, s
     return { queryIndex: match?.index || queryIndex };
   }
 
-  if (query === '\\^') query = '^';
-  else if (query === '\\$') query = '$';
-
-  // $ must precede ^ in the [], else interpreted as not ^
-  query = query.replaceAll(/\\([$^])/g, '$1');  // remove all double-escapes
+  query = unescapeQuery(query);
 
   let curEndRange;
   let lastLine = document.lineAt(document.lineCount - 1);
@@ -471,12 +544,13 @@ function getQueryDocumentIndexForward(cursorPosition, query, putCursorForward, s
  * Get the previous query position restricted to the line of the cursor
  * @param { Position } cursorPosition
  * @param { string } query - the typed character to match
- * @param { string } purCursorBackward - before/afterCharacter
+ * @param { string } putCursorBackward - before/afterCharacter
  * @param { Selection } selection
- * 
+ * @param { boolean } [isRegex] - treat query as a regular expression?
+ *
  * @returns { QueryObject }
  */
-function getQueryLineIndexBackward(cursorPosition, query, purCursorBackward, selection) {
+function getQueryLineIndexBackward(cursorPosition, query, putCursorBackward, selection, isRegex) {
 
   const document = window.activeTextEditor?.document;
 
@@ -485,23 +559,28 @@ function getQueryLineIndexBackward(cursorPosition, query, purCursorBackward, sel
 
   if (!document) return noMatchQueryObject;
 
-  if (query === '^') return { queryIndex: 0 };
-
-  if (query === '\\^') query = '^';
-  else if (query === '\\$') query = '$';
-
-  // $ must precede ^ in the [], else interpreted as not ^
-  query = query.replaceAll(/\\([$^])/g, '$1');  // remove all double-escapes
-
   const line = document.lineAt(cursorPosition.line);
   if (!selection.isReversed) startOfLine = line.text.substring(0, selection.anchor.character);
   else startOfLine = line.text.substring(0, cursorPosition.character);  // same as selection.active.character
+
+  if (isRegex) {
+    if (!startOfLine) return noMatchQueryObject;
+
+    const match = regexMatchBackward(startOfLine, query, putCursorBackward);
+    if (!match) return noMatchQueryObject;
+
+    return { queryIndex: match.index ?? 0, matchLength: match[0].length };
+  }
+
+  if (query === '^') return { queryIndex: 0 };
+
+  query = unescapeQuery(query);
 
   if (startOfLine) {   // startOfLine = '' if already at the start of the line
 
     let matchPos;
 
-    if (purCursorBackward === 'afterCharacter') {
+    if (putCursorBackward === 'afterCharacter') {
       const end = startOfLine.length - query.length;
       matchPos = startOfLine.substring(0, end).lastIndexOf(query);
     }
@@ -519,12 +598,13 @@ function getQueryLineIndexBackward(cursorPosition, query, purCursorBackward, sel
  * Get the previous query position anywhere in the document prior to cursor
  * @param { Position } cursorPosition
  * @param { string } query - the typed character to match
- * @param { string } purCursorBackward - before/afterCharacter
+ * @param { string } putCursorBackward - before/afterCharacter
  * @param { Selection } selection
- * 
+ * @param { boolean } [isRegex] - treat query as a regular expression?
+ *
  * @returns { QueryObject }
  */
-function getQueryDocumentIndexBackward(cursorPosition, query, purCursorBackward, selection) {
+function getQueryDocumentIndexBackward(cursorPosition, query, putCursorBackward, selection, isRegex) {
 
   const document = window.activeTextEditor?.document;
 
@@ -544,6 +624,15 @@ function getQueryDocumentIndexBackward(cursorPosition, query, purCursorBackward,
     curStartRange = new Range(cursorPosition, firstLine.range.start);  // to the start of the file from the cursor
 
   startText = document.getText(curStartRange);
+
+  if (isRegex) {
+    if (!startText) return noMatchQueryObject;
+
+    const match = regexMatchBackward(startText, query, putCursorBackward);
+    if (!match) return noMatchQueryObject;
+
+    return { queryIndex: match.index ?? 0, matchLength: match[0].length };
+  }
 
   if (query === '$') {   // go to end of previous line
     if (!selection.isReversed && !selection.isSingleLine) {    // a !reversed multiline selection
@@ -609,40 +698,12 @@ function getQueryDocumentIndexBackward(cursorPosition, query, purCursorBackward,
 
   else if (query === '^$') {  // previous empty line
 
-    let queryLength = query.length;
-    // if (document.eol === EndOfLine.CRLF) { // correct for Windows CRLF
-    //   if (query === "^$") queryLength = 2;
-    // }
-    // else if (document.eol === EndOfLine.LF) queryLength = 1; // correct for Mac/Linux LF
-
-    if (query === "^$") {
-      if (document.eol === EndOfLine.CRLF) queryLength = 2;
-      else if (document.eol === EndOfLine.LF) queryLength = 1; // correct for Mac/Linux LF
-    }
-
-
-    // if (startText.includes('\r\n')) regexp = new RegExp('^(?!\n)$(?!\n)', 'gm');
-    // else regexp = new RegExp('^$', 'gm');  // these use \n only
-
-    // below are a problem because vscode getText() does not include \r\n, only \n
-    // C:\Users\Mark\OneDrive\Test Bed\.vscode\tasks.json
-    // C:\Users\Mark\AppData\Roaming\Code\User\snippets\myGlobal-snippets.code-snippets
-
-    // const tasks = document.uri.path.endsWith('.vscode/tasks.json');
-    // const codeSnippets = (document.languageId === 'snippets' && path.extname(document.uri.fsPath) === '.code-snippets');
-    // const keybindings = (document.uri.scheme === 'vscode-userdata' && path.basename(document.uri.fsPath) === 'keybindings.json');
-
-    // if (tasks || codeSnippets || keybindings) regexp = new RegExp('^$', 'gm');  // uses \n only
-    // else regexp = new RegExp('^(?!\n)$(?!\n)', 'gm');
-
+    const queryLength = document.eol === EndOfLine.CRLF ? 2 : 1; // correct for Windows CRLF / Mac-Linux LF
 
     const matches = [...startText.matchAll(/(?<=\r?\n)\r?\n/g)];
 
     if (!matches.length) {
-      // these will always be 0 ?
-      // if (startText.startsWith('\r\n')) queryIndex = startText.indexOf('\r\n');
       if (startText.startsWith('\r\n')) return { queryIndex: 0 };
-      // else if (startText.startsWith('\n')) queryIndex = startText.indexOf('\n');
       else if (startText.startsWith('\n')) return { queryIndex: 0 };
       else return { queryIndex };
     }
@@ -651,8 +712,8 @@ function getQueryDocumentIndexBackward(cursorPosition, query, purCursorBackward,
     const penultimateIndex = matches?.at(-2)?.index ?? -1;
 
     // if putCursorBackward = afterCharacter, add match.length (\r\n or \n) to lastIndex
-    if (purCursorBackward === "afterCharacter") {
-      // // going backward and cursor at last match, skip and go to the penultimate match
+    if (putCursorBackward === "afterCharacter") {
+      // going backward and cursor at last match, skip and go to the penultimate match
       if ((penultimateIndex !== -1) && (lastIndex !== -1) && (cursorIndex === lastIndex + queryLength)) {
         queryIndex = penultimateIndex;
       }
@@ -668,17 +729,13 @@ function getQueryDocumentIndexBackward(cursorPosition, query, purCursorBackward,
     return { queryIndex };
   }
 
-  if (query === '\\^') query = '^';
-  else if (query === '\\$') query = '$';
-
-  // $ must precede ^ in the [], else interpreted as not ^
-  query = query.replaceAll(/\\([$^])/g, '$1');  // remove all double-escapes
+  query = unescapeQuery(query);
 
   if (startText) {  // startText = '' if already at the start of the document
 
     let matchPos;
 
-    if (purCursorBackward === 'afterCharacter') {
+    if (putCursorBackward === 'afterCharacter') {
       const end = startText.length - query.length;
       matchPos = startText.substring(0, end).lastIndexOf(query);
     }

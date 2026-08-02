@@ -7,6 +7,16 @@
         "string"
       ]
     },
+    "isRegex": {
+      "markdownDescription": "Treat `text` as a regular expression instead of literal text. `${selectedText}` in `text` is resolved per-selection to that selection's currently highlighted text (works with or without `isRegex`). Remember that regex metacharacters like `\\w` must be double-escaped in keybindings.json, e.g. `\"\\\\w\"`.",
+      "type": "boolean",
+      "default": false
+    },
+    "selectMatch": {
+      "markdownDescription": "When selecting, select only the matched text itself instead of extending the selection from the current cursor/selection position to the match. Which end of the match is `active` (where the cursor lands) still follows `putCursorOnForwardSelect`/`putCursorOnBackwardSelect`.",
+      "type": "boolean",
+      "default": false
+    },
     "restrictSearch": {
       "description": "Default is to jump anywhere in the document.  Options: document, line.",
       "type": "string",
@@ -353,6 +363,9 @@
                   "description": "On a forward jump, put the cursor before or after the matched character.",
                   "$ref": "#/definitions/cursorJump",
                   "default": "beforeCharacter"
+                },
+                "isRegex": {
+                  "$ref": "#/definitions/isRegex"
                 }
               }
             }
@@ -390,6 +403,12 @@
                   "description": "On a forward select, extend the selection to before or after the matched character.",
                   "$ref": "#/definitions/cursorSelect",
                   "default": "afterCharacter"
+                },
+                "isRegex": {
+                  "$ref": "#/definitions/isRegex"
+                },
+                "selectMatch": {
+                  "$ref": "#/definitions/selectMatch"
                 }
               }
             }
@@ -427,6 +446,9 @@
                   "description": "On a backward jump, put the cursor before or after the matched character.",
                   "$ref": "#/definitions/cursorJump",
                   "default": "beforeCharacter"
+                },
+                "isRegex": {
+                  "$ref": "#/definitions/isRegex"
                 }
               }
             }
@@ -464,6 +486,12 @@
                   "description": "On a backward selection, extend the selection to before or after the matched character.",
                   "$ref": "#/definitions/cursorSelect",
                   "default": "beforeCharacter"
+                },
+                "isRegex": {
+                  "$ref": "#/definitions/isRegex"
+                },
+                "selectMatch": {
+                  "$ref": "#/definitions/selectMatch"
                 }
               }
             }

@@ -1,0 +1,93 @@
+[
+  {
+    "key": "alt+p",
+    "command": "jump-and-select.jumpForward",
+    "description": "cursor moves to end of current line",
+    "args": {
+      "text": "$",
+      "restrictSearch": "document",
+      "putCursorBackward": "beforeCharacter"
+    }
+  },
+  {
+    "key": "alt+o",
+    "command": "jump-and-select.jumpBackward",
+    "description": "cursor moves to end of previous line",
+    "args": {
+      "text": "$",
+      "restrictSearch": "document",
+      "putCursorBackward": "beforeCharacter"
+    }
+  },
+  {
+    "key": "alt+i",
+    "command": "jump-and-select.jumpBackward",
+    "description": "cursor moves to start of current line",
+    "args": {
+      "text": "^",
+      "restrictSearch": "document",
+      "putCursorBackward": "beforeCharacter"
+    }
+  },
+  {
+    "key": "alt+u",
+    "command": "jump-and-select.jumpForward",
+    "description": "cursor moves to start of next line",
+    "args": {
+      "text": "^",
+      "restrictSearch": "document",
+      "putCursorBackward": "beforeCharacter"
+    }
+  },
+  {
+    "key": "alt+y",
+    "command": "jump-and-select.jumpBackward",
+    "description": "cursor moves to prevous empty line",
+    "args": {
+      "text": "^$",
+      "restrictSearch": "document",
+      "putCursorBackward": "beforeCharacter"
+    }
+  },
+  {
+    "key": "alt+k",
+    "command": "jump-and-select.jumpForward",
+    "description": "cursor moves to next empty line",
+    "args": {
+      "text": "^$",
+      "restrictSearch": "document",
+      "putCursorBackward": "beforeCharacter"
+    }
+  },
+  {
+    "key": "alt+r",
+    "command": "jump-and-select.jumpForward",
+    "description": "cursor moves to next match, no selection",
+    "args": {
+      "text": "^${selectedText}(?:(?=\\w))",
+      "isRegex": true
+    }
+  },
+  {
+    "key": "shift+alt+f",
+    "command": "jump-and-select.jumpForwardSelect",
+    "description": "cursor moves to next match and selects the match",
+    "description2": "test with whitespace selected at beginning of line",
+    "args": {
+      "text": "^${selectedText}(?:(?=\\w))",
+      "isRegex": true,
+      "selectMatch": true
+    }
+  },
+  {
+    "key": "shift+alt+b",
+    "command": "jump-and-select.jumpBackwardSelect",
+    "description": "cursor moves to previous match and selects it",
+    "description2": "test with whitespace selected at beginning of line",
+    "args": {
+      "text": "^${selectedText}(?:(?=\\w))",
+      "isRegex": true,
+      "selectMatch": true
+    }
+  }
+]

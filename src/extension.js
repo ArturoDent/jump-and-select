@@ -5,8 +5,6 @@ const { jump2Symbols } = require('./symbols');
 const statusBarItem = require('./statusBar');
 
 
-var global = Function('return this')();  // used for global.typeDisposable
-
 /** @type { DocumentSymbol[] | undefined } */
 globalThis.symbols = [];
 
@@ -20,6 +18,12 @@ globalThis.currentUri = {};
 globalThis.usesArrowFunctions = false;
 
 globalThis.refreshSymbols = true;
+
+/** @type { import("vscode").Disposable | undefined } */
+globalThis.typeDisposable = undefined;
+
+/** @type { boolean } */
+globalThis.statusBarItemVisible = false;
 
 
 
@@ -43,11 +47,12 @@ async function activate(context) {
     // no args are required
 
     if (statusBarItem) await statusBarItem.hide();
-    if (global.typeDisposable) await global.typeDisposable.dispose();
+    if (globalThis.typeDisposable) await globalThis.typeDisposable.dispose();
 
     let kbText = args ? args.text : "";  // if args means triggered via a keybinding
     const multiMode = false;
     const select = false;
+    const isRegex = args?.isRegex ?? false;
 
     // check if args.putCursorOnForwardjump is "beforeCharacter" or "afterCharacter"
 
@@ -59,129 +64,156 @@ async function activate(context) {
       args?.putCursorOnForwardJump ?? settings.putCursorOnForwardJump,
       kbText,
       multiMode,
-      select);
+      select,
+      isRegex,
+      false);
   });
 
   let commandDisposable1m = commands.registerCommand('jump-and-select.jumpForwardMultiMode', async args => {
 
     if (statusBarItem) await statusBarItem.hide();
-    if (global.typeDisposable) await global.typeDisposable.dispose();
+    if (globalThis.typeDisposable) await globalThis.typeDisposable.dispose();
 
     let kbText = args ? args.text : "";  // if args means triggered via a keybinding
     const multiMode = true;
     const select = false;
+    const isRegex = args?.isRegex ?? false;
 
     jumpForward(
       args?.restrictSearch ?? settings.restrictSearch,
       args?.putCursorOnForwardJump ?? settings.putCursorOnForwardJump,
       kbText,
       multiMode,
-      select);
+      select,
+      isRegex,
+      false);
   });
 
 
   let commandDisposable2 = commands.registerCommand('jump-and-select.jumpForwardSelect', async args => {
 
     if (statusBarItem) await statusBarItem.hide();
-    if (global.typeDisposable) await global.typeDisposable.dispose();
+    if (globalThis.typeDisposable) await globalThis.typeDisposable.dispose();
 
     let kbText = args ? args.text : "";
     const multiMode = false;
     const select = true;
+    const isRegex = args?.isRegex ?? false;
+    const selectMatch = args?.selectMatch ?? false;
 
     jumpForward(
       args?.restrictSearch ?? settings.restrictSearch,
       args?.putCursorOnForwardSelect ?? settings.putCursorOnForwardSelect,
       kbText,
       multiMode,
-      select);
+      select,
+      isRegex,
+      selectMatch);
   });
 
   let commandDisposable2m = commands.registerCommand('jump-and-select.jumpForwardSelectMultiMode', async args => {
 
     if (statusBarItem) await statusBarItem.hide();
-    if (global.typeDisposable) await global.typeDisposable.dispose();
+    if (globalThis.typeDisposable) await globalThis.typeDisposable.dispose();
 
     let kbText = args ? args.text : "";
     const multiMode = true;
     const select = true;
+    const isRegex = args?.isRegex ?? false;
+    const selectMatch = args?.selectMatch ?? false;
 
     jumpForward(
       args?.restrictSearch ?? settings.restrictSearch,
       args?.putCursorOnForwardSelect ?? settings.putCursorOnForwardSelect,
       kbText,
       multiMode,
-      select);
+      select,
+      isRegex,
+      selectMatch);
   });
 
 
   let commandDisposable3 = commands.registerCommand('jump-and-select.jumpBackward', async args => {
 
     if (statusBarItem) await statusBarItem.hide();
-    if (global.typeDisposable) await global.typeDisposable.dispose();
+    if (globalThis.typeDisposable) await globalThis.typeDisposable.dispose();
 
     let kbText = args ? args.text : "";
     const multiMode = false;
     const select = false;
+    const isRegex = args?.isRegex ?? false;
 
     jumpBackward(
       args?.restrictSearch ?? settings.restrictSearch,
       args?.putCursorOnBackwardJump ?? settings.putCursorOnBackwardJump,
       kbText,
       multiMode,
-      select);
+      select,
+      isRegex,
+      false);
   });
 
   let commandDisposable3m = commands.registerCommand('jump-and-select.jumpBackwardMultiMode', async args => {
 
     if (statusBarItem) await statusBarItem.hide();
-    if (global.typeDisposable) await global.typeDisposable.dispose();
+    if (globalThis.typeDisposable) await globalThis.typeDisposable.dispose();
 
     let kbText = args ? args.text : "";
     const multiMode = true;
     const select = false;
+    const isRegex = args?.isRegex ?? false;
 
     jumpBackward(
       args?.restrictSearch ?? settings.restrictSearch,
       args?.putCursorOnBackwardJump ?? settings.putCursorOnBackwardJump,
       kbText,
       multiMode,
-      select);
+      select,
+      isRegex,
+      false);
   });
 
 
   let commandDisposable4 = commands.registerCommand('jump-and-select.jumpBackwardSelect', async args => {
 
     if (statusBarItem) await statusBarItem.hide();
-    if (global.typeDisposable) await global.typeDisposable.dispose();
+    if (globalThis.typeDisposable) await globalThis.typeDisposable.dispose();
 
     let kbText = args ? args.text : "";
     const multiMode = false;
     const select = true;
+    const isRegex = args?.isRegex ?? false;
+    const selectMatch = args?.selectMatch ?? false;
 
     jumpBackward(
       args?.restrictSearch ?? settings.restrictSearch,
       args?.putCursorOnBackwardSelect ?? settings.putCursorOnBackwardSelect,
       kbText,
       multiMode,
-      select);
+      select,
+      isRegex,
+      selectMatch);
   });
 
   let commandDisposable4m = commands.registerCommand('jump-and-select.jumpBackwardSelectMultiMode', async args => {
 
     if (statusBarItem) await statusBarItem.hide();
-    if (global.typeDisposable) await global.typeDisposable.dispose();
+    if (globalThis.typeDisposable) await globalThis.typeDisposable.dispose();
 
     let kbText = args ? args.text : "";
     const multiMode = true;
     const select = true;
+    const isRegex = args?.isRegex ?? false;
+    const selectMatch = args?.selectMatch ?? false;
 
     jumpBackward(
       args?.restrictSearch ?? settings.restrictSearch,
       args?.putCursorOnBackwardSelect ?? settings.putCursorOnBackwardSelect,
       kbText,
       multiMode,
-      select);
+      select,
+      isRegex,
+      selectMatch);
   });
 
   context.subscriptions.push(commandDisposable1, commandDisposable2, commandDisposable3, commandDisposable4);
@@ -189,7 +221,7 @@ async function activate(context) {
 
   let abortMultimode = commands.registerCommand('jump-and-select.abortMultiMode', async () => {
     if (statusBarItem) await statusBarItem.hide();
-    if (global.typeDisposable) global.typeDisposable.dispose();
+    if (globalThis.typeDisposable) globalThis.typeDisposable.dispose();
 
     // because focus is lost from the editor when you click the StatusBarItem
     await commands.executeCommand('workbench.action.focusLastEditorGroup');
@@ -204,7 +236,11 @@ async function activate(context) {
     // do we need a multimode ?  multiCursor aware?
     // TODO: still do this?
     if (statusBarItem) await statusBarItem.hide();
+<<<<<<< HEAD
     if (global.typeDisposable) global.typeDisposable.dispose();
+=======
+    if (globalThis.typeDisposable) globalThis.typeDisposable.dispose();
+>>>>>>> cleanup/command-functions
 
     // defaults
     if (!!args.symbols && !Array.isArray(args.symbols)) args.symbols = [args.symbols];
@@ -237,7 +273,7 @@ function deactivate() {
     statusBarItem.hide();
     statusBarItem.dispose();
   }
-  if (global.typeDisposable) global.typeDisposable.dispose();
+  if (globalThis.typeDisposable) globalThis.typeDisposable.dispose();
 
   delete globalThis.symbols;
 }

@@ -1,7 +1,6 @@
 const { commands, window, StatusBarAlignment, ThemeColor } = require('vscode');
 
-var global = Function('return this')();  // used for global.typeDisposable
-global.statusBarItemVisible = false;
+globalThis.statusBarItemVisible = false;
 
 
 /** @type { import ("vscode").StatusBarItem } */
@@ -16,9 +15,9 @@ let sbItem;
  */
 exports.show = async function (direction) {
 
-  if (!!sbItem && !global.statusBarItemVisible) {
+  if (!!sbItem && !globalThis.statusBarItemVisible) {
     sbItem.show();   // one already exists
-    global.statusBarItemVisible = true;
+    globalThis.statusBarItemVisible = true;
   }
 
   else {
@@ -49,7 +48,7 @@ exports.show = async function (direction) {
 
   // setContext for command enablement - so abort only shows in Command Palette if sbItem showing
   await commands.executeCommand('setContext', 'jumpAndSelect.statusBarItem.visible', true);
-  global.statusBarItemVisible = true;
+  globalThis.statusBarItemVisible = true;
 };
 
 
@@ -58,7 +57,7 @@ exports.show = async function (direction) {
  */
 exports.hide = async function () {
   if (sbItem) sbItem.hide();
-  global.statusBarItemVisible = false;
+  globalThis.statusBarItemVisible = false;
   await commands.executeCommand('setContext', 'jumpAndSelect.statusBarItem.visible', false);
 };
 
@@ -67,7 +66,7 @@ exports.hide = async function () {
  */
 exports.dispose = async function () {
   if (sbItem) sbItem.hide();
-  global.statusBarItemVisible = false;
+  globalThis.statusBarItemVisible = false;
   sbItem.dispose();
   await commands.executeCommand('setContext', 'jumpAndSelect.statusBarItem.visible', false);
 };

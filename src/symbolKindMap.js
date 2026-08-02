@@ -1,6 +1,10 @@
-const vscode = require('vscode');
+const vscode = require( 'vscode' );
+/** @import { SymMap, SymMapKey } from "./types.js" */
+
+
 
 exports.symbolKindMap = {
+  // const symbolKindMap = {
   "file": vscode.SymbolKind.File,
   "module": vscode.SymbolKind.Module,
   "namespace": vscode.SymbolKind.Namespace,
@@ -29,4 +33,29 @@ exports.symbolKindMap = {
   "typeParameter": vscode.SymbolKind.TypeParameter,
 
   // [key: string]: number
+};
+
+
+/**
+ * 
+ * @param { SymMapKey[] | undefined } kbSymbols
+ * 
+ * @returns { SymMap }
+ */
+exports.buildSymMap = function ( kbSymbols ) {
+
+  /** @type { SymMap } */
+  const symMap = {};
+
+  if ( kbSymbols ) {
+    kbSymbols?.forEach( kbSymbol => {
+      if ( module.exports.symbolKindMap[kbSymbol] ) symMap[kbSymbol] = module.exports.symbolKindMap[kbSymbol];
+    } );
+  }
+  else {  // else no symbols in the keybinding or empty array for 'symbol'
+    for ( const [key, value] of Object.entries( module.exports.symbolKindMap ) ) {
+      symMap[key] = value;
+    }
+  }
+  return symMap;
 };
