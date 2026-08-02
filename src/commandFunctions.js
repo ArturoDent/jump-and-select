@@ -186,30 +186,11 @@ async function _jumpForward(restrictSearch, putCursorForward, query, select, isR
 
   const editor = window.activeTextEditor;
 
-<<<<<<< HEAD
-  let matchLength = query.length;
-=======
   const newSelections = [...editor.selections];
->>>>>>> cleanup/command-functions
 
   newSelections.forEach((selection, index) => {
 
-<<<<<<< HEAD
-  if (query === "^" || query === "$") matchLength = 0;
-  else if (query === "\\^" || query === "\\$") matchLength = 1;
-
-  if (query === "^$") {
-    if (editor.document.eol === EndOfLine.CRLF) matchLength = 2;
-    else if (editor.document.eol === EndOfLine.LF) matchLength = 1; // correct for Mac/Linux LF
-  }
-
-  let index = 0;
-  for await (const selection of selections) {
-
-    let curPos = selection.active;  // cursor Position
-=======
     const curPos = selection.active;  // cursor Position
->>>>>>> cleanup/command-functions
     let curAnchor = selection.anchor; // start of selection - not where the cursor is
     const cursorIndex = editor.document.offsetAt(curPos);
 
@@ -332,8 +313,6 @@ function getQueryLineIndexForward(cursorPosition, query, putCursorForward, selec
   if (selection.isReversed) restOfLine = line.text.substring(selection.anchor.character);
   else restOfLine = line.text.substring(cursorPosition.character);
 
-<<<<<<< HEAD
-=======
   if (isRegex) {
     if (!restOfLine) return noMatchQueryObject;
 
@@ -353,7 +332,6 @@ function getQueryLineIndexForward(cursorPosition, query, putCursorForward, selec
 
   query = unescapeQuery(query);
 
->>>>>>> cleanup/command-functions
   if (restOfLine) {   // else restOfLine if already at end = ''
 
     let matchPos;

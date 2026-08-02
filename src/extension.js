@@ -236,11 +236,7 @@ async function activate(context) {
     // do we need a multimode ?  multiCursor aware?
     // TODO: still do this?
     if (statusBarItem) await statusBarItem.hide();
-<<<<<<< HEAD
-    if (global.typeDisposable) global.typeDisposable.dispose();
-=======
     if (globalThis.typeDisposable) globalThis.typeDisposable.dispose();
->>>>>>> cleanup/command-functions
 
     // defaults
     if (!!args.symbols && !Array.isArray(args.symbols)) args.symbols = [args.symbols];
