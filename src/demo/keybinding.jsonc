@@ -122,7 +122,8 @@
     "key": "alt+k",
     "command": "jump-and-select.jumpForward",
     "description": "cursor moves to next line that is empty or has whitespace",
-    "description2": "and puts cursor after any whitespace that may occur on that line""args": {
+    "description2": "and puts cursor after any whitespace that may occur on that line",
+    "args": {
       "text": "^\\s*?$",
       "isRegex": true,
       "putCursorOnForwardJump": "afterCharacter"
