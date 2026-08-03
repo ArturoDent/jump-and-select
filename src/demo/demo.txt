@@ -8,3 +8,6 @@ after a blank line
   next line
 
   last line
+    
+lines above and below has whitespace only
+      

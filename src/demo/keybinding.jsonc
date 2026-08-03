@@ -50,16 +50,6 @@
     }
   },
   {
-    "key": "alt+k",
-    "command": "jump-and-select.jumpForward",
-    "description": "cursor moves to next empty line",
-    "args": {
-      "text": "^$",
-      "restrictSearch": "document",
-      "putCursorOnForwardJump": "beforeCharacter"
-    }
-  },
-  {
     "key": "alt+r",
     "command": "jump-and-select.jumpForward",
     "description": "cursor moves to next match, no selection",
@@ -99,6 +89,43 @@
       "text": "^${selectedText}(?:(?=\\w))",
       "isRegex": true
       //   "select": "match"
+    }
+  },
+  {
+    "key": "alt+k",
+    "command": "jump-and-select.jumpForward",
+    "description": "cursor moves to next empty line",
+    "args": {
+      "text": "^$",
+      "isRegex": true
+    }
+  },
+  {
+    "key": "alt+j",
+    "command": "jump-and-select.jumpForward",
+    "description": "cursor moves to next line that contains only whitespace or nothing",
+    "args": {
+      "text": "^\\s*?$",
+      "isRegex": true
+    }
+  },
+  {
+    "key": "alt+l",
+    "command": "jump-and-select.jumpBackward",
+    "description": "cursor moves to previous line that contains only whitespace or nothing",
+    "args": {
+      "text": "^\\s*?$",
+      "isRegex": true
+    }
+  },
+  {
+    "key": "alt+k",
+    "command": "jump-and-select.jumpForward",
+    "description": "cursor moves to next line that is empty or has whitespace",
+    "description2": "and puts cursor after any whitespace that may occur on that line""args": {
+      "text": "^\\s*?$",
+      "isRegex": true,
+      "putCursorOnForwardJump": "afterCharacter"
     }
   }
 ]

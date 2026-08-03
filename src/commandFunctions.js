@@ -56,41 +56,101 @@ function resolveSelectedText(query, editor, selection) {
 }
 
 /**
- * Find the first regex match in `text`, skipping a match sitting at index 0
- * when putCursorForward is 'beforeCharacter' (the cursor is already right
- * before it, so a repeated jump should keep advancing rather than no-op).
+ * Collapse CRLF line endings in `text` down to a single '\n' and return a map
+ * back to the original offsets. Regex '^'/'$' anchors (with the 'm' flag)
+ * treat '\r' and '\n' as two independent line terminators, so an empty line
+ * written as "\r\n\r\n" spuriously satisfies '^$' at the position between the
+ * first line's '\r' and '\n' too - landing mid-terminator on the *current*
+ * line instead of at the start of the next one. Matching against the
+ * collapsed text avoids that, and origPos maps a match back to a real offset.
+ *
+ * @param { string } text
+ * @returns { { normalized: string, origPos: number[] } } origPos[k] = original offset of the gap before normalized[k]; origPos[normalized.length] = text.length
+ */
+function normalizeCRLF(text) {
+  let normalized = '';
+  const origPos = [0];
+  let i = 0;
+  while (i < text.length) {
+    if (text[i] === '\r' && text[i + 1] === '\n') {
+      normalized += '\n';
+      i += 2;
+    } else {
+      normalized += text[i];
+      i += 1;
+    }
+    origPos.push(i);
+  }
+  return { normalized, origPos };
+}
+
+/**
+ * Find the first regex match in `text`, skipping one that produces zero (or
+ * insufficient) cursor movement:
+ * - 'beforeCharacter' (final position = match start): any match at index 0
+ *   lands exactly on the cursor - always a no-op, skip unconditionally.
+ * - 'afterCharacter' (final position = match end): a match at index 0 only
+ *   counts if it reaches into a genuinely later line. A line-anchored
+ *   pattern like '^\s*$' can match at index 0 (the cursor's own line) with
+ *   non-zero length - e.g. it may greedily absorb the rest of the current
+ *   blank/whitespace-only line and, if the next real line also qualifies,
+ *   merge straight into it too. Landing after a match confined to the
+ *   current line is still a no-op the user would perceive as "stuck"; landing
+ *   after one that crossed into the next line is genuine, correct progress.
+ *   The line boundary is the first '\n' left in the (CRLF-normalized) text.
  *
  * @param { string } text
  * @param { string } pattern
  * @param { string } putCursorForward
- * @returns { RegExpMatchArray | null }
+ * @returns { { index: number, length: number } | null } offsets are relative to the original (un-collapsed) `text`
  */
 function regexMatchForward(text, pattern, putCursorForward) {
   let re;
   try { re = new RegExp(pattern, 'mg'); } catch { return null; }
-  const matches = [...text.matchAll(re)];
-  return (putCursorForward === 'beforeCharacter'
-    ? matches.find(m => m.index > 0)
-    : matches[0]) ?? null;
+  const { normalized, origPos } = normalizeCRLF(text);
+  const matches = [...normalized.matchAll(re)];
+  const firstNewline = normalized.indexOf('\n');
+  const match = matches.find(m => {
+    if (m.index > 0) return true;
+    if (putCursorForward !== 'afterCharacter') return false;
+    return firstNewline !== -1 && (m.index + m[0].length) > firstNewline;
+  }) ?? null;
+  if (!match) return null;
+  const start = origPos[match.index];
+  const end = origPos[match.index + match[0].length];
+  return { index: start, length: end - start };
 }
 
 /**
- * Find the last regex match in `text`, skipping a match ending exactly at
- * the end of `text` when putCursorBackward is 'afterCharacter' (the cursor
- * is already right after it, so a repeated jump should keep advancing).
+ * Find the last regex match in `text`, skipping one that produces zero (or
+ * insufficient) cursor movement - the mirror image of regexMatchForward:
+ * - 'afterCharacter' (final position = match end): any match ending exactly
+ *   at the end of `text` lands exactly on the cursor - always a no-op.
+ * - 'beforeCharacter' (final position = match start): a match ending at the
+ *   boundary only counts if it started in a genuinely earlier line (reached
+ *   back past the last '\n' before the cursor); one confined to the
+ *   cursor's own line-prefix is still a no-op.
  *
  * @param { string } text
  * @param { string } pattern
  * @param { string } putCursorBackward
- * @returns { RegExpMatchArray | null }
+ * @returns { { index: number, length: number } | null } offsets are relative to the original (un-collapsed) `text`
  */
 function regexMatchBackward(text, pattern, putCursorBackward) {
   let re;
   try { re = new RegExp(pattern, 'mg'); } catch { return null; }
-  const matches = [...text.matchAll(re)];
-  return (putCursorBackward === 'afterCharacter'
-    ? matches.findLast(m => m.index + m[0].length < text.length)
-    : matches.at(-1)) ?? null;
+  const { normalized, origPos } = normalizeCRLF(text);
+  const matches = [...normalized.matchAll(re)];
+  const lastNewline = normalized.lastIndexOf('\n');
+  const match = matches.findLast(m => {
+    if (m.index + m[0].length < normalized.length) return true;
+    if (putCursorBackward !== 'beforeCharacter') return false;
+    return lastNewline !== -1 && m.index < lastNewline;
+  }) ?? null;
+  if (!match) return null;
+  const start = origPos[match.index];
+  const end = origPos[match.index + match[0].length];
+  return { index: start, length: end - start };
 }
 
 // -------------------------------------------------------------------------------------------
@@ -323,7 +383,7 @@ function getQueryLineIndexForward(cursorPosition, query, putCursorForward, selec
     if (selection.isReversed) queryIndex = document.offsetAt(selection.end) - document.offsetAt(selection.start) + matchPos;
     else queryIndex = matchPos;
 
-    return { queryIndex, matchLength: match[0].length };
+    return { queryIndex, matchLength: match.length };
   }
 
   if (query === '$') {
@@ -387,7 +447,7 @@ function getQueryDocumentIndexForward(cursorPosition, query, putCursorForward, s
     if (selection.isReversed) queryIndex = document.offsetAt(selection.end) - document.offsetAt(selection.start) + matchPos;
     else queryIndex = matchPos;
 
-    return { queryIndex, matchLength: match[0].length };
+    return { queryIndex, matchLength: match.length };
   }
 
   if (query === '$') {  // this line end, if already at line end go to next line end
@@ -547,7 +607,7 @@ function getQueryLineIndexBackward(cursorPosition, query, putCursorBackward, sel
     const match = regexMatchBackward(startOfLine, query, putCursorBackward);
     if (!match) return noMatchQueryObject;
 
-    return { queryIndex: match.index ?? 0, matchLength: match[0].length };
+    return { queryIndex: match.index ?? 0, matchLength: match.length };
   }
 
   if (query === '^') return { queryIndex: 0 };
@@ -609,7 +669,7 @@ function getQueryDocumentIndexBackward(cursorPosition, query, putCursorBackward,
     const match = regexMatchBackward(startText, query, putCursorBackward);
     if (!match) return noMatchQueryObject;
 
-    return { queryIndex: match.index ?? 0, matchLength: match[0].length };
+    return { queryIndex: match.index ?? 0, matchLength: match.length };
   }
 
   if (query === '$') {   // go to end of previous line

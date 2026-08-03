@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls \"C:/Users/markm/.claude/projects/c--Users-markm-OneDrive-jump-and-select/memory/\" 2>/dev/null; echo \"---\"; cat \"C:/Users/markm/.claude/projects/c--Users-markm-OneDrive-jump-and-select/memory/MEMORY.md\" 2>/dev/null)",
+      "Read(//c/Users/markm/.claude/projects/c--Users-markm-OneDrive-jump-and-select/**)",
+      "Bash(ls -la \"C:/Users/markm/.claude/projects/c--Users-markm-OneDrive-jump-and-select/memory/\" 2>&1)"
+    ]
+  }
+}

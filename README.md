@@ -149,7 +149,7 @@ Example of modified settings (in `settings.json`) after setting the values in th
   }
 ```
 
-* Note: `beforeCharacter` should really be `beforeQuery` and `afterCharacter` should be `afterQuery`.  The original names are from a time when you could only input one typed character at a time.  But in the keybindings `text` argument you can have multiple characters like `howdy` or `abc\\$` and the cursor will go before or after that entire query.  So think of them as `beforeQuery` and `afterQuery` - which may be a single or multiple characters.
+* Note: `beforeCharacter` should really be `beforeQuery` and `afterCharacter` should be `afterQuery`.  The original names are from a time when you could only input one typed character at a time.  But in the keybindings `text` argument you can have multiple characters like `howdy` or `abc\\$` or `^\\s*?$` and the cursor will go before or after that entire query.  So think of them as `beforeQuery` and `afterQuery` - which may be a single or multiple characters.
 
 There is a precedence to the option values.  Any option set in a keybinding takes precedence over the `jump-and-select.defaults` setting which takes precedence over the deprecated settings mentioned above.  
 
@@ -341,6 +341,22 @@ With `isRegex: true`:
 * `text` is passed directly to JavaScript's `RegExp`, with the `m` (multiline) flag, so `^`/`$` anchor to line boundaries even when `restrictSearch` is `document`.
 * Regex metacharacters follow normal regex escaping rules, not the `^`/`$` double-escaping convention described above. Because the pattern lives inside a JSON string in keybindings.json, you still need to **double-escape** backslashes - e.g. `\w` must be written as `"\\w"`.
 * An invalid regular expression is treated as "no match" rather than throwing an error.
+
+```jsonc
+{
+  "key": "alt+k",
+  "command": "jump-and-select.jumpForward",
+
+  "description": "cursor moves to next line that is empty or has whitespace only",
+  "description2": "and puts cursor after any whitespace that may occur on that line"
+  
+  "args": {
+    "text": "^\\s*?$",
+    "isRegex": true,
+    "putCursorOnForwardJump": "afterCharacter"  // or 'beforeCharacter'
+  }
+}
+```
 
 ### With no `isRegex`
 
