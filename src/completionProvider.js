@@ -89,26 +89,33 @@ exports.makeKeybindingsCompletionProvider = function (context) {
 						_makeCompletionItem("false", position, "false")
 					];
 				}
-				else if (argsRange.contains(position) && linePrefix.endsWith('"selectMatch": ')) {
+				else if (argsRange.contains(position) && linePrefix.endsWith('"select": "')) {
 					return [
-						_makeCompletionItem("true", position, "false"),
-						_makeCompletionItem("false", position, "false")
+						_makeCompletionItem("match", position, "extends"),
+						_makeCompletionItem("extends", position, "extends")
 					];
 				}
 				else if (argsRange.contains(position) && linePrefix.endsWith('"text": "')) {
 					return undefined;
 				}
 
-				const forwardArray = ["text", "putCursorForward", "restrictSearch", "isRegex", "selectMatch"];
-				const backwardArray = ["text", "putCursorBackward", "restrictSearch", "isRegex", "selectMatch"];
+				const forwardArray = ["text", "putCursorForward", "restrictSearch", "isRegex"];
+				const forwardSelectArray = ["text", "putCursorForward", "restrictSearch", "isRegex", "select"];
+				const backwardArray = ["text", "putCursorBackward", "restrictSearch", "isRegex"];
+				const backwardSelectArray = ["text", "putCursorBackward", "restrictSearch", "isRegex", "select"];
 
-				// eliminate any options already used
-				if ((command === "jumpForward") || (command === "jumpForwardSelect")) {
+				// eliminate any options already used; 'select' is only offered for *Select commands
+				if (command === "jumpForward") {
 					return _filterCompletionsItemsNotUsed(forwardArray, argsText, position);
 				}
-				else if ((command === "jumpBackward") || (command === "jumpBackwardSelect")) {
+				else if (command === "jumpForwardSelect") {
+					return _filterCompletionsItemsNotUsed(forwardSelectArray, argsText, position);
+				}
+				else if (command === "jumpBackward") {
 					return _filterCompletionsItemsNotUsed(backwardArray, argsText, position);
-
+				}
+				else if (command === "jumpBackwardSelect") {
+					return _filterCompletionsItemsNotUsed(backwardSelectArray, argsText, position);
 				}
 				else return undefined;
 			}
@@ -156,7 +163,7 @@ function _filterCompletionsItemsNotUsed(directionArray, argsText, position) {
 		"putCursorBackward": "beforeCharacter",
 		"restrictSearch": "document",
 		"isRegex": "false",
-		"selectMatch": "false"
+		"select": "extends"
 	};
 
 	return directionArray

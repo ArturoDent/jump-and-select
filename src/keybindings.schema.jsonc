@@ -12,10 +12,18 @@
       "type": "boolean",
       "default": false
     },
-    "selectMatch": {
-      "markdownDescription": "When selecting, select only the matched text itself instead of extending the selection from the current cursor/selection position to the match. Which end of the match is `active` (where the cursor lands) still follows `putCursorOnForwardSelect`/`putCursorOnBackwardSelect`.",
-      "type": "boolean",
-      "default": false
+    "selectMode": {
+      "markdownDescription": "How the selection is built from the match. `match` selects only the matched text itself. `extends` (default) extends the selection from the current cursor/selection position to the match. Which end of the match is `active` (where the cursor lands) still follows `putCursorOnForwardSelect`/`putCursorOnBackwardSelect`.",
+      "type": "string",
+      "enum": [
+        "match",
+        "extends"
+      ],
+      "markdownEnumDescriptions": [
+        "Select only the matched text itself.",
+        "Extend the selection from the current cursor/selection position to the match."
+      ],
+      "default": "extends"
     },
     "restrictSearch": {
       "description": "Default is to jump anywhere in the document.  Options: document, line.",
@@ -407,8 +415,8 @@
                 "isRegex": {
                   "$ref": "#/definitions/isRegex"
                 },
-                "selectMatch": {
-                  "$ref": "#/definitions/selectMatch"
+                "select": {
+                  "$ref": "#/definitions/selectMode"
                 }
               }
             }
@@ -490,8 +498,8 @@
                 "isRegex": {
                   "$ref": "#/definitions/isRegex"
                 },
-                "selectMatch": {
-                  "$ref": "#/definitions/selectMatch"
+                "select": {
+                  "$ref": "#/definitions/selectMode"
                 }
               }
             }

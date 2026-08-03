@@ -6,7 +6,7 @@
     "args": {
       "text": "$",
       "restrictSearch": "document",
-      "putCursorBackward": "beforeCharacter"
+      "putCursorOnForwardJump": "beforeCharacter"
     }
   },
   {
@@ -16,7 +16,7 @@
     "args": {
       "text": "$",
       "restrictSearch": "document",
-      "putCursorBackward": "beforeCharacter"
+      "putCursorOnBackwardJump": "beforeCharacter"
     }
   },
   {
@@ -26,7 +26,7 @@
     "args": {
       "text": "^",
       "restrictSearch": "document",
-      "putCursorBackward": "beforeCharacter"
+      "putCursorOnBackwardJump": "beforeCharacter"
     }
   },
   {
@@ -36,7 +36,7 @@
     "args": {
       "text": "^",
       "restrictSearch": "document",
-      "putCursorBackward": "beforeCharacter"
+      "putCursorOnForwardJump": "beforeCharacter"
     }
   },
   {
@@ -46,7 +46,7 @@
     "args": {
       "text": "^$",
       "restrictSearch": "document",
-      "putCursorBackward": "beforeCharacter"
+      "putCursorOnBackwardJump": "beforeCharacter"
     }
   },
   {
@@ -56,7 +56,7 @@
     "args": {
       "text": "^$",
       "restrictSearch": "document",
-      "putCursorBackward": "beforeCharacter"
+      "putCursorOnForwardJump": "beforeCharacter"
     }
   },
   {
@@ -76,18 +76,29 @@
     "args": {
       "text": "^${selectedText}(?:(?=\\w))",
       "isRegex": true,
-      "selectMatch": true
+      "select": "match"
+    }
+  },
+  {
+    "key": "shift+alt+g",
+    "command": "jump-and-select.jumpForwardSelect",
+    "description": "cursor moves to next match and extends the current selection to include the match the match",
+    "description2": "test with whitespace selected at beginning of line",
+    "args": {
+      "text": "^${selectedText}(?:(?=\\w))",
+      "isRegex": true,
+      "select": "extends"
     }
   },
   {
     "key": "shift+alt+b",
     "command": "jump-and-select.jumpBackwardSelect",
-    "description": "cursor moves to previous match and selects it",
+    "description": "cursor moves to previous match and extends the current selection to include the match",
     "description2": "test with whitespace selected at beginning of line",
     "args": {
       "text": "^${selectedText}(?:(?=\\w))",
-      "isRegex": true,
-      "selectMatch": true
+      "isRegex": true
+      //   "select": "match"
     }
   }
 ]

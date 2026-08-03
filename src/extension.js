@@ -99,7 +99,7 @@ async function activate(context) {
     const multiMode = false;
     const select = true;
     const isRegex = args?.isRegex ?? false;
-    const selectMatch = args?.selectMatch ?? false;
+    const selectMatch = (args?.select ?? 'extends') === 'match';
 
     jumpForward(
       args?.restrictSearch ?? settings.restrictSearch,
@@ -120,7 +120,7 @@ async function activate(context) {
     const multiMode = true;
     const select = true;
     const isRegex = args?.isRegex ?? false;
-    const selectMatch = args?.selectMatch ?? false;
+    const selectMatch = (args?.select ?? 'extends') === 'match';
 
     jumpForward(
       args?.restrictSearch ?? settings.restrictSearch,
@@ -183,7 +183,7 @@ async function activate(context) {
     const multiMode = false;
     const select = true;
     const isRegex = args?.isRegex ?? false;
-    const selectMatch = args?.selectMatch ?? false;
+    const selectMatch = (args?.select ?? 'extends') === 'match';
 
     jumpBackward(
       args?.restrictSearch ?? settings.restrictSearch,
@@ -204,7 +204,7 @@ async function activate(context) {
     const multiMode = true;
     const select = true;
     const isRegex = args?.isRegex ?? false;
-    const selectMatch = args?.selectMatch ?? false;
+    const selectMatch = (args?.select ?? 'extends') === 'match';
 
     jumpBackward(
       args?.restrictSearch ?? settings.restrictSearch,

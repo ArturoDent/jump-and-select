@@ -2,9 +2,15 @@
 
 Jump/move the cursor to the next or previous occurrence of some typed character or group of characters (in a keybinding).  
 You can also optionally select the text from the current cursor position to that next/previous character while extending the current selection.  
-Works with keybindings and macros.  You can use multiple characters in a keybinding or macro.  
+Works with preset keybindings and macros that may contain regex's.  You can use multiple characters in a keybinding or macro.  
 Works with multiple cursors.  
-Jump between and select docuemnt symbols like functions, classes and/or methods.  
+Jump between and select document symbols like functions, classes and/or methods.  
+
+-----------
+
+## Notable Changes in v0.9.0
+
+Can use full regular expressions in `text` jumps again.  `${selectedText}` is resolved for each selection.  Added `select` option: `"select": "match"` selects the matched jump text, `"select": "extends"` (default) extends the selection from cursor.  
 
 -----------
 
@@ -49,16 +55,6 @@ are all deprecated.  They still work in your `settings.json` but do not show up 
 <img src="https://github.com/ArturoDent/jump-and-select/blob/main/images/settingUI.gif?raw=true" width="825" height="400" alt="defaults setting in the Settings UI "/>
 
 ## Notable Changes in v0.5.0
-
-* In a keybinding, the `text` argument will NOT be interpreted as a regular expression.  This is a **Breaking Change**.  But these limited `text` regular expression queries are allowed:  
-
-```plaintext
-       1. "^" : go to start of line,
-       2. "$" : go to end of line, and
-       3. "^$": go to next or previous empty line.
-       
-       4. "\\$": go to a literal "$".  See below for more on escaping these characters.
-```
 
 See [Using regular expressions in a keybinding](#using-regular-expressions-in-a-keybinding).
 
@@ -296,9 +292,9 @@ Another example, using a combination of `jump-and-select.jumpBackwardSelectMulti
 
 <img src="https://github.com/ArturoDent/jump-and-select/blob/main/images/jumpSelectionExpandEmptyLine.gif?raw=true" width="800" height="300" alt="Error message when fail to exit MultiMode"/>
 
-### Selecting only the match with `selectMatch`
+### Selecting only the match with `select`
 
-By default, a `...Select` command **extends** the selection: the anchor stays where it was and only the active end moves to the match, so everything between the old and new position gets selected. Add `"selectMatch": true` to select only the matched text itself instead:
+By default, when using one of the `...Select` commands, the selection is "extended": the anchor stays where it was and only the active end moves to the match, so everything between the old and new position gets selected. This is `"select": "extends"`, the default. Set `"select": "match"` to select only the matched text itself instead:
 
 ```jsonc
 {
@@ -307,19 +303,48 @@ By default, a `...Select` command **extends** the selection: the anchor stays wh
   "args": {
     "text": "^${selectedText}(?:(?=\\w))",
     "isRegex": true,
-    "selectMatch": true
-    // "restrictSearch": "document",
+    "select": "match"    // or "extends"
   }
 }
 ```
 
-With `selectMatch: true`, the resulting selection covers exactly the matched text (e.g. `foo` in `foobar`), not the span from your original cursor position to the match. `putCursorOnForwardSelect`/`putCursorOnBackwardSelect` still control which end of the match the cursor lands on (`active`) - only where the *other* end (`anchor`) comes from changes, from "your original position" to "the other edge of the match". `selectMatch` works with both literal and `isRegex: true` searches, and with `${selectedText}` per selection when using multiple cursors.
+With `"select": "match"`, the resulting selection covers exactly the matched text, not the span from your original cursor position to the match. `putCursorOnForwardSelect`/`putCursorOnBackwardSelect` still control which end of the match the cursor lands on (`active`) - only where the *other* end (`anchor`) comes from changes, from "your original position" to "the other edge of the match". The `select` option works with both literal and `isRegex: true` searches, and with `${selectedText}` per selection when using multiple cursors. It's only available on the `...Select` commands (`jumpForwardSelect`, `jumpBackwardSelect`, and their MultiMode variants).
+
+-------------
+
+## `${selectedText}`
+
+`text` may contain the literal template `${selectedText}`, which is replaced **per selection** with that selection's currently highlighted text before matching. With multiple cursors, each selection can have different selected text, so each cursor searches for its own selection's text. This works whether or not `isRegex` is set - for example, without `isRegex`, `"text": "${selectedText}"` jumps to the next literal occurrence of whatever you have selected.
 
 -------------
 
 ## Using regular expressions in a keybinding
 
-With a `"text": ""` argument in a keybinding, you can only use these regular expression patterns: `^`, `$`, or `^$`.  Those will always be evaluated as regular expressions, never as literals.  For example,
+### Full regular expressions with `isRegex`
+
+The `^`, `$`, and `^$` patterns above are the only regular expressions evaluated by default. To use a **full regular expression** in `text`, add `"isRegex": true` to the keybinding's `args`:
+
+```jsonc
+{
+  "key": "alt+r",
+  "command": "jump-and-select.jumpForward",
+  "args": {
+    "text": "^${selectedText}(?:(?=\\w))",
+    "isRegex": true
+    // "restrictSearch": "document",
+  }
+}
+```
+
+With `isRegex: true`:
+
+* `text` is passed directly to JavaScript's `RegExp`, with the `m` (multiline) flag, so `^`/`$` anchor to line boundaries even when `restrictSearch` is `document`.
+* Regex metacharacters follow normal regex escaping rules, not the `^`/`$` double-escaping convention described above. Because the pattern lives inside a JSON string in keybindings.json, you still need to **double-escape** backslashes - e.g. `\w` must be written as `"\\w"`.
+* An invalid regular expression is treated as "no match" rather than throwing an error.
+
+### With no `isRegex`
+
+With a `"text": "..."` option and no `"isRegex"`, you can only use these regular expression patterns: `^`, `$`, or `^$`.  Those will always be evaluated as regular expressions, never as literals.  For example,
 
 ```jsonc
 {
@@ -405,34 +430,6 @@ to see how they work in action.
 
 ---------------
 
-## Full regular expressions with `isRegex`
-
-The `^`, `$`, and `^$` patterns above are the only regular expressions evaluated by default. To use a **full regular expression** in `text`, add `"isRegex": true` to the keybinding's `args`:
-
-```jsonc
-{
-  "key": "alt+r",
-  "command": "jump-and-select.jumpForward",
-  "args": {
-    "text": "^${selectedText}(?:(?=\\w))",
-    "isRegex": true
-    // "restrictSearch": "document",
-  }
-}
-```
-
-With `isRegex: true`:
-
-* `text` is passed directly to JavaScript's `RegExp`, with the `m` (multiline) flag, so `^`/`$` anchor to line boundaries even when `restrictSearch` is `document`.
-* Regex metacharacters follow normal regex escaping rules, not the `^`/`$` double-escaping convention described above. Because the pattern lives inside a JSON string in keybindings.json, you still need to **double-escape** backslashes - e.g. `\w` must be written as `"\\w"`.
-* An invalid regular expression is treated as "no match" rather than throwing an error.
-
-### `${selectedText}`
-
-`text` may contain the literal template `${selectedText}`, which is replaced **per selection** with that selection's currently highlighted text before matching. With multiple cursors, each selection can have different selected text, so each cursor searches for its own selection's text. This works whether or not `isRegex` is set - for example, without `isRegex`, `"text": "${selectedText}"` jumps to the next literal occurrence of whatever you have selected.
-
----------------
-
 ## StatusBar colors
 
 Color options for the StatusBarItem are very limited.  Right now these are the settings you can modify:
@@ -504,7 +501,7 @@ For some unknown reason, tabs (`\t`) are not considered a typed character and do
 ## TODO  
   
 [  ] - Explore allowing input via 'paste' as well.  
-[  ] - Consider adding a setting to make queries be interpreted as regex's in keybindings.  
+[ X ] - Consider adding a setting to make queries be interpreted as regex's in keybindings.  
 [  ] - Consider cancelling multiMode if change editor.  
 [  ] - Should there be a notification for no match on a query?  
 [  ] - Add a kbWhere option for  no matches in remaining children?  
@@ -551,5 +548,9 @@ For some unknown reason, tabs (`\t`) are not considered a typed character and do
 * 0.8.0&emsp;  Work on next and previous, deepSymbolRecursion for those options.  
 0.8.1&emsp; Added support for **all symbols** in vscode.SymbolKind's.  
 &emsp;&emsp; &emsp; Reworked child/next/previous. Added visitAllSymbols() and isRightKind().  
+
+* 0.9.0&emsp; Re-added regex supprt in `text` with `isRegex` option.  
+&emsp;&emsp; &emsp; Added a `select` option (`"match"` or `"extends"`) - select match only, or extend the selection.  
+&emsp;&emsp; &emsp; Added `${selectedText}` "variable" resolution.  
 
 -----------------------------------------------------------------------------------------------------------
