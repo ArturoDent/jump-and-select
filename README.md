@@ -236,6 +236,90 @@ Once you are in `multiMode` you can move the cursor anywhere you want and contin
 
 ---------
 
+## Jumping to Empty Lines / Line Start / Line End while in MultiMode
+
+The built-in `type` command that MultiMode listens to only fires for actual character insertion, so keys like <kbd>Tab</kbd> or <kbd>Ctrl</kbd>+<kbd>Tab</kbd> never reach it.  
+
+But you can bind them directly via the extension's `jumpForwardMultiMode` / `jumpBackwardMultiMode` commands, with `when` context clauses to only fire while a MultiMode session is active. See [With no `isRegex`](#with-no-isregex) for what `^`, `$`, and `^$` mean as `text` values.
+
+While in MultiMode, `jumpAndSelect.statusBarItem.visible` is `true`, and `jumpAndSelect.multiMode.select` tells you whether the active session is a plain MultiMode session (`false`) or a Select-MultiMode session (`true`). Pairing both contexts per key means the right command variant runs.
+
+Here's are keybindings for your `keybindings.json` for:
+
+1. <kbd>Tab</kbd> = next empty line,
+2. <kbd>Shift</kbd>+<kbd>Tab</kbd> = previous empty line,
+3. <kbd>Ctrl</kbd>+<kbd>Tab</kbd> = end of line, and
+4. <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Tab</kbd> = start of line
+
+* each with a plain-move and a Select-MultiMode variant:
+
+```jsonc
+// Tab -> next empty line
+{
+  "key": "tab",
+  "command": "jump-and-select.jumpForwardMultiMode",
+  "when": "editorTextFocus && jumpAndSelect.statusBarItem.visible && !jumpAndSelect.multiMode.select",
+
+  "args": { "text": "^$" }
+  // "args": { "text": "^\\s*?$" }  to also include lines with only whitespace or completely blank
+},
+{
+  "key": "tab",
+  "command": "jump-and-select.jumpForwardSelectMultiMode",
+  "when": "editorTextFocus && jumpAndSelect.statusBarItem.visible && jumpAndSelect.multiMode.select",
+  "args": { "text": "^$" }
+  // "args": { "text": "^\\s*?$" }  to also include lines with only whitespace or completely blank
+},
+
+// Shift+Tab -> previous empty line
+{
+  "key": "shift+tab",
+  "command": "jump-and-select.jumpBackwardMultiMode",
+  "when": "editorTextFocus && jumpAndSelect.statusBarItem.visible && !jumpAndSelect.multiMode.select",
+  "args": { "text": "^$" }
+  // "args": { "text": "^\\s*?$" }  to also include lines with only whitespace or completely blank
+},
+{
+  "key": "shift+tab",
+  "command": "jump-and-select.jumpBackwardSelectMultiMode",
+  "when": "editorTextFocus && jumpAndSelect.statusBarItem.visible && jumpAndSelect.multiMode.select",
+  "args": { "text": "^$" }
+  // "args": { "text": "^\\s*?$" }  to also include lines with only whitespace or completely blank
+},
+
+// Ctrl+Tab -> end of line
+{
+  "key": "ctrl+tab",
+  "command": "jump-and-select.jumpForwardMultiMode",
+  "when": "editorTextFocus && jumpAndSelect.statusBarItem.visible && !jumpAndSelect.multiMode.select",
+  "args": { "text": "$" }
+},
+{
+  "key": "ctrl+tab",
+  "command": "jump-and-select.jumpForwardSelectMultiMode",
+  "when": "editorTextFocus && jumpAndSelect.statusBarItem.visible && jumpAndSelect.multiMode.select",
+  "args": { "text": "$" }
+},
+
+// Ctrl+Shift+Tab -> start of line
+{
+  "key": "ctrl+shift+tab",
+  "command": "jump-and-select.jumpBackwardMultiMode",
+  "when": "editorTextFocus && jumpAndSelect.statusBarItem.visible && !jumpAndSelect.multiMode.select",
+  "args": { "text": "^" }
+},
+{
+  "key": "ctrl+shift+tab",
+  "command": "jump-and-select.jumpBackwardSelectMultiMode",
+  "when": "editorTextFocus && jumpAndSelect.statusBarItem.visible && jumpAndSelect.multiMode.select",
+  "args": { "text": "^" }
+}
+```
+
+These aren't bound by default - <kbd>Tab</kbd> and <kbd>Ctrl</kbd>+<kbd>Tab</kbd> are heavily overloaded elsewhere in VS Code, so this is opt-in. Because every `when` clause requires `jumpAndSelect.statusBarItem.visible`, none of this affects Tab or Ctrl+Tab outside of an **active MultiMode session**.
+
+---------
+
 ## Expanding the Selection
 
 If you already have a selection or create one with one of the 'Select' commands (`jumpForwardSelect`, `jumpForwardSelectMultiMode`, `jumpBackwardSelect`, or `jumpBackwardSelectMultiMode`) and do another 'select' command that pre-existing selection will be expanded.  

@@ -195,7 +195,7 @@ async function typeRegisterAndRunJumps(restrictSearch, putCursor, multiMode, sel
  */
 exports.jumpForward = async function (restrictSearch, putCursor, kbText, multiMode, select, isRegex, selectMatch) {
 
-  if (multiMode && !globalThis.statusBarItemVisible) await statusBarItem.show("forward");
+  if (multiMode && !globalThis.statusBarItemVisible) await statusBarItem.show("forward", select);
 
   // kbText = triggered via a keybinding with a text arg
   if (kbText) {
@@ -219,7 +219,7 @@ exports.jumpForward = async function (restrictSearch, putCursor, kbText, multiMo
  */
 exports.jumpBackward = async function (restrictSearch, putCursor, kbText, multiMode, select, isRegex, selectMatch) {
 
-  if (multiMode && !globalThis.statusBarItemVisible) await statusBarItem.show("backward");
+  if (multiMode && !globalThis.statusBarItemVisible) await statusBarItem.show("backward", select);
 
   // kbText = triggered via a keybinding with a text arg
   if (kbText) {

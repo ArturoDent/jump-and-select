@@ -10,10 +10,11 @@ let sbItem;
 /**
  * Create and show a StatusBarItem
  * advising to press 'Return' to exit multiMode
- * 
- * @param { string } direction - going "forward" or "backward" 
+ *
+ * @param { string } direction - going "forward" or "backward"
+ * @param { boolean } [select] - is this a Select-MultiMode session?
  */
-exports.show = async function (direction) {
+exports.show = async function (direction, select) {
 
   if (!!sbItem && !globalThis.statusBarItemVisible) {
     sbItem.show();   // one already exists
@@ -48,6 +49,7 @@ exports.show = async function (direction) {
 
   // setContext for command enablement - so abort only shows in Command Palette if sbItem showing
   await commands.executeCommand('setContext', 'jumpAndSelect.statusBarItem.visible', true);
+  await commands.executeCommand('setContext', 'jumpAndSelect.multiMode.select', !!select);
   globalThis.statusBarItemVisible = true;
 };
 
@@ -59,6 +61,7 @@ exports.hide = async function () {
   if (sbItem) sbItem.hide();
   globalThis.statusBarItemVisible = false;
   await commands.executeCommand('setContext', 'jumpAndSelect.statusBarItem.visible', false);
+  await commands.executeCommand('setContext', 'jumpAndSelect.multiMode.select', false);
 };
 
 /**
@@ -69,4 +72,5 @@ exports.dispose = async function () {
   globalThis.statusBarItemVisible = false;
   sbItem.dispose();
   await commands.executeCommand('setContext', 'jumpAndSelect.statusBarItem.visible', false);
+  await commands.executeCommand('setContext', 'jumpAndSelect.multiMode.select', false);
 };
