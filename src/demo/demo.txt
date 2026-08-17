@@ -1,11 +1,11 @@
 
 howdy there
 
-after a blank line
+after a blank line  ( )
 
-  last line
+  last line { }
 
-  next line
+  next line .
 
   last line
     

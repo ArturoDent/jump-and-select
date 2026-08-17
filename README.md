@@ -251,7 +251,7 @@ Here's are keybindings for your `keybindings.json` for:
 3. <kbd>Ctrl</kbd>+<kbd>Tab</kbd> = end of line, and
 4. <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Tab</kbd> = start of line
 
-* each with a plain-move and a Select-MultiMode variant:
+* each with a plain-jump and a select-jump MultiMode variant:
 
 ```jsonc
 // Tab -> next empty line
@@ -422,8 +422,8 @@ The `^`, `$`, and `^$` patterns above are the only regular expressions evaluated
 
 With `isRegex: true`:
 
-* `text` is passed directly to JavaScript's `RegExp`, with the `m` (multiline) flag, so `^`/`$` anchor to line boundaries even when `restrictSearch` is `document`.
-* Regex metacharacters follow normal regex escaping rules, not the `^`/`$` double-escaping convention described above. Because the pattern lives inside a JSON string in keybindings.json, you still need to **double-escape** backslashes - e.g. `\w` must be written as `"\\w"`.
+* `text` is passed directly to JavaScript's `RegExp`, with the `m` (multiline) flag, so `^`/`$` anchor to line boundaries even when `restrictSearch` is `document`.  
+* Regex metacharacters follow normal regex escaping rules, not the `^`/`$` double-escaping convention described above. Because the pattern lives inside a JSON string in keybindings.json, you still need to **double-escape** backslashes - e.g. `\w` must be written as `"\\w"`.  
 * An invalid regular expression is treated as "no match" rather than throwing an error.
 
 ```jsonc
